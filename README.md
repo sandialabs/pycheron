@@ -25,6 +25,8 @@ The tool being used for dependency management ([Poetry](https://python-poetry.or
 You will need to use a **Python 3.6.9** environment, and **activate it before installing packages and using Pycheron**.
 
 ### Installing
+Before installing, you will need to download [git-lfs](https://git-lfs.github.com/)
+
 The easiest way to install pycheron is to run:
 
 `sh build.sh <pycheron-version>`
