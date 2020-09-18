@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.psd.noise.stationNoiseModel &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html"><span><img src="../../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../../install.html">Install</a></li>
+                <li><a href="../../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.psd.noise.stationNoiseModel</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">author: J. Bobeck</span>
+<span class="sd">date: 3.08.16</span>
+<span class="sd">version: 1.0</span>
+<span class="sd">modified: N/A</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">obspy</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<span class="kn">from</span> <span class="nn">pycheron.db.sqllite_db</span> <span class="k">import</span> <span class="n">Database</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.psdList</span> <span class="k">import</span> <span class="n">psdList</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.psdStatistics</span> <span class="k">import</span> <span class="n">psdStatistics</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.logger</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.format</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.getChannel</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;ggplot&#39;</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;stationNoiseModel&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="stationNoiseModel"><a class="viewcode-back" href="../../../../pycheron.psd.noise.stationNoiseModel.html#pycheron.psd.noise.stationNoiseModel.stationNoiseModel">[docs]</a><span class="k">def</span> <span class="nf">stationNoiseModel</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;envelope10_90&quot;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates Station Noise Model for a station</span>
+
+<span class="sd">    :param st: Stream object of data from one station or a Database object</span>
+<span class="sd">    :type st: obspy.core.stream.Stream or pycheron.db.sqllite_db.Database</span>
+<span class="sd">    :param type: Type of model:</span>
+
+<span class="sd">        * &quot;single10&quot; : Based on single line of 10th percentile</span>
+<span class="sd">        * &quot;single90&quot; : Based on single line of 90th percentile</span>
+<span class="sd">        * &quot;single05&quot; : Based on single line of 5th percentile</span>
+<span class="sd">        * &quot;single95&quot; : Based on single line of 95th percentile</span>
+<span class="sd">        * &quot;envelope10_90&quot; : Based on envelope between 10th and 90th percentile</span>
+<span class="sd">        * &quot;envelope05_95&quot; : Based on envelope between 5th and 95th percentile</span>
+
+<span class="sd">    :type type: str</span>
+<span class="sd">    :param plot: Whether to output plot</span>
+<span class="sd">    :type plot: bool</span>
+<span class="sd">    :param fname: If plot = True, the file location to save it</span>
+<span class="sd">    :type fname: str</span>
+<span class="sd">    :param network: If using a db object, the network of the data you want to use</span>
+<span class="sd">    :type network: str</span>
+<span class="sd">    :param station: If using a db object, the station of the data you want to use</span>
+<span class="sd">    :type station: str</span>
+<span class="sd">    :param location: If using a db object, the location of the data you want to use</span>
+<span class="sd">    :type location: str</span>
+<span class="sd">    :param session: If using a db object, the session name of the data you want to use</span>
+<span class="sd">    :type session: str</span>
+<span class="sd">    :param database:  database object to save to</span>
+<span class="sd">    :type database: pycheron.db.sqllite_db.Database</span>
+<span class="sd">    :param logger: Logger object</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+
+<span class="sd">    :return: A dictionary with the following keys and types:</span>
+
+<span class="sd">        * metric_name (`str`)</span>
+<span class="sd">        * network (`str`)</span>
+<span class="sd">        * station (`str`)</span>
+<span class="sd">        * location (`str`)</span>
+<span class="sd">        * type (`str`)</span>
+<span class="sd">        * If *type* is: &quot;single10&quot;, &quot;single90&quot;, &quot;single05&quot;, or &quot;single95&quot;:</span>
+
+<span class="sd">          * &quot;e_station_noiseModel&quot; (`pandas.Series`) - station noise model based on percentile for channel \*\*E</span>
+<span class="sd">          * &quot;n_station_noiseModel&quot; (`pandas.Series`) - station noise model based on percentile for channel \*\*N</span>
+<span class="sd">          * &quot;z_station_noiseModel&quot; (`pandas.Series`) - station noise model based on percentile for channel \*\*Z</span>
+
+<span class="sd">        * If *type* is: &quot;envelope10_90&quot; or &quot;envelope05_95&quot;:</span>
+
+<span class="sd">          * &quot;e_station_noiseModel_low&quot; (`pandas.Series`) - station noise model based on higher bound percentile</span>
+<span class="sd">            (90 or 95) for channel \*\*E</span>
+<span class="sd">          * &quot;e_station_noiseModel_high&quot; (`pandas.Series`) -station noise model based on lower bound percentile</span>
+<span class="sd">            (05 or 10) for channel \*\*E</span>
+<span class="sd">          * &quot;n_station_noiseModel_low&quot; (`pandas.Series`) - station noise model based on higher bound percentile</span>
+<span class="sd">            (90 or 95) for channel \*\*N</span>
+<span class="sd">          * &quot;n_station_noiseModel_high&quot; (`pandas.Series`) -station noise model based on lower bound percentile</span>
+<span class="sd">            (05 or 10) for channel \*\*N</span>
+<span class="sd">          * &quot;z_station_noiseModel_low&quot; (`pandas.Series`) - station noise model based on higher bound percentile</span>
+<span class="sd">            (90 or 95) for channel \*\*Z</span>
+<span class="sd">          * &quot;z_station_noiseModel_high&quot; (`pandas.Series`) -station noise model based on lower bound percentile</span>
+<span class="sd">            (05 or 10) for channel \*\*Z</span>
+
+<span class="sd">    :rtype: dict</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from pycheron.psd.noise.stationNoiseModel import stationNoiseModel</span>
+<span class="sd">        from obspy import UTCDateTime</span>
+<span class="sd">        from obspy.clients.fdsn import Client</span>
+
+
+<span class="sd">        client = Client(&quot;IRIS&quot;)</span>
+<span class="sd">        t = UTCDateTime(&quot;2017-06-01T00:00:00&quot;)</span>
+<span class="sd">        te = UTCDateTime(&quot;2017-06-02T00:00:00&quot;)</span>
+<span class="sd">        st = client.get_waveforms(&quot;TX&quot;, &quot;ALPN&quot;, &quot;00&quot;, &quot;*&quot;, t, te)</span>
+
+<span class="sd">        model = stationNoiseModel(st, type=&quot;envelope10_90&quot;,plot=True)</span>
+
+<span class="sd">        # access z station noise above 90 percent</span>
+<span class="sd">        model[&#39;z_station_noise_high&#39;]</span>
+<span class="sd">        # access z station noise below 10 percent</span>
+<span class="sd">        model[&#39;z_station_noise_low&#39;]</span>
+<span class="sd">        # access e station noise above 90 percent</span>
+<span class="sd">        model[&#39;e_station_noise_high&#39;]</span>
+<span class="sd">        # access e station noise below 10 percent</span>
+<span class="sd">        model[&#39;e_station_noise_low&#39;]</span>
+<span class="sd">        # access n station noise above 90 percent</span>
+<span class="sd">        model[&#39;n_station_noise_high&#39;]</span>
+<span class="sd">        # access n station noise below 10 percent</span>
+<span class="sd">        model[&#39;n_station_noise_low&#39;]</span>
+
+<span class="sd">    **Plotting**</span>
+
+<span class="sd">    If you set the parameter `plot` equal to `True` then the following plot will be produced.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # using output `model` from above example</span>
+<span class="sd">        import matplotlib.pyplot as plt</span>
+
+<span class="sd">        # Station Noise Plots</span>
+<span class="sd">        plt.semilogx(model[&quot;e_station_noise_low&quot;], &#39;orangered&#39;, label=&quot;E Station&quot;)</span>
+<span class="sd">        plt.semilogx(model[&quot;e_station_noise_high&quot;], &#39;orangered&#39;)</span>
+
+<span class="sd">        plt.semilogx(model[&quot;n_station_noise_low&quot;], &#39;c&#39;, label=&quot;N Station&quot;)</span>
+<span class="sd">        plt.semilogx(model[&quot;n_station_noise_high&quot;], &#39;c&#39;)</span>
+
+<span class="sd">        plt.semilogx(model[&quot;z_station_noise_low&quot;], &#39;darkmagenta&#39;, label=&quot;Z Station&quot;)</span>
+<span class="sd">        plt.semilogx(model[&quot;z_station_noise_high&quot;], &#39;darkmagenta&#39;)</span>
+
+<span class="sd">        plt.xlabel(&quot;Period&quot;)</span>
+<span class="sd">        plt.ylabel(&quot;Power(dB)&quot;)</span>
+<span class="sd">        plt.title(&quot;Noise Model for Station: &quot; + st[0].stats.station + &quot; (&quot; + &quot;envelope10_90&quot; + &quot;)&quot;)</span>
+
+<span class="sd">        plt.grid(True, &quot;both&quot;, &quot;both&quot;, c=&quot;white&quot;)</span>
+<span class="sd">        plt.legend()</span>
+
+<span class="sd">    .. image:: _static/stationNoiseModel.png</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># initialize dataframes to fill</span>
+    <span class="n">df_z_en1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df_z_en2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df_e_en1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df_e_en2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df_n_en1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df_n_en2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="c1"># initializing single dfs to fill</span>
+    <span class="n">df_e</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df_n</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df_z</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="c1"># If obspy object calculate psds and grab out station name</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">obspy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">Stream</span><span class="p">):</span>
+        <span class="n">network</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">quality</span> <span class="o">=</span> <span class="n">parse_snclq</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_id</span><span class="p">())</span>
+
+        <span class="c1"># If database object, check to see if we already have the psds calculated</span>
+        <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tb</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">get_metric</span><span class="p">(</span><span class="s2">&quot;psdMetric&quot;</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="n">network</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
+                                     <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+
+            <span class="c1"># if returns no data, calculate and insert into db</span>
+            <span class="k">if</span> <span class="n">tb</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="n">psds</span> <span class="o">=</span> <span class="n">psdList</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+                <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">psds</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tb_psds</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">uncorrected_psds</span><span class="p">[</span><span class="n">tb</span><span class="o">.</span><span class="n">channel</span> <span class="o">==</span> <span class="n">channel</span><span class="p">]</span>
+                <span class="n">psds</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tb_psds</span><span class="p">)):</span>
+                    <span class="n">psd</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">extract_masks</span><span class="p">(</span><span class="n">tb_psds</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                    <span class="n">psds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psd</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">psds</span> <span class="o">=</span> <span class="n">psdList</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+
+    <span class="c1"># If st is a database object, then grab psd from db. Grab out station name.</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">database</span> <span class="o">=</span> <span class="n">st</span>
+
+        <span class="n">tb</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">get_metric</span><span class="p">(</span><span class="s2">&quot;psdMetric&quot;</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="n">network</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                 <span class="n">location</span><span class="o">=</span><span class="n">location</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">tb</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;stationNoiseModel Error: No psdMetric found for specific network in Database, please run psdMetric&quot;</span>
+                <span class="s2">&quot; first&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="s2">&quot;--&quot;</span>
+
+        <span class="n">psds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tb</span><span class="o">.</span><span class="n">uncorrected_psds</span><span class="p">)):</span>
+            <span class="n">psd</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">extract_masks</span><span class="p">(</span><span class="n">tb</span><span class="o">.</span><span class="n">uncorrected_psds</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">psds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psd</span><span class="p">)</span>
+
+    <span class="c1"># get psd statistics for the psds</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">psdStatistics</span><span class="p">(</span><span class="n">psds</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">per</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">psds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">per</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">psds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># looping through each psd</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">)):</span>
+
+        <span class="n">chan</span> <span class="o">=</span> <span class="n">getChannelName</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;snclq&quot;</span><span class="p">])</span>
+        <span class="c1"># makes sure no nan values in stats</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;percent_5&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">!=</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;percent_10&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">!=</span> <span class="kc">True</span> \
+                <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;percent_90&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">!=</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;percent_95&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">!=</span> <span class="kc">True</span><span class="p">:</span>
+
+            <span class="n">per05</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;percent_5&quot;</span><span class="p">]</span>
+            <span class="n">per10</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;percent_10&quot;</span><span class="p">]</span>
+            <span class="n">per90</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;percent_90&quot;</span><span class="p">]</span>
+            <span class="n">per95</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;percent_95&quot;</span><span class="p">]</span>
+
+            <span class="c1">########</span>
+            <span class="c1"># Do we need this code too? If we know that period is the same length as stats[i][&quot;*Percent&quot;] do we need</span>
+            <span class="c1"># this? Or are there situations we found where they aren&#39;t?</span>
+            <span class="c1">#######</span>
+            <span class="c1"># if len(per) &lt;= len(stats[i][&quot;percent_5&quot;]):</span>
+            <span class="c1">#     per05 = stats[i][&quot;percent_5&quot;][np.where(per)]</span>
+            <span class="c1">#     per10 = stats[i][&quot;percent_10&quot;][np.where(per)]</span>
+            <span class="c1">#     per90 = stats[i][&quot;percent_90&quot;][np.where(per)]</span>
+            <span class="c1">#     per95 = stats[i][&quot;percent_95&quot;][np.where(per)]</span>
+            <span class="c1"># else:</span>
+            <span class="c1">#     per = per[np.where(stats[i][&quot;percent_5&quot;])]</span>
+            <span class="c1">#     per05 = per</span>
+            <span class="c1">#     per10 = per</span>
+            <span class="c1">#     per90 = per</span>
+            <span class="c1">#     per95 = per</span>
+
+            <span class="c1"># For channels that endwith Z, structure the dataframes appropriately for the various options: single10,</span>
+            <span class="c1"># single05, single90, single95, or the envelopes of 10 and 90 percentiles or 5 and 95 percentiles</span>
+            <span class="k">if</span> <span class="n">chan</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single10&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per10</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_z</span> <span class="o">=</span> <span class="n">df_z</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single05&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per05</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per05</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_z</span> <span class="o">=</span> <span class="n">df_z</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single90&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per90</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per90</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_z</span> <span class="o">=</span> <span class="n">df_z</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single95&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per95</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per95</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_z</span> <span class="o">=</span> <span class="n">df_z</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;envelope10_90&#39;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per10</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_z_en1</span> <span class="o">=</span> <span class="n">df_z_en1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per90</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per90</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_z_en2</span> <span class="o">=</span> <span class="n">df_z_en2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;envelope05_95&#39;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per05</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per05</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_z_en1</span> <span class="o">=</span> <span class="n">df_z_en1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per95</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per95</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_z_en2</span> <span class="o">=</span> <span class="n">df_z_en2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># For channels that endwith E or 2, structure the dataframes appropriately for the various options:</span>
+            <span class="c1"># single10, single05, single90, single95, or the envelopes of 10 and 90 percentiles or 5 and 95 percentiles</span>
+            <span class="k">elif</span> <span class="n">chan</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;E&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">chan</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">):</span>
+
+                <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single10&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per10</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_e</span> <span class="o">=</span> <span class="n">df_e</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single05&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per05</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per05</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_e</span> <span class="o">=</span> <span class="n">df_e</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single90&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per90</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per90</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_e</span> <span class="o">=</span> <span class="n">df_e</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single95&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per95</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per95</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_e</span> <span class="o">=</span> <span class="n">df_e</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;envelope10_90&#39;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per10</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_e_en1</span> <span class="o">=</span> <span class="n">df_e_en1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per90</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per90</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_e_en2</span> <span class="o">=</span> <span class="n">df_e_en2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;envelope05_95&#39;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per05</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per05</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_e_en1</span> <span class="o">=</span> <span class="n">df_e_en1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per95</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per95</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_e_en2</span> <span class="o">=</span> <span class="n">df_e_en2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># For channels that endwith N or 1, structure the dataframes appropriately for the various options:</span>
+            <span class="c1"># single10, single05, single90, single95, or the envelopes of 10 and 90 percentiles or 5 and 95 percentiles</span>
+            <span class="k">elif</span> <span class="n">chan</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;N&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">chan</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single10&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per10</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_n</span> <span class="o">=</span> <span class="n">df_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single05&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per05</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per05</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_n</span> <span class="o">=</span> <span class="n">df_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single90&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per90</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per90</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_n</span> <span class="o">=</span> <span class="n">df_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single95&quot;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per95</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per95</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_n</span> <span class="o">=</span> <span class="n">df_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;envelope10_90&#39;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per10</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per10</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_n_en1</span> <span class="o">=</span> <span class="n">df_n_en1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per90</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per90</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_n_en2</span> <span class="o">=</span> <span class="n">df_n_en2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;envelope05_95&#39;</span><span class="p">:</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per05</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per05</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_n_en1</span> <span class="o">=</span> <span class="n">df_n_en1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">per95</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per95</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                    <span class="n">df_n_en2</span> <span class="o">=</span> <span class="n">df_n_en2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Add dfs created to output dictionary. If type startswith &quot;s&quot;, meaning we are doing single noise model lines,</span>
+    <span class="c1"># add to output dictionary and plot if plot == True, plot the single profiles using orangered for the E component,</span>
+    <span class="c1"># cyan for the N component and dark magenta for the Z component. Make axis labels, grid, and legend and save figure</span>
+    <span class="c1"># to fname</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;e_station_noiseModel&quot;</span><span class="p">:</span> <span class="n">df_e</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">&quot;n_station_noiseModel&quot;</span><span class="p">:</span> <span class="n">df_n</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+               <span class="s2">&quot;z_station_noiseModel&quot;</span><span class="p">:</span> <span class="n">df_z</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">&quot;metric_name&quot;</span><span class="p">:</span> <span class="s2">&quot;stationNoiseModel&quot;</span><span class="p">,</span> <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span>
+               <span class="s2">&quot;station&quot;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Station Noise Plots</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;e_station_noiseModel&quot;</span><span class="p">],</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;E Station&quot;</span><span class="p">)</span>
+
+            <span class="n">p</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;n_station_noiseModel&quot;</span><span class="p">],</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;N Station&quot;</span><span class="p">)</span>
+
+            <span class="n">p</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;z_station_noiseModel&quot;</span><span class="p">],</span> <span class="s1">&#39;darkmagenta&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Z Station&quot;</span><span class="p">)</span>
+
+            <span class="n">p</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Period&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Power(dB)&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Noise Model for Station: &quot;</span> <span class="o">+</span> <span class="n">station</span> <span class="o">+</span> <span class="s2">&quot; (&quot;</span> <span class="o">+</span> <span class="nb">type</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">.</span><span class="mi">01</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+                <span class="n">update</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;station_noise_image_path&quot;</span><span class="p">:</span> <span class="n">fname</span><span class="p">}</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">update</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">Database</span><span class="p">)</span> <span class="ow">or</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">out</span>
+
+    <span class="c1"># Add dfs created to output dictionary. If type doesn&#39;t start with &quot;s&quot;, means we are doing envelopes so plot</span>
+    <span class="c1"># high/low noise profiles, add to output dictionary and plot if plot == True, plot the envelopes using orangered</span>
+    <span class="c1"># for the E component high/low noise profile, cyan for the N component high/low noise profile, and dark magenta for</span>
+    <span class="c1"># the Z component high/low noise profile. Make axis labels, grid, and legend and save figure to</span>
+    <span class="c1"># fname</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;e_station_noiseModel_low&quot;</span><span class="p">:</span> <span class="n">df_e_en1</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">&quot;e_station_noiseModel_high&quot;</span><span class="p">:</span> <span class="n">df_e_en2</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+               <span class="s2">&quot;n_station_noiseModel_low&quot;</span><span class="p">:</span> <span class="n">df_n_en1</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">&quot;n_station_noiseModel_high&quot;</span><span class="p">:</span> <span class="n">df_n_en2</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+               <span class="s2">&quot;z_station_noiseModel_low&quot;</span><span class="p">:</span> <span class="n">df_z_en1</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">&quot;z_station_noiseModel_high&quot;</span><span class="p">:</span> <span class="n">df_z_en2</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+               <span class="s2">&quot;metric_name&quot;</span><span class="p">:</span> <span class="s2">&quot;stationNoiseModel&quot;</span><span class="p">,</span> <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span> <span class="s2">&quot;station&quot;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span>
+               <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Station Noise Plots</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;e_station_noiseModel_low&quot;</span><span class="p">],</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;E Station&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;e_station_noiseModel_high&quot;</span><span class="p">],</span> <span class="s1">&#39;orangered&#39;</span><span class="p">)</span>
+
+            <span class="n">p</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;n_station_noiseModel_low&quot;</span><span class="p">],</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;N Station&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;n_station_noiseModel_high&quot;</span><span class="p">],</span> <span class="s1">&#39;c&#39;</span><span class="p">)</span>
+
+            <span class="n">p</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;z_station_noiseModel_low&quot;</span><span class="p">],</span> <span class="s1">&#39;darkmagenta&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Z Station&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;z_station_noiseModel_high&quot;</span><span class="p">],</span> <span class="s1">&#39;darkmagenta&#39;</span><span class="p">)</span>
+
+            <span class="n">p</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Period&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Power(dB)&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Noise Model for Station: &quot;</span> <span class="o">+</span> <span class="n">station</span> <span class="o">+</span> <span class="s2">&quot; (&quot;</span> <span class="o">+</span> <span class="nb">type</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">.</span><span class="mi">01</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+                <span class="n">update</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;station_noise_image_path&quot;</span><span class="p">:</span> <span class="n">fname</span><span class="p">}</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">update</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">Database</span><span class="p">)</span> <span class="ow">or</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">out</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

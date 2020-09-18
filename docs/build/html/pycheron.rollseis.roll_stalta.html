@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.rollseis.roll_stalta &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">pycheron.rollseis.roll_stalta</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="module-pycheron.rollseis.roll_stalta">
+<span id="pycheron-rollseis-roll-stalta"></span><h1>pycheron.rollseis.roll_stalta<a class="headerlink" href="#module-pycheron.rollseis.roll_stalta" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pycheron.rollseis.roll_stalta.roll_stalta">
+<code class="descname">roll_stalta</code><span class="sig-paren">(</span><em>x</em>, <em>n_sta</em>, <em>n_lta</em>, <em>increment=1</em>, <em>fortran=False</em>, <em>logger=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/rollseis/roll_stalta.html#roll_stalta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.rollseis.roll_stalta.roll_stalta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple rolling STA/LTA ratio calculation utilized for automatic detection of seismic signal arrival times.</p>
+<p><code class="docutils literal notranslate"><span class="pre">roll_stalta</span></code> doesn’t do any preprocessing of incoming data and merely calculates the ratio of the average value
+in the STA window to the average value in the LTA window. Windows are aligned so that the index is at the left edge
+of the STA window and at the right edge of the LTA window, e.g., <a class="footnote-reference" href="#id2" id="id1">[1]</a></p>
+<div class="math">
+<p><img src="_images/math/abb40178e9d195b0f2fa08ff3c3cf20c8262efb3.png" alt="STA(x_{i}) = (1/ns)* \sum_{j = i}^{i+ns} x_{i}
+
+LTA(x_{i}) = (1/nl) * \sum_{j=i-nl}^{i} x_{i}
+
+r_{i} = STA_{i}/LTA_{i}"/></p>
+</div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">[---------- LTA --------*]........</span>
+<span class="go">.......................[*- STA --]</span>
+</pre></div>
+</div>
+<p>For proper use of this algorithm seismic data should be preprocessed in following manner:</p>
+<p>demean, detrend and taper the raw signal
+square the processed signal to get power</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>numpy.array</em>) – input data vector</li>
+<li><strong>n_sta</strong> (<em>int</em>) – integer STA window size</li>
+<li><strong>n_lta</strong> (<em>int</em>) – integer LTA window size</li>
+<li><strong>increment</strong> (<em>int</em>) – increment shift to use when sliding the window to the next location. For increments greater
+than one, the rolling means will not align properly, hence the need for a dedicated
+<code class="docutils literal notranslate"><span class="pre">roll_stalta</span></code> function. Setting increment to a value greater than 1 will result in NaNs for
+all skipped over indices.</li>
+<li><strong>fortran</strong> (<em>bool</em>) – Whether to use Fortran or not. <strong>Note:</strong> Linux/iOS only</li>
+<li><strong>logger</strong> (<a class="reference internal" href="pycheron.util.logger.html#pycheron.util.logger.Logger" title="pycheron.util.logger.Logger"><em>pycheron.util.logger.Logger</em></a>) – logger object</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Returns vector of values of the same length as x with each point containing the STA/LTA
+ratio at that point</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Values within n_lta - 1 of the beginning and n_sta - 1 of the end are set to NaNs</p>
+</div>
+<p><strong>Example</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pycheron.rollseis.roll_stalta</span> <span class="kn">import</span> <span class="n">roll_stalta</span>
+<span class="kn">import</span> <span class="nn">obspy</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.noise.deadChannel</span> <span class="kn">import</span> <span class="n">DDT</span>
+
+<span class="c1">#Contrived example:</span>
+<span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="c1">#calculate rolling_stalta with n_sta = 3, n_lta = 6, increment = 1 for above vector x</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">roll_stalta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Plotting</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="c1"># Plot original data as black triangles</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;^&#39;</span><span class="p">,</span><span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+
+<span class="c1">#Plot rolling_stalta in red circles</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">markerfacecolor</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;STA/LTA&#39;</span><span class="p">)</span>
+
+<span class="c1">#Adjust plot limits to show upper/lower data points more clearly</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">101</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
+<span class="c1">#Add title and legend</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Test of roll_stalta on contrived example&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/roll_stalta.png" src="_images/roll_stalta.png" />
+<p class="rubric">References</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><a class="reference external" href="http://en.wikipedia.org/wiki/First_break_picking">http://en.wikipedia.org/wiki/First_break_picking</a></td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

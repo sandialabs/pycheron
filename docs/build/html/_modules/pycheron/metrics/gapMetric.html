@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.gapMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.metrics.gapMetric</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;gapMetric&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">obspy.core.utcdatetime</span> <span class="k">import</span> <span class="n">UTCDateTime</span>
+<span class="kn">from</span> <span class="nn">obspy.core.trace</span> <span class="k">import</span> <span class="n">Trace</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.masks</span> <span class="k">import</span> <span class="n">samples2time</span>
+<span class="kn">import</span> <span class="nn">pycheron.util.logger</span> <span class="k">as</span> <span class="nn">Logger</span>
+
+
+<div class="viewcode-block" id="gapMetric"><a class="viewcode-back" href="../../../pycheron.metrics.gapMetric.html#pycheron.metrics.gapMetric.gapMetric">[docs]</a><span class="k">def</span> <span class="nf">gapMetric</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">generateMasks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">separateMasks</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">completeDay</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masksByTime</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function calculates metrics associated with gaps and overlaps in a seismic signal.</span>
+
+<span class="sd">    :param st: obspy stream object</span>
+<span class="sd">    :type st: obspy.core.stream.Stream</span>
+<span class="sd">    :param generateMasks: (boolean) If True, QC masks will be created.</span>
+<span class="sd">    :type generateMasks: bool</span>
+<span class="sd">    :param separateMasks: (boolean) If True, 2 masks will be create. 1 for gaps, and 1 for overlaps, if False these masks will be merged and 3 masks will be returned. Gaps, Overlaps, Combined.</span>
+<span class="sd">    :type separateMasks: bool</span>
+<span class="sd">    :param completeDay: (boolean) If True, if an individual day is does not start at 00:00:00 or end at 23:59:59, a small trace will be made to complete the day. This should be used if, for example, have only 6 hours of data, but would like to consider that 6 hours out of a whole day, thus gaps</span>
+<span class="sd">                               would be found and masks would be created around that segment of data.</span>
+<span class="sd">    :type completeDay: bool</span>
+<span class="sd">    :param masksByTime: (bool) - Boolean to determine whether masks are generated by time. If True, masks will be generated with a start/end time, if false, they will be generated as boolean array.</span>
+<span class="sd">    :type masksByTime: bool</span>
+<span class="sd">    :param logger: logger object</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+<span class="sd">    :param database: database object</span>
+<span class="sd">    :type database: pycheron.db.sqllite_db.Database</span>
+
+<span class="sd">    :return: Tuple of station gap summary information and channel gap information. See below.</span>
+<span class="sd">    :rtype: tuple</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Example, returns 2 objects. Each object is a list of dictionaries</span>
+<span class="sd">        summary, data = gapMetric()</span>
+
+<span class="sd">    **Metrics include:**</span>
+
+<span class="sd">    * Station Summary data:</span>
+<span class="sd">        * `station_completeness` - total percentage of total requested time for which signal is available for a station (average of channel percentages)</span>
+<span class="sd">        * `network` - network name</span>
+<span class="sd">        * `station` - station name</span>
+<span class="sd">        * `location` - location</span>
+<span class="sd">        * `total_gaps` - total number of gaps in stream</span>
+<span class="sd">        * `total_overlaps` - total number of overlaps in stream</span>
+<span class="sd">        * `metric_name` - gapMetricStation</span>
+<span class="sd">        * `starttime` - end time of trace</span>
+<span class="sd">        * `endtime` - start time of trace</span>
+<span class="sd">        * `gap_masks` - Mask for gapped data. Boolean array</span>
+<span class="sd">        * `overlap_masks` - Mask for overlapped data. Boolean array</span>
+<span class="sd">        * `combined_masks` - Mask for gapped and overlaped data. Boolean array</span>
+<span class="sd">        * `maximum_gap` - length of maximum gap found in channel within stream</span>
+<span class="sd">        * `maximum_overlap` - length of maximum overlap(s) found in channel within stream</span>
+<span class="sd">        * `channel_percent_available` - percentage  of total requested time for which a signal is available for channel</span>
+
+<span class="sd">    * Channel data</span>
+<span class="sd">        * `channel` - channel that the above metrics apply to</span>
+<span class="sd">        * `duration` - duration of gaps/overlaps within channel</span>
+<span class="sd">        * `type` - overlap or gap</span>
+<span class="sd">        * `gap_overlap_start_time` - gap/overlap start time</span>
+<span class="sd">        * `gap_overlap_end_time` - gap/overlap end time</span>
+<span class="sd">        * `metric_name` - gapChannelMetric</span>
+
+<span class="sd">    **Examples**</span>
+
+<span class="sd">    1. Gaps with multiple channels, same station</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        #test data with gaps with multiple channels, same station</span>
+<span class="sd">        data = &#39;test/test_data/6e_sp06_Eall.397679.tar.mseed&#39;</span>
+<span class="sd">        #reading in stream</span>
+<span class="sd">        st = obspy.read(data)</span>
+<span class="sd">        gaps, sum = gapMetric(st)</span>
+<span class="sd">        print &#39;Gap Details:&#39;</span>
+<span class="sd">        for i in gaps:</span>
+<span class="sd">            print i</span>
+<span class="sd">        &gt;&gt;&gt; Gap Details:</span>
+<span class="sd">        &gt;&gt;&gt; [{&#39;duration&#39;: 408.0050001144409, &#39;gap/overlap_start_time&#39;: &#39;2014-01-19T21:01:07.985000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2014-01-19T21:07:56&#39;, &#39;type&#39;: &#39;Gap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: 86397.97009897232, &#39;gap/overlap_start_time&#39;: &#39;2014-01-20T00:00:00.990000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2014-01-20T23:59:58.970099&#39;, &#39;type&#39;: &#39;Gap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}]</span>
+<span class="sd">        &gt;&gt;&gt; [{&#39;duration&#39;: 408.0050001144409, &#39;gap/overlap_start_time&#39;: &#39;2014-01-19T21:01:07.985000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2014-01-19T21:07:56&#39;, &#39;type&#39;: &#39;Gap&#39;, &#39;channel&#39;: u&#39;EHN&#39;}, {&#39;duration&#39;: 86397.97009897232, &#39;gap/overlap_start_time&#39;: &#39;2014-01-20T00:00:00.990000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2014-01-20T23:59:58.970099&#39;, &#39;type&#39;: &#39;Gap&#39;, &#39;channel&#39;: u&#39;EHN&#39;}]</span>
+<span class="sd">        &gt;&gt;&gt; [{&#39;duration&#39;: 408.0050001144409, &#39;gap/overlap_start_time&#39;: &#39;2014-01-19T21:01:07.985000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2014-01-19T21:07:56&#39;, &#39;type&#39;: &#39;Gap&#39;, &#39;channel&#39;: u&#39;EHZ&#39;}, {&#39;duration&#39;: 86397.97009897232, &#39;gap/overlap_start_time&#39;: &#39;2014-01-20T00:00:00.990000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2014-01-20T23:59:58.970099&#39;, &#39;type&#39;: &#39;Gap&#39;, &#39;channel&#39;: u&#39;EHZ&#39;}]</span>
+
+<span class="sd">        print &quot;Gap Summary:&quot;</span>
+<span class="sd">        for i in sum:</span>
+<span class="sd">            print i</span>
+<span class="sd">        &gt;&gt;&gt; Gap Summary:</span>
+<span class="sd">        &gt;&gt;&gt; {&#39;overlap_masks&#39;: None, &#39;station_completeness&#39;: 49.76476708626203, &#39;total_gaps&#39;: 6, &#39;start_time&#39;: UTCDateTime(2014, 1, 19, 0, 0, 0, 5000), &#39;total_overlaps&#39;: 0, &#39;combined_masks&#39;: None, &#39;maximum_overlap&#39;: nan, &#39;channel_percent_available&#39;: 49.76476708626204, &#39;end_time&#39;: UTCDateTime(2014, 1, 20, 23, 59, 58, 995000), &#39;gap_masks&#39;: None, &#39;maximum_gap&#39;: 86397.97009897232, &#39;channel&#39;: u&#39;EHE&#39;, &#39;metirc_name&#39;: &#39;gapMetric&#39;}</span>
+<span class="sd">        &gt;&gt;&gt; {&#39;overlap_masks&#39;: None, &#39;station_completeness&#39;: 49.76476708626203, &#39;total_gaps&#39;: 6, &#39;start_time&#39;: UTCDateTime(2014, 1, 19, 0, 0, 0, 5000), &#39;total_overlaps&#39;: 0, &#39;combined_masks&#39;: None, &#39;maximum_overlap&#39;: nan, &#39;channel_percent_available&#39;: 49.76476708626204, &#39;end_time&#39;: UTCDateTime(2014, 1, 20, 23, 59, 58, 995000), &#39;gap_masks&#39;: None, &#39;maximum_gap&#39;: 86397.97009897232, &#39;channel&#39;: u&#39;EHN&#39;, &#39;metirc_name&#39;: &#39;gapMetric&#39;}</span>
+<span class="sd">        &gt;&gt;&gt; {&#39;overlap_masks&#39;: None, &#39;station_completeness&#39;: 49.76476708626203, &#39;total_gaps&#39;: 6, &#39;start_time&#39;: UTCDateTime(2014, 1, 19, 0, 0, 0, 5000), &#39;total_overlaps&#39;: 0, &#39;combined_masks&#39;: None, &#39;maximum_overlap&#39;: nan, &#39;channel_percent_available&#39;: 49.76476708626204, &#39;end_time&#39;: UTCDateTime(2014, 1, 20, 23, 59, 58, 995000), &#39;gap_masks&#39;: None, &#39;maximum_gap&#39;: 86397.97009897232, &#39;channel&#39;: u&#39;EHZ&#39;, &#39;metirc_name&#39;: &#39;gapMetric&#39;}</span>
+
+<span class="sd">    2. Data with overlaps single channel</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        #test data with overlaps single channel</span>
+<span class="sd">        data = &#39;test/test_data/qualityflags.mseed&#39;</span>
+<span class="sd">        st = obspy.read(data)</span>
+<span class="sd">        gaps, sum= gapMetric(st)</span>
+<span class="sd">        print &#39;Gap Details:&#39;</span>
+<span class="sd">        &gt;&gt;&gt; Gap Details:</span>
+<span class="sd">        &gt;&gt;&gt; [{&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.054999828338623, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2007-12-31T23:59:59.915000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: 86397.01009917259, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:00:01.970000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2008-01-01T23:59:58.985099&#39;, &#39;type&#39;: &#39;Gap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}]</span>
+
+<span class="sd">        for i in gaps:</span>
+<span class="sd">            print i</span>
+<span class="sd">        print &quot;Gap Summary:&quot;</span>
+<span class="sd">        for i in sum:</span>
+<span class="sd">            print i</span>
+<span class="sd">        &gt;&gt;&gt; Gap Summary:</span>
+<span class="sd">        &gt;&gt;&gt; {&#39;overlap_masks&#39;: None, &#39;station_completeness&#39;: 0.0023957440604789326, &#39;total_gaps&#39;: 1, &#39;start_time&#39;: UTCDateTime(2007, 12, 31, 23, 59, 59, 915000), &#39;total_overlaps&#39;: 17, &#39;combined_masks&#39;: None, &#39;maximum_overlap&#39;: 2.054999828338623, &#39;channel_percent_available&#39;: 0.0023957440604789326, &#39;end_time&#39;: UTCDateTime(2008, 1, 1, 23, 59, 58, 995000), &#39;gap_masks&#39;: None, &#39;maximum_gap&#39;: 86397.01009917259, &#39;channel&#39;: u&#39;EHE&#39;, &#39;metirc_name&#39;: &#39;gapMetric&#39;}</span>
+
+<span class="sd">    3. Data with gaps and overlaps single channel</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        #test data with gaps and overlaps single channel</span>
+<span class="sd">        data = &#39;test/test_data/sglchan_onegap_oneoverlap.mseed&#39;</span>
+<span class="sd">        st = obspy.read(data)</span>
+<span class="sd">        gaps, sum= gapMetric(st)</span>
+<span class="sd">        print &#39;Gap Details:&#39;</span>
+<span class="sd">        for i in gaps:</span>
+<span class="sd">            print i</span>
+<span class="sd">        &gt;&gt;&gt; Gap Details:</span>
+<span class="sd">        &gt;&gt;&gt; [{&#39;duration&#39;: 16.479999780654907, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:01:34.480000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2008-01-01T00:01:50.965000&#39;, &#39;type&#39;: &#39;Gap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: -2.06000018119812, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:01:53.020000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2008-01-01T00:01:50.965000&#39;, &#39;type&#39;: &#39;Overlap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}, {&#39;duration&#39;: 86191.2000989914, &#39;gap/overlap_start_time&#39;: &#39;2008-01-01T00:03:27.780000&#39;, &#39;gap/overlap_end_time&#39;: &#39;2008-01-01T23:59:58.985099&#39;, &#39;type&#39;: &#39;Gap&#39;, &#39;channel&#39;: u&#39;EHE&#39;}]</span>
+
+<span class="sd">        print &quot;Gap Summary:&quot;</span>
+<span class="sd">        for i in sum:</span>
+<span class="sd">            print i</span>
+<span class="sd">        &gt;&gt;&gt; Gap Summary:</span>
+<span class="sd">        &gt;&gt;&gt; {&#39;overlap_masks&#39;: None, &#39;station_completeness&#39;: 0.22170325039695626, &#39;total_gaps&#39;: 2, &#39;start_time&#39;: UTCDateTime(2007, 12, 31, 23, 59, 59, 765000), &#39;total_overlaps&#39;: 1, &#39;combined_masks&#39;: None, &#39;maximum_overlap&#39;: 2.06000018119812, &#39;channel_percent_available&#39;: 0.22170325039695626, &#39;end_time&#39;: UTCDateTime(2008, 1, 1, 23, 59, 58, 995000), &#39;gap_masks&#39;: None, &#39;maximum_gap&#39;: 86191.2000989914, &#39;channel&#39;: u&#39;EHE&#39;, &#39;metirc_name&#39;: &#39;gapMetric&#39;}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># ------------------Initialize---------------------------------------------</span>
+    <span class="c1"># Initalize list of counts of various metrics on gaps/overlaps</span>
+    <span class="n">max_gap_listE</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">max_overlap_listE</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">max_gap_listN</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">max_overlap_listN</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">max_gap_listZ</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">max_overlap_listZ</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Initalize channel lists, totalSec, duration, and cont_chunk</span>
+    <span class="n">chans_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">uniq_chans</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">totalSec</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">durSeg</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Initialize output variable data</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Initialize percent available list</span>
+    <span class="n">percent_avail_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sta_percent</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">percent_av</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Initialize values</span>
+    <span class="n">num_gaps</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">max_gap</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">num_overlaps</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">max_overlap</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">num_gaps_per_sta</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">num_overlaps_per_sta</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total_gaps</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total_overlaps</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">sampRate</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">gapMask</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">overlapMask</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">allMasks</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">gStarttime</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">gEndtime</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">num_segs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Loop through traces get channel list (will be repeat) and number of segments</span>
+
+    <span class="n">trM</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">completeDay</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">trM</span> <span class="o">=</span> <span class="n">trM</span><span class="o">.</span><span class="n">merge</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trM</span><span class="p">)):</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">trM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">bod</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="mi">00</span><span class="p">,</span> <span class="mi">00</span><span class="p">,</span> <span class="mi">00</span><span class="p">,</span> <span class="mi">00</span><span class="p">)</span>
+            <span class="n">eod</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">99</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+            <span class="k">if</span> <span class="n">end</span> <span class="o">&lt;=</span> <span class="n">eod</span><span class="p">:</span>
+                <span class="n">tr_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">99999</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;sampling_rate&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+                    <span class="s2">&quot;calib&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">calib</span><span class="p">,</span>
+                    <span class="s2">&quot;npts&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+                    <span class="s2">&quot;station&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                    <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+                    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                    <span class="s2">&quot;starttime&quot;</span><span class="p">:</span> <span class="n">eod</span> <span class="o">-</span> <span class="p">(</span><span class="mf">3.</span> <span class="o">/</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">),</span>
+                    <span class="s2">&quot;endtime&quot;</span><span class="p">:</span> <span class="n">eod</span>
+                <span class="p">}</span>
+                <span class="n">trNew</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">tr_data</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span>
+                <span class="n">trM</span> <span class="o">=</span> <span class="n">trM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trNew</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;gapMetric(): New Trace Added&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="n">bod</span><span class="p">:</span>
+                <span class="n">tr_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">99999</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;sampling_rate&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+                    <span class="s2">&quot;calib&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">calib</span><span class="p">,</span>
+                    <span class="s2">&quot;npts&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+                    <span class="s2">&quot;station&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                    <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+                    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                    <span class="s2">&quot;starttime&quot;</span><span class="p">:</span> <span class="n">bod</span><span class="p">,</span>
+                    <span class="s2">&quot;endtime&quot;</span><span class="p">:</span> <span class="n">bod</span> <span class="o">+</span> <span class="p">(</span><span class="mf">3.</span> <span class="o">/</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+                <span class="p">}</span>
+                <span class="n">trNew</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">tr_data</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span>
+                <span class="n">trM</span> <span class="o">=</span> <span class="n">trM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trNew</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;gapMetric(): New Trace Added&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Get total time duration for each stream object by merging all gaps together</span>
+        <span class="n">trM</span> <span class="o">=</span> <span class="n">trM</span><span class="o">.</span><span class="n">merge</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="p">)):</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span>
+        <span class="n">station</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span>
+        <span class="n">chans_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+        <span class="c1"># Get number of segments per channel</span>
+    <span class="n">num_segs</span> <span class="o">=</span> <span class="p">[</span><span class="n">chans_list</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">chan</span><span class="p">)</span> <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">chans_list</span><span class="p">)]</span>
+
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trM</span><span class="p">)):</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">trM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">totalSec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span>
+        <span class="n">uniq_chans</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+
+    <span class="c1"># For multiple gaps per station create list of totSec to iterate through that are the same number of iterations as</span>
+    <span class="c1"># gaps, also make one for channel list</span>
+    <span class="n">totSec</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">chans</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">num_segs</span><span class="p">)):</span>
+        <span class="n">totSec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">totalSec</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">num_segs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">chans</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">uniq_chans</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">num_segs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">totSec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">totSec</span><span class="p">)</span>
+    <span class="n">chans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">chans</span><span class="p">)</span>
+    <span class="n">chans</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+    <span class="c1"># ------------------Gap Function-------------------------------------------</span>
+    <span class="n">gaps</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">get_gaps</span><span class="p">()</span>
+
+    <span class="n">index_gaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">index_over</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gaps</span><span class="p">)):</span>
+        <span class="c1"># ------------------------QC MASKS----------------------</span>
+        <span class="c1"># create gap masks</span>
+        <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">start_gap</span> <span class="o">=</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span>
+            <span class="n">secFromStart</span> <span class="o">=</span> <span class="n">start_gap</span> <span class="o">-</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+            <span class="n">maskStartIndex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">secFromStart</span> <span class="o">*</span> <span class="n">sampRate</span><span class="p">)</span>
+            <span class="n">maskEndIndex</span> <span class="o">=</span> <span class="n">maskStartIndex</span> <span class="o">+</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">maskStartIndex</span><span class="p">,</span> <span class="n">maskEndIndex</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">index_gaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index_gaps</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+        <span class="c1"># create overlap masks</span>
+        <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">start_over</span> <span class="o">=</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span>
+            <span class="n">secFromStart</span> <span class="o">=</span> <span class="n">start_over</span> <span class="o">-</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+            <span class="n">maskStartIndex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">secFromStart</span> <span class="o">*</span> <span class="n">sampRate</span><span class="p">))</span>
+            <span class="n">maskEndIndex</span> <span class="o">=</span> <span class="n">maskStartIndex</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">])</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">maskStartIndex</span><span class="p">,</span> <span class="n">maskEndIndex</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">index_over</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index_over</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+        <span class="c1"># -------------------------------------------------------------</span>
+
+        <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">max_gap_listE</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">])</span>
+                <span class="n">max_gap</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_gap_listE</span><span class="p">)</span>
+                <span class="n">num_gaps_per_sta</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">max_gap_listE</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">max_overlap_listE</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]))</span>
+                <span class="n">max_overlap</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_overlap_listE</span><span class="p">)</span>
+                <span class="n">num_overlaps_per_sta</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">max_overlap_listE</span><span class="p">)</span>
+                <span class="n">percent_avail_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="c1"># getting gap/overlap start and endtime</span>
+            <span class="k">if</span> <span class="n">num_gaps_per_sta</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">num_overlaps_per_sta</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">gStarttime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">])</span>
+                <span class="n">gEndtime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">gStarttime</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">gEndtime</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">durSeg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">max_gap_listN</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">])</span>
+                <span class="n">max_gap</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_gap_listN</span><span class="p">)</span>
+                <span class="n">num_gaps_per_sta</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">max_gap_listN</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">max_overlap_listN</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]))</span>
+                <span class="n">max_overlap</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_overlap_listN</span><span class="p">)</span>
+                <span class="n">num_overlaps_per_sta</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">max_overlap_listN</span><span class="p">)</span>
+                <span class="n">percent_avail_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="c1"># getting gap/overlap start and endtime</span>
+            <span class="k">if</span> <span class="n">num_gaps_per_sta</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">num_overlaps_per_sta</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">gStarttime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">])</span>
+                <span class="n">gEndtime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">gStarttime</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">gEndtime</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">durSeg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;Z&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">max_gap_listZ</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">])</span>
+                <span class="n">max_gap</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_gap_listZ</span><span class="p">)</span>
+                <span class="n">num_gaps_per_sta</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">max_gap_listZ</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">max_overlap_listZ</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]))</span>
+                <span class="n">max_overlap</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_overlap_listZ</span><span class="p">)</span>
+                <span class="n">num_overlaps_per_sta</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">max_overlap_listZ</span><span class="p">)</span>
+                <span class="n">percent_avail_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="c1"># getting gap/overlap start and endtime</span>
+            <span class="k">if</span> <span class="n">num_gaps_per_sta</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">num_overlaps_per_sta</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">gStarttime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">])</span>
+                <span class="n">gEndtime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">gStarttime</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">gEndtime</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">durSeg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">gaps</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">chans</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">chans</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+            <span class="n">ind_gaps</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gaps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">percent_av</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">max_gap_listE</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">totalSec</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">percent_av</span> <span class="o">=</span> <span class="mi">100</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">gap_secsE</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">max_gap_listE</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">uniq_chans</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">percent_avail_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">gap_secsE</span> <span class="o">/</span> <span class="n">totSec</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">percent_avail_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">gap_secsE</span> <span class="o">/</span> <span class="n">totSec</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                    <span class="n">percent_av</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">percent_avail_list</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="mi">100</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">percent_av</span><span class="p">:</span>
+                        <span class="n">percent_av</span> <span class="o">=</span> <span class="mi">100</span>
+
+            <span class="k">elif</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gaps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">percent_av</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">max_gap_listN</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">totalSec</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">percent_av</span> <span class="o">=</span> <span class="mi">100</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">gap_secsN</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">max_gap_listN</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">uniq_chans</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">percent_avail_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">gap_secsN</span> <span class="o">/</span> <span class="n">totSec</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">percent_avail_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">gap_secsN</span> <span class="o">/</span> <span class="n">totSec</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                    <span class="n">percent_av</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">percent_avail_list</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="mi">100</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">percent_av</span><span class="p">:</span>
+                        <span class="n">percent_av</span> <span class="o">=</span> <span class="mi">100</span>
+
+            <span class="k">elif</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;Z&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gaps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">durSeg</span> <span class="o">=</span> <span class="n">gaps</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">gaps</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">percent_av</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">max_gap_listZ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">totalSec</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">percent_av</span> <span class="o">=</span> <span class="mi">100</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">gap_secsZ</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">max_gap_listZ</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">uniq_chans</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">percent_avail_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">gap_secsZ</span> <span class="o">/</span> <span class="n">totSec</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">percent_avail_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">gap_secsZ</span> <span class="o">/</span> <span class="n">totSec</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                    <span class="n">percent_av</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">percent_avail_list</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="mi">100</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">percent_av</span><span class="p">:</span>
+                        <span class="n">percent_av</span> <span class="o">=</span> <span class="mi">100</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">durSeg</span><span class="p">)):</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="n">chans</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                         <span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="n">durSeg</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                         <span class="s1">&#39;gap_overlap_start_time&#39;</span><span class="p">:</span> <span class="n">gStarttime</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                         <span class="s1">&#39;gap_overlap_end_time&#39;</span><span class="p">:</span> <span class="n">gEndtime</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                         <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span> <span class="k">if</span> <span class="n">durSeg</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s2">&quot;gapMetricChannel&quot;</span>
+                         <span class="p">}</span>
+                    <span class="n">ind_gaps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="n">chans</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                     <span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="n">durSeg</span><span class="p">,</span>
+                     <span class="s1">&#39;gap_overlap_start_time&#39;</span><span class="p">:</span> <span class="n">gStarttime</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                     <span class="s1">&#39;gap_overlap_end_time&#39;</span><span class="p">:</span> <span class="n">gEndtime</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                     <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span> <span class="k">if</span> <span class="n">durSeg</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s2">&quot;gapMetricChannel&quot;</span>
+                     <span class="p">}</span>
+                <span class="n">ind_gaps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ind_gaps</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ind_gaps</span><span class="p">)</span>
+
+            <span class="n">sta_percent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">percent_av</span><span class="p">)</span>
+            <span class="n">total_gaps</span> <span class="o">+=</span> <span class="n">num_gaps_per_sta</span>
+            <span class="n">total_overlaps</span> <span class="o">+=</span> <span class="n">num_overlaps_per_sta</span>
+            <span class="n">durSeg</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># station summary</span>
+        <span class="k">if</span> <span class="n">generateMasks</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">masksByTime</span><span class="p">:</span>
+                <span class="n">index_gaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">index_gaps</span><span class="p">)</span>
+                <span class="n">index_over</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">index_over</span><span class="p">)</span>
+                <span class="n">gapMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                <span class="n">gapMask</span><span class="p">[</span><span class="n">index_gaps</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+                <span class="n">overlapMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                <span class="n">overlapMask</span><span class="p">[</span><span class="n">index_over</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">separateMasks</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="n">allMasks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                    <span class="n">allMasks</span><span class="p">[</span><span class="n">index_gaps</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="n">allMasks</span><span class="p">[</span><span class="n">index_over</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">index_gaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">index_gaps</span><span class="p">)</span>
+                <span class="n">index_over</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">index_over</span><span class="p">)</span>
+
+                <span class="n">gapMask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_gaps</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span>
+                <span class="n">overlapMask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_over</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">separateMasks</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="n">allMasks</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_gaps</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span>
+                    <span class="n">allMasks</span> <span class="o">=</span> <span class="n">allMasks</span> <span class="o">+</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_over</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span>
+
+    <span class="n">sum_data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">additions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span>
+                     <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="n">total_gaps</span><span class="p">,</span>
+                     <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="n">num_overlaps</span><span class="p">,</span>
+                     <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetricStation&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">,</span> <span class="s2">&quot;gap_masks&quot;</span><span class="p">:</span> <span class="n">gapMask</span><span class="p">,</span>
+                     <span class="s2">&quot;overlap_masks&quot;</span><span class="p">:</span> <span class="n">overlapMask</span><span class="p">,</span> <span class="s2">&quot;combined_masks&quot;</span><span class="p">:</span> <span class="n">allMasks</span><span class="p">,</span> <span class="s2">&quot;channel_percent_available&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">}</span>
+        <span class="n">sum_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">additions</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;E&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">max_overlap_listE</span><span class="p">:</span>
+                    <span class="n">max_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">max_overlap_listE</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">max_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">if</span> <span class="n">max_gap_listE</span><span class="p">:</span>
+                    <span class="n">max_gap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">max_gap_listE</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">max_gap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">channel_per</span> <span class="o">=</span> <span class="n">percent_av</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="n">channel_per</span> <span class="o">=</span> <span class="n">percent_av</span>
+
+            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;N&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">max_overlap_listE</span><span class="p">:</span>
+                    <span class="n">max_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">max_overlap_listN</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">max_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">if</span> <span class="n">max_gap_listE</span><span class="p">:</span>
+                    <span class="n">max_gap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">max_gap_listN</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">max_gap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">channel_per</span> <span class="o">=</span> <span class="n">percent_av</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="n">channel_per</span> <span class="o">=</span> <span class="n">percent_av</span>
+            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">max_overlap_listE</span><span class="p">:</span>
+                    <span class="n">max_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">max_overlap_listZ</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">max_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">if</span> <span class="n">max_gap_listE</span><span class="p">:</span>
+                    <span class="n">max_gap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">max_gap_listZ</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">max_gap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">channel_per</span> <span class="o">=</span> <span class="n">percent_av</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="n">channel_per</span> <span class="o">=</span> <span class="n">percent_av</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">additions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span>
+                             <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="n">total_gaps</span><span class="p">,</span> <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="n">num_overlaps</span><span class="p">,</span>
+                             <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetricStation&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">,</span>
+                             <span class="s2">&quot;gap_masks&quot;</span><span class="p">:</span> <span class="n">gapMask</span><span class="p">,</span>
+                             <span class="s2">&quot;overlap_masks&quot;</span><span class="p">:</span> <span class="n">overlapMask</span><span class="p">,</span> <span class="s2">&quot;combined_masks&quot;</span><span class="p">:</span> <span class="n">allMasks</span><span class="p">,</span>
+                             <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="n">max_overlap</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="n">max_gap</span><span class="p">,</span>
+                             <span class="s2">&quot;channel_percent_available&quot;</span><span class="p">:</span> <span class="n">channel_per</span><span class="p">}</span>
+
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">pct</span> <span class="o">=</span> <span class="n">percent_av</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="n">pct</span> <span class="o">=</span> <span class="n">percent_av</span>
+                <span class="n">additions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="n">pct</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span>
+                             <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="n">total_gaps</span><span class="p">,</span>
+                             <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="n">num_overlaps_per_sta</span><span class="p">,</span> <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetricStation&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">,</span>
+                             <span class="s2">&quot;gap_masks&quot;</span><span class="p">:</span> <span class="n">gapMask</span><span class="p">,</span>
+                             <span class="s2">&quot;overlap_masks&quot;</span><span class="p">:</span> <span class="n">overlapMask</span><span class="p">,</span> <span class="s2">&quot;combined_masks&quot;</span><span class="p">:</span> <span class="n">allMasks</span><span class="p">,</span>
+                             <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="n">max_overlap</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="n">max_gap</span><span class="p">,</span>
+                             <span class="s2">&quot;channel_percent_available&quot;</span><span class="p">:</span> <span class="n">channel_per</span><span class="p">}</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">percent_av</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mi">100</span><span class="p">:</span>
+                        <span class="n">additions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="n">percent_av</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span>
+                                     <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span> <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="n">total_gaps</span><span class="p">,</span>
+                                     <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="n">total_overlaps</span><span class="p">,</span>
+                                     <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetricStation&#39;</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">,</span>
+                                     <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">,</span> <span class="s2">&quot;gap_masks&quot;</span><span class="p">:</span> <span class="n">gapMask</span><span class="p">,</span>
+                                     <span class="s2">&quot;overlap_masks&quot;</span><span class="p">:</span> <span class="n">overlapMask</span><span class="p">,</span> <span class="s2">&quot;combined_masks&quot;</span><span class="p">:</span> <span class="n">allMasks</span><span class="p">,</span>
+                                     <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="n">max_overlap</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="n">max_gap</span><span class="p">,</span>
+                                     <span class="s2">&quot;channel_percent_available&quot;</span><span class="p">:</span> <span class="n">channel_per</span><span class="p">}</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">percent_av</span> <span class="o">==</span> <span class="mi">100</span><span class="p">:</span>
+                        <span class="n">additions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="n">percent_av</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span>
+                                     <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span> <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="n">total_gaps</span><span class="p">,</span>
+                                     <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="n">total_overlaps</span><span class="p">,</span>
+                                     <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetricStation&#39;</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">,</span>
+                                     <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">,</span> <span class="s2">&quot;gap_masks&quot;</span><span class="p">:</span> <span class="n">gapMask</span><span class="p">,</span>
+                                     <span class="s2">&quot;overlap_masks&quot;</span><span class="p">:</span> <span class="n">overlapMask</span><span class="p">,</span> <span class="s2">&quot;combined_masks&quot;</span><span class="p">:</span> <span class="n">allMasks</span><span class="p">,</span>
+                                     <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="n">max_overlap</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="n">max_gap</span><span class="p">,</span>
+                                     <span class="s2">&quot;channel_percent_available&quot;</span><span class="p">:</span> <span class="n">channel_per</span><span class="p">}</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">total_percent_avail</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">percent_av</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="mi">100</span><span class="p">]</span>
+                    <span class="n">additions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">total_percent_avail</span><span class="p">),</span>
+                                 <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">:</span> <span class="n">station</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span>
+                                 <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="n">total_gaps</span><span class="p">,</span> <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="n">total_overlaps</span><span class="p">,</span>
+                                 <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetricStation&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">trM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">,</span>
+                                 <span class="s2">&quot;gap_masks&quot;</span><span class="p">:</span> <span class="n">gapMask</span><span class="p">,</span>
+                                 <span class="s2">&quot;overlap_masks&quot;</span><span class="p">:</span> <span class="n">overlapMask</span><span class="p">,</span> <span class="s2">&quot;combined_masks&quot;</span><span class="p">:</span> <span class="n">allMasks</span><span class="p">,</span>
+                                 <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="n">max_overlap</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="n">max_gap</span><span class="p">,</span>
+                                 <span class="s2">&quot;channel_percent_available&quot;</span><span class="p">:</span> <span class="n">channel_per</span><span class="p">}</span>
+            <span class="n">sum_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">additions</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">((</span><span class="n">sum_data</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">sum_data</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

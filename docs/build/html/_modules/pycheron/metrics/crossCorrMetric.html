@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.crossCorrMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.metrics.crossCorrMetric</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;crossCorrMetric&#39;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.noise.deadChannel</span> <span class="k">import</span> <span class="n">DDT</span><span class="p">,</span> <span class="n">isDC</span>
+<span class="kn">import</span> <span class="nn">pycheron.util.logger</span> <span class="k">as</span> <span class="nn">Logger</span>
+<span class="kn">from</span> <span class="nn">obspy.signal</span> <span class="k">import</span> <span class="n">cross_correlation</span><span class="p">,</span> <span class="nb">filter</span>
+
+
+<div class="viewcode-block" id="crossCorrMetric"><a class="viewcode-back" href="../../../pycheron.metrics.crossCorrMetric.html#pycheron.metrics.crossCorrMetric.crossCorrMetric">[docs]</a><span class="k">def</span> <span class="nf">crossCorrMetric</span><span class="p">(</span><span class="n">tr1</span><span class="p">,</span> <span class="n">tr2</span><span class="p">,</span> <span class="n">maxLagSecs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">filt</span><span class="o">=</span><span class="s1">&#39;lowpass&#39;</span><span class="p">,</span> <span class="n">freqmin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">freqmax</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">corners</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">zerophase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">maxorder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ba</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">freq_passband</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Cross-correlates the current data with the neighboring data.</span>
+
+<span class="sd">:param tr1: obspy trace object 1</span>
+<span class="sd">:type tr1: `obspy.core.trace.Trace`</span>
+<span class="sd">:param tr2: obspy trace object 2</span>
+<span class="sd">:type tr2: `obspy.core.trace.Trace`</span>
+<span class="sd">:param maxLagSecs: Maximum number of seconds of lag to use</span>
+<span class="sd">:type maxLagSecs: int</span>
+<span class="sd">:param filt: Choose from the following filter options: `&quot;bandpass&quot;`, `&quot;bandstop&quot;`, `&quot;envelope&quot;`, `&quot;highpass&quot;`, `&quot;integer_decimation&quot;`, `&quot;lowpass&quot;`, `&quot;lowpass_cheby_2&quot;`. See Filter_Options_ .</span>
+<span class="sd">:type filt: str</span>
+<span class="sd">:param freqmin: Depending on the filter utilized, either pass band low corner frequency (bandpass, bandstop), filter corner frequency (lowpass), or the frequency above which signals are attenuated with 95 dB</span>
+<span class="sd">:type freqmin: int</span>
+<span class="sd">:param freqmax: Depending on the filter utilized, either passband high corner frequency (bandpass, bandstop), or filter corner frequency (highpass)</span>
+<span class="sd">:type freqmax: int</span>
+<span class="sd">:param corners:  Filter corners/order</span>
+<span class="sd">:type corners: int</span>
+<span class="sd">:param zerophase: If True, applies filter once forward and once backwards. This results in twice the filter order but zero phase shift in the resulting filtered trace.</span>
+<span class="sd">:type zerophase: bool</span>
+<span class="sd">:param decimation_factor: Integer decimation factor</span>
+<span class="sd">:type decimation_factor: int</span>
+<span class="sd">:param maxorder: Maximal order of designed cheby2 filter (option for lowpass_cheby2 only)</span>
+<span class="sd">:type maxorder: int</span>
+<span class="sd">:param ba: If True, returns only the filter coefficients (b,a) instead of filtering. (option for lowpass_cheby2 only)</span>
+<span class="sd">:type ba: bool</span>
+<span class="sd">:param freq_passband: If True, return additionally to the filtered data, then iteratively determine the pass band frequency. (option for lowpass_cheby2 only)</span>
+<span class="sd">:type freq_passband: bool</span>
+<span class="sd">:param logger: If using a logger, (you must create one using the util.logger class)</span>
+<span class="sd">:type logger: pycheron.util.logger.Logger</span>
+<span class="sd">:param database: database object</span>
+<span class="sd">:type database: pycheron.db.sqllite_db.Database</span>
+
+<span class="sd">:return: Dictionary containing the following keys and types:</span>
+
+<span class="sd">         * snclq (`str`)</span>
+<span class="sd">         * snclq1_starttime (`str`)</span>
+<span class="sd">         * snclq1_endtime (`str`)</span>
+<span class="sd">         * snclq2_starttime (`str`)</span>
+<span class="sd">         * snclq2_endtime (`str`)</span>
+<span class="sd">         * peak_correlation (`float`)</span>
+<span class="sd">         * peak_lag (`float`)</span>
+<span class="sd">         * metric_name (`str`)</span>
+
+<span class="sd">:rtype: dict</span>
+
+<span class="sd">Finds the min and max of the cross-correlation function of these, saves the value with the largest absolute value (preserve the sign). Preserves the lag in seconds to the min or max value saved above.</span>
+<span class="sd">Finds the difference in traveltime between the 2 traces: (current - neighbor). Adjusts the lag by subtracting this difference (preserving sign) from the lag. In short, calculates the maximum absolute correlation (polarity_check</span>
+<span class="sd">(peak correlation)) and lg at maximum correlation (timing_drift, peak lag) associated with two traces.</span>
+
+<span class="sd">.. _Filter_Options:</span>
+
+<span class="sd">**Filter Options**</span>
+
+<span class="sd">* &quot;bandpass&quot; - Butterworth-Bandpass Filter</span>
+<span class="sd">        *Parameters Required*</span>
+
+<span class="sd">        * **freqmin** (`int`) - Pass band low corner frequency</span>
+<span class="sd">        * **freqmax** (`int`) - Pass band high corner frequency</span>
+<span class="sd">        * **df** (`int`) - sampling rate in Hz (get from tr.stats.sampling_rate so not needed as input param)</span>
+<span class="sd">        * **corners** (`int`) - Filter corners/order.</span>
+<span class="sd">        * **zerophase** (`bool`) - If True, applies filter once forward and once backwards. This results in twice the filter order but zero phase shift in the resulting filtered trace.</span>
+
+<span class="sd">* &quot;bandstop&quot; - Butterworth-Bandstop Filter</span>
+<span class="sd">        *Parameters Required*</span>
+
+<span class="sd">        * **freqmin** (`int`) - Pass band low corner frequency</span>
+<span class="sd">        * **freqmax** (`int`) - Pass band high corner frequency</span>
+<span class="sd">        * **df** (`int`) - sampling rate in Hz (get from tr.stats.sampling_rate so not needed as input param)</span>
+<span class="sd">        * **corners** (`int`) - Filter corners/order.</span>
+<span class="sd">        * **zerophase** (`bool`) - If True, applies filter once forward and once backwards. This results in twice the filter order but zero phase shift in the resulting filtered trace.</span>
+
+<span class="sd">* &quot;envelope&quot; - Envelope function</span>
+<span class="sd">    *Parameters Required*</span>
+
+<span class="sd">    * **None**</span>
+
+<span class="sd">*  &quot;highpass&quot; - Butterworth-Highpass Filter</span>
+<span class="sd">        *Parameters Required*</span>
+
+<span class="sd">        * **freqmax** (`int`) - Pass band high corner frequency</span>
+<span class="sd">        * **df** (`int`) - sampling rate in Hz (get from tr.stats.sampling_rate so not needed as input param)</span>
+<span class="sd">        * **corners** (`int`) - Filter corners/order.</span>
+<span class="sd">        * **zerophase** (`bool`) - If True, applies filter once forward and once backwards. This results in twice the filter order but zero phase shift in the resulting filtered trace.</span>
+
+<span class="sd">*   &quot;integer_decimation&quot; - Downsampling by applying a simple integer decimation</span>
+<span class="sd">        *Parameters Required*</span>
+
+<span class="sd">        * **decimation_factor** (`int`) - Integer decimation factor</span>
+
+<span class="sd">*    &quot;lowpass&quot; - Butterwoth-Lowpass Filter</span>
+<span class="sd">        *Parameters Required*</span>
+
+<span class="sd">        * **freqmin** (`int`) - Pass band low corner frequency</span>
+<span class="sd">        * **df** (`int`) - sampling rate in Hz (get from tr.stats.sampling_rate so not needed as input param)</span>
+<span class="sd">        * **corners** (`int`) - Filter corners/order.</span>
+<span class="sd">        * **zerophase** (`bool`) - If True, applies filter once forward and once backwards. This results in twice the filter order but zero phase shift in the resulting filtered trace.</span>
+
+<span class="sd">*    &quot;lowpass_cheby_2&quot; - Cheby2- Lowpass Filter</span>
+<span class="sd">        *Parameters Required*</span>
+
+<span class="sd">        * **freqmin** (`int`) - Pass band low corner frequency</span>
+<span class="sd">        * **maxorder** (`int`) - Maximal order of designed cheby2 filter</span>
+<span class="sd">        * **ba** (&#39;bool&#39;) - If True, returns only the filter coefficients (b,a) instead of filtering. (DEFAULT = False)</span>
+<span class="sd">        * **freq_passband** (`bool`) - If True, return additionally to the filtered data, then iteratively determine the pass band frequency.</span>
+
+<span class="sd">**Examples**</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    # Initialize IRIS client</span>
+<span class="sd">    client = Client(&quot;IRIS&quot;)</span>
+
+<span class="sd">    # Define start/end time and then get same signal shifted by 3 seconds</span>
+<span class="sd">    starttime = UTCDateTime(&quot;2013-11-12T07:09:45.000&quot;)</span>
+<span class="sd">    endtime = starttime + 600</span>
+<span class="sd">    st1 = client.get_waveforms(&quot;NM&quot;,&quot;SLM&quot;,&quot;00&quot;,&quot;BHZ&quot;,starttime, endtime)</span>
+<span class="sd">    st2 = client.get_waveforms(&quot;NM&quot;,&quot;SLM&quot;,&quot;00&quot;,&quot;BHZ&quot;,starttime+3, endtime+3)</span>
+
+<span class="sd">    #Get trace data for each stream</span>
+<span class="sd">    tr1 = st1[0]</span>
+<span class="sd">    tr2 = st2[0]</span>
+
+<span class="sd">    #Cross-correlate</span>
+<span class="sd">    CC = crossCorrMetric(tr1,tr2,freqmin=0.1, corners = 2)</span>
+<span class="sd">    print(CC)</span>
+<span class="sd">    &gt;&gt;&gt; {&#39;peak_correlation&#39;: 0.3450079442293356, &#39;snclq1_starttime&#39;: UTCDateTime(2013, 11, 12, 7, 9, 45), &#39;snclq2_endtime&#39;: UTCDateTime(2013, 11, 12, 7, 19, 48), &#39;snclq2&#39;: u&#39;NM.SLM.00.BHZ.M&#39;, &#39;snclq1&#39;: u&#39;NM.SLM.00.BHZ.M&#39;, &#39;peak_lag (s)&#39;: 0.008580576472234229, &#39;snclq2_starttime&#39;: UTCDateTime(2013, 11, 12, 7, 9, 48), &#39;metric_name&#39;: &#39;crossCorrMetric&#39;, &#39;snclq1_endtime&#39;: UTCDateTime(2013, 11, 12, 7, 19, 45)}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="k">if</span> <span class="n">logger</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># -----------Compatibility Checks and Data Resampling------------------------------------------</span>
+
+    <span class="c1"># Demean and detrend both traces (no taper), but first make a copy of the trace so it isn&#39;t permanently changed</span>
+    <span class="n">trC1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">trC1</span> <span class="o">=</span> <span class="n">DDT</span><span class="p">(</span><span class="n">trC1</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">trC2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">trC2</span> <span class="o">=</span> <span class="n">DDT</span><span class="p">(</span><span class="n">trC2</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Deal with potentially different sampling rates</span>
+    <span class="k">if</span> <span class="n">trC1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">trC2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">sr1</span> <span class="o">=</span> <span class="n">trC1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="n">sr2</span> <span class="o">=</span> <span class="n">trC2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sr1</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">trC1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">))</span>
+        <span class="n">sr2</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">trC2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">))</span>
+
+    <span class="c1"># Get min of both sampling rates</span>
+    <span class="n">sampling_rate</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sr1</span><span class="p">,</span> <span class="n">sr2</span><span class="p">)</span>
+
+    <span class="c1"># Check if sampling rates are not multiples of each other, first for trace1, then trace2</span>
+    <span class="k">if</span> <span class="n">sr1</span> <span class="o">&gt;</span> <span class="n">sampling_rate</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sr1</span> <span class="o">%</span> <span class="n">sampling_rate</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;crossCorrMetric(): sampling rates are not multiples of each other &#39;</span> \
+                         <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> = </span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1"> = </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">trC1</span><span class="o">.</span><span class="n">get_id</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="n">sr1</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">trC2</span><span class="o">.</span><span class="n">get_id</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="n">sr2</span><span class="p">)))</span>
+            <span class="k">return</span>
+        <span class="n">increment</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">sr1</span> <span class="o">/</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="n">trC1</span><span class="o">.</span><span class="n">decimate</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">increment</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="n">trC1</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="k">if</span> <span class="n">sr2</span> <span class="o">&gt;</span> <span class="n">sampling_rate</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sr2</span> <span class="o">%</span> <span class="n">sampling_rate</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;crossCorrMetric(): sampling rates are not multiples of each other &#39;</span> \
+                         <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> = </span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1"> = </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">trC1</span><span class="o">.</span><span class="n">get_id</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="n">sr1</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">trC2</span><span class="o">.</span><span class="n">get_id</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="n">sr2</span><span class="p">)))</span>
+            <span class="k">return</span>
+        <span class="n">increment</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">sr2</span> <span class="o">/</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="n">trC2</span><span class="o">.</span><span class="n">decimate</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">increment</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="n">trC2</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># Check that we have valid data everywhere</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">any</span><span class="p">())</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">any</span><span class="p">())</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;crossCorrMetric(): NaN values generated during resampling&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Check for flatlined data</span>
+    <span class="k">if</span> <span class="n">isDC</span><span class="p">(</span><span class="n">trC1</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;crossCorrMetric(): </span><span class="si">%s</span><span class="s1"> has one unique sample value (flatlined). Standard deviation is zero,&#39;</span> \
+                     <span class="s1">&#39;cross-correlation is undefined&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">trC1</span><span class="o">.</span><span class="n">get_id</span><span class="p">())))</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">isDC</span><span class="p">(</span><span class="n">trC2</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;crossCorrMetric(): </span><span class="si">%s</span><span class="s1"> has one unique sample value (flatlined). Standard deviation is zero,&#39;</span> \
+                     <span class="s1">&#39;cross-correlation is undefined&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">trC2</span><span class="o">.</span><span class="n">get_id</span><span class="p">())))</span>
+        <span class="k">return</span>
+
+    <span class="c1"># -----------Correlation Function------------------------------------------</span>
+
+    <span class="c1"># Applying low pass or other filter to both traces</span>
+    <span class="k">if</span> <span class="n">filt</span> <span class="o">==</span> <span class="s1">&#39;bandpass&#39;</span><span class="p">:</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">bandpass</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">freqmin</span><span class="p">,</span> <span class="n">freqmax</span><span class="p">,</span> <span class="n">trC1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">corners</span><span class="p">,</span> <span class="n">zerophase</span><span class="p">)</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">bandpass</span><span class="p">(</span><span class="n">d2</span><span class="p">,</span> <span class="n">freqmin</span><span class="p">,</span> <span class="n">freqmax</span><span class="p">,</span> <span class="n">trC2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">corners</span><span class="p">,</span> <span class="n">zerophase</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filt</span> <span class="o">==</span> <span class="s1">&#39;bandstop&#39;</span><span class="p">:</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">bandstop</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">freqmin</span><span class="p">,</span> <span class="n">freqmax</span><span class="p">,</span> <span class="n">trC1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">corners</span><span class="p">,</span> <span class="n">zerophase</span><span class="p">)</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">bandstop</span><span class="p">(</span><span class="n">d2</span><span class="p">,</span> <span class="n">freqmin</span><span class="p">,</span> <span class="n">freqmax</span><span class="p">,</span> <span class="n">trC2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">corners</span><span class="p">,</span> <span class="n">zerophase</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filt</span> <span class="o">==</span> <span class="s1">&#39;envelope&#39;</span><span class="p">:</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">envelope</span><span class="p">(</span><span class="n">d1</span><span class="p">)</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">envelope</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filt</span> <span class="o">==</span> <span class="s1">&#39;highpass&#39;</span><span class="p">:</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">highpass</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">freqmax</span><span class="p">,</span> <span class="n">trC1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">corners</span><span class="p">,</span> <span class="n">zerophase</span><span class="p">)</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">highpass</span><span class="p">(</span><span class="n">d2</span><span class="p">,</span> <span class="n">freqmax</span><span class="p">,</span> <span class="n">trC2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">corners</span><span class="p">,</span> <span class="n">zerophase</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filt</span> <span class="o">==</span> <span class="s1">&#39;integer_decimation&#39;</span><span class="p">:</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">envelope</span><span class="p">(</span><span class="n">d1</span><span class="p">)</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">envelope</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filt</span> <span class="o">==</span> <span class="s1">&#39;lowpass&#39;</span><span class="p">:</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">lowpass</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">freqmin</span><span class="p">,</span> <span class="n">trC1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">corners</span><span class="p">,</span> <span class="n">zerophase</span><span class="p">)</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">lowpass</span><span class="p">(</span><span class="n">d2</span><span class="p">,</span> <span class="n">freqmin</span><span class="p">,</span> <span class="n">trC2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">corners</span><span class="p">,</span> <span class="n">zerophase</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filt</span> <span class="o">==</span> <span class="s1">&#39;lowpass_cheby_2&#39;</span><span class="p">:</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">lowpass_cheby_2</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">freqmin</span><span class="p">,</span> <span class="n">trC1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">maxorder</span><span class="p">,</span> <span class="n">ba</span><span class="p">,</span> <span class="n">freq_passband</span><span class="p">)</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="nb">filter</span><span class="o">.</span><span class="n">lowpass_cheby_2</span><span class="p">(</span><span class="n">d2</span><span class="p">,</span> <span class="n">freqmin</span><span class="p">,</span> <span class="n">trC2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="n">maxorder</span><span class="p">,</span> <span class="n">ba</span><span class="p">,</span> <span class="n">freq_passband</span><span class="p">)</span>
+
+    <span class="c1"># Calculate cross-correlation</span>
+    <span class="n">lagMax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sampling_rate</span> <span class="o">*</span> <span class="n">maxLagSecs</span><span class="p">)</span>
+    <span class="n">xcorr</span> <span class="o">=</span> <span class="n">cross_correlation</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">,</span> <span class="n">lagMax</span><span class="p">)</span>
+
+    <span class="c1"># Find strongest correlation</span>
+    <span class="n">peak_correlation</span> <span class="o">=</span> <span class="n">xcorr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Get lag associated with the strongest correlation (already provided by cross_correlation.xcorr), then get peak lag</span>
+    <span class="n">lagPoints</span> <span class="o">=</span> <span class="n">xcorr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">peak_lag</span> <span class="o">=</span> <span class="n">lagPoints</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">sampling_rate</span>
+
+    <span class="c1"># Create output metric information</span>
+    <span class="c1"># if tr is not from mseed, it will not have dq flag</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">snclq1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">mseed</span><span class="o">.</span><span class="n">dataquality</span>
+        <span class="n">snclq2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">mseed</span><span class="o">.</span><span class="n">dataquality</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="n">snclq1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span>
+        <span class="n">snclq2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">snclq1</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">snclq2</span><span class="p">,</span>
+         <span class="s1">&#39;snclq1_starttime&#39;</span><span class="p">:</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+         <span class="s1">&#39;snclq1_endtime&#39;</span><span class="p">:</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+         <span class="s1">&#39;snclq2_starttime&#39;</span><span class="p">:</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+         <span class="s1">&#39;snclq2_endtime&#39;</span><span class="p">:</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+         <span class="s1">&#39;peak_correlation&#39;</span><span class="p">:</span> <span class="n">peak_correlation</span><span class="p">,</span>
+         <span class="s1">&#39;peak_lag&#39;</span><span class="p">:</span> <span class="n">peak_lag</span><span class="p">,</span>
+         <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;crossCorrMetric&#39;</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">d</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

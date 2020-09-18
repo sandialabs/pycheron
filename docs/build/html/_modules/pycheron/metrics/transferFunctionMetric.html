@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.transferFunctionMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.metrics.transferFunctionMetric</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;transferFunctionMetric&#39;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">scipy.signal</span> <span class="k">as</span> <span class="nn">sig</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">floor</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.crossSpectrum</span> <span class="k">import</span> <span class="n">crossSpectrum</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.McNamaraBins</span> <span class="k">import</span> <span class="n">McNamaraBins</span>
+<span class="kn">from</span> <span class="nn">obspy.clients.iris</span> <span class="k">import</span> <span class="n">Client</span>
+<span class="kn">import</span> <span class="nn">pycheron.util.logger</span> <span class="k">as</span> <span class="nn">Logger</span>
+
+
+<div class="viewcode-block" id="transferFunctionMetric"><a class="viewcode-back" href="../../../pycheron.metrics.transferFunctionMetric.html#pycheron.metrics.transferFunctionMetric.transferFunctionMetric">[docs]</a><span class="k">def</span> <span class="nf">transferFunctionMetric</span><span class="p">(</span><span class="n">tr1</span><span class="p">,</span> <span class="n">tr2</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates metrics that assess the relationship between two SNCLs with the same network, station and channel but</span>
+<span class="sd">    separate locations.</span>
+
+<span class="sd">    :param tr1: (trace) obspy trace object 1</span>
+<span class="sd">    :type tr1: obspy.core.trace.Trace</span>
+<span class="sd">    :param tr2: (trace) obspy trace object 2</span>
+<span class="sd">    :type tr2: obspy.core.trace.Trace</span>
+<span class="sd">    :param logger: logger object</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+<span class="sd">    :param database: database object</span>
+<span class="sd">    :type database: pycheron.db.sqllite_db.Database</span>
+
+<span class="sd">    :return: (dict) - dictionary with the following keys and values:</span>
+
+<span class="sd">                    * snclq (`str`)</span>
+<span class="sd">                    * start_time (`str`)</span>
+<span class="sd">                    * end_time (`str`)</span>
+<span class="sd">                    * metric_name (`str`)</span>
+<span class="sd">                    * gain_ratio (`float`)</span>
+<span class="sd">                    * phase_diff (`float`)</span>
+<span class="sd">                    * ms_coherence (`float`)</span>
+
+<span class="sd">    :rtype: dict</span>
+
+<span class="sd">    When seismometers are working properly, the transfer function amplitude and phase will match similar values</span>
+<span class="sd">    calculated from the instrument responses.</span>
+
+<span class="sd">    This function calculates the transfer function from data in the incoming streams (traces really). Response</span>
+<span class="sd">    information is then obtained from the evalresp web service [#]_</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Seismic streams passed to transferFunctionMetric() must have the same network, station, and channel and must</span>
+<span class="sd">        cover the same time range. The two channels should also have values of azimuth and dip within 5 degrees of each</span>
+<span class="sd">        other. If sampling rates differ, and one is a multiple of the other, the stream with the higher sampling rate will</span>
+<span class="sd">        be decimated to match the lower sampling frequency. The output dictionary generated for these two-channel metrics</span>
+<span class="sd">        will have a SNCL code of the form: Net.Sta.Loc1:Loc2.Chan.</span>
+
+<span class="sd">    **Algorithm Steps**</span>
+
+<span class="sd">    1) Calculate complex transfer function:</span>
+<span class="sd">         * Request 1 hour of data (noise is ideal, so any consistent time is fine; only need this monthly or weekly)</span>
+<span class="sd">         * If channel sample rates differ, decimate to make them identical</span>
+<span class="sd">         * Detrend</span>
+<span class="sd">         * Demean</span>
+<span class="sd">         * Compute complex cross-spectrum of traces x and y --&gt; Pxx, Pxy, Pyy (same procedure as PSD)</span>
+<span class="sd">         * Retrieve stored PSD Pxx(f)</span>
+<span class="sd">    2) Calculate transfer function values:</span>
+<span class="sd">         * Txy(f) = Pxy(f) / Pxx(f)</span>
+<span class="sd">         * dataGain &lt;- Mod(Txy)</span>
+<span class="sd">         * dataPhase &lt;- Arg(Txy)</span>
+<span class="sd">         * Save avgDataGain (amplitude) and avgDataphase values for T=5-7s</span>
+<span class="sd">    3) Calculate the corresponding response amplitude ratio and phase difference for x and y</span>
+<span class="sd">         * Request responses for x and y for that 1 hour</span>
+<span class="sd">         * Calculate respGain = respGainy(f) / respGainx(f)</span>
+<span class="sd">         * Calculate respPhase = respPhasey(f) - respPhasex(f)</span>
+<span class="sd">         * Save avgRespGain and avgRespPhase values for T = 5-7s</span>
+<span class="sd">    4) Calculate metrics:</span>
+<span class="sd">         * Calculate (data/resp) gain ratio for two saved gain averages:</span>
+<span class="sd">           gain_ratio = avgDataGain/avgRespGain (reasonableness of cross-spectral amplitudes between st1 and</span>
+<span class="sd">           st2)</span>
+<span class="sd">         * Calculate (data-resp) phase difference from the two saved phase averages:</span>
+<span class="sd">           phase_diff = avgDataPhase - avgRespPhase (reasonableness of cross-spectral phases between st1 and</span>
+<span class="sd">           st2)</span>
+<span class="sd">         * Calculate magnitude squared coherence of x and y:</span>
+
+<span class="sd">           * Retrieve stored PSD for Pxx and Pyy</span>
+<span class="sd">           * ms_coherence = abs(Pxy)^2 / (Pxx*Pyy) (mean square coherence between st1 and st2)</span>
+<span class="sd">           * Save the average MSCoherence for T=5-7s</span>
+
+<span class="sd">    These values can be interpreted as follows:</span>
+
+<span class="sd">    * Whenever ms_coherence ~= 1.0, properly functioning seismometers should have:</span>
+
+<span class="sd">      * gain ratio ~= 1.0</span>
+<span class="sd">      * phase_diff &lt; 10.0 (degrees)</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Initialize IRIS client</span>
+<span class="sd">        client = Client(&quot;IRIS&quot;)</span>
+
+<span class="sd">        #Define start/end times</span>
+<span class="sd">        starttime = UTCDateTime(&quot;2011-05-01T01:00:00.000&quot;)</span>
+<span class="sd">        endtime = starttime + 3600</span>
+
+<span class="sd">        # Grab data from IRIS web client server with specified starttime/endtime and SNCL</span>
+<span class="sd">        st1 = client.get_waveforms(&quot;CI&quot;,&quot;PASC&quot;,&quot;00&quot;,&quot;BHZ&quot;, starttime,endtime)</span>
+<span class="sd">        st2 = client.get_waveforms(&quot;CI&quot;,&quot;PASC&quot;,&quot;10&quot;,&quot;BHZ&quot;, starttime, endtime)</span>
+
+<span class="sd">        # Grab out traces</span>
+<span class="sd">        tr1 = st1[0]</span>
+<span class="sd">        tr2 = st2[0]</span>
+
+<span class="sd">        # Calculate transfer function then print</span>
+<span class="sd">        TF = transferFunctionMetric(tr1,tr2)</span>
+<span class="sd">        print TF</span>
+<span class="sd">        &gt;&gt;&gt; {&#39;metric_name&#39;: &#39;transferFunction&#39;, &#39;start_time&#39;: &quot;2011-05-01T01:00:00.019500Z&quot;, &#39;snclq&#39;: &#39;PASC:CI:BHZ:00:BHZ:10&#39;, &#39;end_time&#39;: &quot;2011-05-01T01:59:59.994500Z&quot;, &#39;ms_coherence&#39;: 0.9999875790954715, &#39;gain_ratio&#39;: 0.9058981533571073, &#39;phase_diff&#39;: 0.13553317118827302}</span>
+
+<span class="sd">    .. rubric:: References</span>
+
+<span class="sd">    .. [#] http://service.iris.edu/irisws/evalresp/1/</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># --------------Sanity Checks and data re-sampling-----------------------------------------------</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+
+    <span class="c1"># First though let&#39;s define default span for crossSpectrum calculation</span>
+    <span class="n">spans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+
+    <span class="c1"># Get start and end times for each trace</span>
+    <span class="n">start1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+    <span class="n">end1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+
+    <span class="n">start2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+    <span class="n">end2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+
+    <span class="c1"># Checking temporal extent of traces match, if not exit</span>
+    <span class="k">if</span> <span class="n">start2</span> <span class="o">-</span> <span class="n">start1</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">start2</span> <span class="o">-</span> <span class="n">start1</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;transferFunctionMetric(): Start times do not match for &#39;</span> \
+                    <span class="s1">&#39;traces </span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">get_id</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="n">tr2</span><span class="o">.</span><span class="n">get_id</span><span class="p">())))</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">end2</span> <span class="o">-</span> <span class="n">end1</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">end2</span> <span class="o">-</span> <span class="n">end1</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;transferFunctionMetric(): End times do not match for &#39;</span> \
+                    <span class="s1">&#39;traces </span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">get_id</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="n">tr2</span><span class="o">.</span><span class="n">get_id</span><span class="p">())))</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Checking sampling rates &gt; 1</span>
+    <span class="k">if</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;transferFunctionMetric(): </span><span class="si">{}</span><span class="s1"> has a sampling rate &lt; 1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">get_id</span><span class="p">())))</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;transferFunctionMetric(): </span><span class="si">{}</span><span class="s1"> has a sampling rate &lt; 1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="nb">str</span><span class="p">(</span><span class="n">tr2</span><span class="o">.</span><span class="n">get_id</span><span class="p">()))))</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Check if sampling rates differ, make sampling rate minimum of both traces if differ</span>
+    <span class="n">sr1</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+    <span class="n">sr2</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+    <span class="n">sampling_rate</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sr1</span><span class="p">,</span> <span class="n">sr2</span><span class="p">)</span>
+
+    <span class="c1"># Check sample rate for trace 1 is multiple of trace 2. If different decimate so they are the same. If they are the</span>
+    <span class="c1"># same assign data1 = tr1.data (e.g., decimation not necessary, so data is just original data)</span>
+    <span class="k">if</span> <span class="n">sr1</span> <span class="o">&gt;</span> <span class="n">sampling_rate</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sr1</span> <span class="o">%</span> <span class="n">sampling_rate</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;transferFunctionMetric(): Sampling Rates are not multiples of &#39;</span>
+                        <span class="s1">&#39;each other </span><span class="si">{s1}</span><span class="s1">:</span><span class="si">{s2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s1</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">get_id</span><span class="p">()),</span> <span class="n">s2</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">tr2</span><span class="o">.</span><span class="n">get_id</span><span class="p">())))</span>
+            <span class="k">return</span>
+        <span class="n">increment</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">sr1</span> <span class="o">/</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="n">data1</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">decimate</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">increment</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># Check sample rate for trace 2 is multiple of trace 1. If different decimate so they are the same. If they are the</span>
+    <span class="c1"># same assign data2 = tr2.data (e.g., decimation not necessary, so data is just original data)</span>
+    <span class="k">if</span> <span class="n">sr2</span> <span class="o">&gt;</span> <span class="n">sampling_rate</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sr2</span> <span class="o">%</span> <span class="n">sampling_rate</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;transferFunctionMetric(): Sampling Rates are not multiples of &#39;</span> \
+                        <span class="s1">&#39;each other </span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">get_id</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="n">tr2</span><span class="o">.</span><span class="n">get_id</span><span class="p">())))</span>
+            <span class="k">return</span>
+
+        <span class="n">increment</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">sr2</span> <span class="o">/</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="n">data2</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">decimate</span><span class="p">(</span><span class="n">tr2</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">increment</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># Check for valid data everywhere after potential resampling</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data1</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data2</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;transferFunctionMetric(): NaN values generated during &#39;</span> \
+                    <span class="s1">&#39;re-sampling </span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">get_id</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="n">tr2</span><span class="o">.</span><span class="n">get_id</span><span class="p">())))</span>
+        <span class="k">return</span>
+
+    <span class="c1"># ----------------Spectral Analysis-----------------------------------------</span>
+
+    <span class="c1"># Choose McNamara frequencies (lo,hi) based on channel band code (e.g, sampling rate). For more information see:</span>
+    <span class="c1"># http://www.iris.edu/manuals/SEED_appA.htm</span>
+
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span>
+    <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">):</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="o">.</span><span class="mi">001</span>
+        <span class="n">hiFreq</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">channel</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">):</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="o">.</span><span class="mi">0025</span>
+        <span class="n">hiFreq</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="o">.</span><span class="mi">005</span>
+        <span class="n">hiFreq</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+
+    <span class="c1"># Set an alignment frequency from which octaves will be generated</span>
+    <span class="n">alignFreq</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+    <span class="c1"># Truncate segment to nearest power of 2 samples</span>
+    <span class="n">pow2</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data1</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">truncateLen</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">pow2</span><span class="p">)</span>
+
+    <span class="c1"># initializing summation arrays for truncated trace data divided into 13 segments</span>
+    <span class="n">specSum1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">specSum2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pxxSum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pyySum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pxySum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">cohSum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">phaSum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Divide the truncated trace data into 13 segments with 75% overlap. Calculate crossSpectrum for each segment.</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">13</span><span class="p">):</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="p">(</span><span class="n">truncateLen</span> <span class="o">/</span> <span class="mi">16</span><span class="p">))</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">truncateLen</span> <span class="o">/</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="n">data1</span><span class="p">[</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">]</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="n">data2</span><span class="p">[</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">]</span>
+        <span class="c1"># Calculate cross spectrum for each segment</span>
+        <span class="n">freq</span><span class="p">,</span> <span class="n">spec1</span><span class="p">,</span> <span class="n">spec2</span><span class="p">,</span> <span class="n">coh</span><span class="p">,</span> <span class="n">phase</span><span class="p">,</span> <span class="n">pxx</span><span class="p">,</span> <span class="n">pyy</span><span class="p">,</span> <span class="n">pxy</span> <span class="o">=</span> \
+            <span class="n">crossSpectrum</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> <span class="n">spans</span><span class="o">=</span><span class="n">spans</span><span class="p">,</span> <span class="n">taper</span><span class="o">=.</span><span class="mi">1</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">demean</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+        <span class="c1"># csd and periodogram returns &#39;two-sided&#39; spectra and needs to be multiplied</span>
+        <span class="c1"># by 2.0 when the time series being evaluated is Real rather than Complex.</span>
+        <span class="c1"># Please see these two excellent sources, especially the &#39;psd&#39; vignette:</span>
+        <span class="c1">#   http://www.stanford.edu/class/ee262/software/signal_tb.pdf</span>
+        <span class="c1">#   http://cran.r-project.org/web/packages/psd/vignettes/normalization.pdf</span>
+
+        <span class="c1"># summing metrics - sum each segment to obtain final spec1, spec2, pxx, pyy, pxy, coherence, and phase</span>
+        <span class="n">specSum1</span> <span class="o">=</span> <span class="n">specSum1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">spec1</span>
+        <span class="n">specSum2</span> <span class="o">=</span> <span class="n">specSum2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">spec2</span>
+        <span class="n">pxxSum</span> <span class="o">=</span> <span class="n">pxxSum</span> <span class="o">+</span> <span class="n">pxx</span>
+        <span class="n">pyySum</span> <span class="o">=</span> <span class="n">pyySum</span> <span class="o">+</span> <span class="n">pyy</span>
+        <span class="n">pxySum</span> <span class="o">=</span> <span class="n">pxySum</span> <span class="o">+</span> <span class="n">pxy</span>
+        <span class="n">cohSum</span> <span class="o">=</span> <span class="n">cohSum</span> <span class="o">+</span> <span class="n">coh</span>
+        <span class="n">phaSum</span> <span class="o">=</span> <span class="n">phaSum</span> <span class="o">+</span> <span class="n">phase</span>
+
+    <span class="c1"># Get average of the sums for each of above variables</span>
+
+    <span class="n">pxx</span> <span class="o">=</span> <span class="n">pxxSum</span> <span class="o">/</span> <span class="mi">13</span>
+    <span class="n">pxy</span> <span class="o">=</span> <span class="n">pxySum</span> <span class="o">/</span> <span class="mi">13</span>
+    <span class="n">coh</span> <span class="o">=</span> <span class="n">cohSum</span> <span class="o">/</span> <span class="mi">13</span>
+    <span class="n">phase</span> <span class="o">=</span> <span class="n">phaSum</span> <span class="o">/</span> <span class="mi">13</span>
+
+    <span class="c1"># Get McNamara binned version of each variable</span>
+    <span class="c1"># Note, when run on components with imaginary components throws warning: ComplexWarning: Casting complex</span>
+    <span class="c1"># values to real discards the imaginary part dfp[i] = (sum(pxx[idx_lo:idx_hi]) / (idx_hi - idx_lo)). Pxx, Pyy</span>
+    <span class="c1"># imaginary components were small enough (*e-10/e-11) that their imaginary component really didn&#39;t affect answers,</span>
+    <span class="c1"># though imaginary component of pxy affects dataAmp answer. In order to counter this difference, computed real and</span>
+    <span class="c1"># imaginary components separately then added them back together afterward. Final output result agrees with R code</span>
+    <span class="c1"># output.</span>
+
+    <span class="n">f</span><span class="p">,</span> <span class="n">PXXR</span> <span class="o">=</span> <span class="n">McNamaraBins</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">pxx</span><span class="p">),</span> <span class="n">loFreq</span><span class="p">,</span> <span class="n">hiFreq</span><span class="p">,</span> <span class="n">alignFreq</span><span class="p">)</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">PXYR</span> <span class="o">=</span> <span class="n">McNamaraBins</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">pxy</span><span class="p">),</span> <span class="n">loFreq</span><span class="p">,</span> <span class="n">hiFreq</span><span class="p">,</span> <span class="n">alignFreq</span><span class="p">)</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">coh</span> <span class="o">=</span> <span class="n">McNamaraBins</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">coh</span><span class="p">,</span> <span class="n">loFreq</span><span class="p">,</span> <span class="n">hiFreq</span><span class="p">,</span> <span class="n">alignFreq</span><span class="p">)</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">phase</span> <span class="o">=</span> <span class="n">McNamaraBins</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">phase</span><span class="p">,</span> <span class="n">loFreq</span><span class="p">,</span> <span class="n">hiFreq</span><span class="p">,</span> <span class="n">alignFreq</span><span class="p">)</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">PXXI</span> <span class="o">=</span> <span class="n">McNamaraBins</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">pxx</span><span class="p">),</span> <span class="n">loFreq</span><span class="p">,</span> <span class="n">hiFreq</span><span class="p">,</span> <span class="n">alignFreq</span><span class="p">)</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">PXYI</span> <span class="o">=</span> <span class="n">McNamaraBins</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">pxy</span><span class="p">),</span> <span class="n">loFreq</span><span class="p">,</span> <span class="n">hiFreq</span><span class="p">,</span> <span class="n">alignFreq</span><span class="p">)</span>
+    <span class="n">pxx</span> <span class="o">=</span> <span class="n">PXXR</span> <span class="o">+</span> <span class="n">PXXI</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span>
+    <span class="n">pxy</span> <span class="o">=</span> <span class="n">PXYR</span> <span class="o">+</span> <span class="n">PXYI</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span>
+
+    <span class="c1"># ----------------Transfer Function Metrics----------------------------------------</span>
+
+    <span class="c1"># Transfer function average amplitude and phase over periods of 5-7 seconds.</span>
+    <span class="c1"># Need to convert phase from radians to positive degrees for comparison with evalresp.    </span>
+    <span class="n">dataAmp</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">pxy</span> <span class="o">/</span> <span class="n">pxx</span><span class="p">)</span>
+    <span class="n">dataPhase</span> <span class="o">=</span> <span class="n">phase</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">pi</span>
+
+    <span class="c1"># Calculate average values for periods in the 5-7 second range for amp, phase, and coherence.</span>
+    <span class="c1"># First find indices that fit within period range.</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">f</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">period</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="mi">5</span> <span class="o">&lt;=</span> <span class="n">period</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">7</span><span class="p">:</span>
+            <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="n">avgDataAmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dataAmp</span><span class="p">[</span><span class="n">indices</span><span class="p">])</span>
+    <span class="n">avgDataPhase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dataPhase</span><span class="p">[</span><span class="n">indices</span><span class="p">])</span>
+    <span class="n">avgCoherence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">coh</span><span class="p">[</span><span class="n">indices</span><span class="p">])</span>
+
+    <span class="c1"># Grab out network, station, channel,location information from traces for evalresp</span>
+    <span class="n">network1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span>
+    <span class="n">network2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span>
+
+    <span class="n">station1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span>
+    <span class="n">station2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span>
+
+    <span class="n">channel1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span>
+    <span class="n">channel2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span>
+
+    <span class="n">location1</span> <span class="o">=</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span>
+    <span class="n">location2</span> <span class="o">=</span> <span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span>
+
+    <span class="c1"># Get min/max, len(f) and define units for evalresp</span>
+    <span class="n">minfreq</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">maxfreq</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">nfreq</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="s1">&#39;def&#39;</span>
+
+    <span class="c1"># calling iris client server to obtain evalresp fap response files</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="n">iris1</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">evalresp</span><span class="p">(</span><span class="n">network</span><span class="o">=</span><span class="n">network1</span><span class="p">,</span>
+                            <span class="n">station</span><span class="o">=</span><span class="n">station1</span><span class="p">,</span>
+                            <span class="n">location</span><span class="o">=</span><span class="n">location1</span><span class="p">,</span>
+                            <span class="n">channel</span><span class="o">=</span><span class="n">channel1</span><span class="p">,</span>
+                            <span class="n">time</span><span class="o">=</span><span class="n">start1</span><span class="p">,</span>
+                            <span class="n">minfreq</span><span class="o">=</span><span class="n">minfreq</span><span class="p">,</span>
+                            <span class="n">maxfreq</span><span class="o">=</span><span class="n">maxfreq</span><span class="p">,</span>
+                            <span class="n">nfreq</span><span class="o">=</span><span class="n">nfreq</span><span class="p">,</span>
+                            <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                            <span class="n">output</span><span class="o">=</span><span class="s1">&#39;fap&#39;</span><span class="p">)</span>
+
+    <span class="n">iris2</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">evalresp</span><span class="p">(</span><span class="n">network</span><span class="o">=</span><span class="n">network2</span><span class="p">,</span>
+                            <span class="n">station</span><span class="o">=</span><span class="n">station2</span><span class="p">,</span>
+                            <span class="n">location</span><span class="o">=</span><span class="n">location2</span><span class="p">,</span>
+                            <span class="n">channel</span><span class="o">=</span><span class="n">channel2</span><span class="p">,</span>
+                            <span class="n">time</span><span class="o">=</span><span class="n">start2</span><span class="p">,</span>
+                            <span class="n">minfreq</span><span class="o">=</span><span class="n">minfreq</span><span class="p">,</span>
+                            <span class="n">maxfreq</span><span class="o">=</span><span class="n">maxfreq</span><span class="p">,</span>
+                            <span class="n">nfreq</span><span class="o">=</span><span class="n">nfreq</span><span class="p">,</span>
+                            <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                            <span class="n">output</span><span class="o">=</span><span class="s1">&#39;fap&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the corresponding response amplitude ratio and phase difference for x and y. In order to compare against</span>
+    <span class="c1"># pxy/pxx need iris2(amp)/iris1(amp)</span>
+    <span class="n">respAmp</span> <span class="o">=</span> <span class="n">iris2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">iris1</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">respPhase</span> <span class="o">=</span> <span class="n">iris1</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">iris2</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="c1"># Get indices that are within 5-7 period range for evalresp responses</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">iris1</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">period</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="mi">5</span> <span class="o">&lt;=</span> <span class="n">period</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">7</span><span class="p">:</span>
+            <span class="n">index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="c1"># Calculate average values for periods in the 5-7 second range for evalresp responses (amp, phase)</span>
+    <span class="n">avgRespAmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">respAmp</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+    <span class="n">avgRespPhase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">respPhase</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+
+    <span class="c1"># Calculate ratio of transfer function average amplitude/phase to response average amplitude/phase over 5-7s periods</span>
+    <span class="n">dataRespGainRatio</span> <span class="o">=</span> <span class="n">avgDataAmp</span> <span class="o">/</span> <span class="n">avgRespAmp</span>
+    <span class="n">dataRespPhaseDiff</span> <span class="o">=</span> <span class="n">avgDataPhase</span> <span class="o">-</span> <span class="n">avgRespPhase</span>
+
+    <span class="c1"># Calculate dataRespPhaseDiff</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dataRespPhaseDiff</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">:</span>
+        <span class="n">dataRespPhaseDiffMag</span> <span class="o">=</span> <span class="mi">360</span> <span class="o">-</span> <span class="n">dataRespPhaseDiff</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dataRespPhaseDiffMag</span> <span class="o">=</span> <span class="n">dataRespPhaseDiff</span>
+
+    <span class="c1"># Create combo snclq for both traces, then return output</span>
+    <span class="n">snclq</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">get_id</span><span class="p">(),</span> <span class="n">tr2</span><span class="o">.</span><span class="n">get_id</span><span class="p">())</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">snclq</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">start1</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">end1</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;transferFunctionMetric&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;gain_ratio&#39;</span><span class="p">:</span> <span class="n">dataRespGainRatio</span><span class="p">,</span> <span class="s1">&#39;phase_diff&#39;</span><span class="p">:</span> <span class="n">dataRespPhaseDiffMag</span><span class="p">,</span> <span class="s1">&#39;ms_coherence&#39;</span><span class="p">:</span> <span class="n">avgCoherence</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">d</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

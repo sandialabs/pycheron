@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.basicStatsMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.metrics.basicStatsMetric</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;basicStatsMetric&#39;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.masks</span> <span class="k">import</span> <span class="n">samples2time</span>
+
+
+<div class="viewcode-block" id="basicStatsMetric"><a class="viewcode-back" href="../../../pycheron.metrics.basicStatsMetric.html#pycheron.metrics.basicStatsMetric.basicStatsMetric">[docs]</a><span class="k">def</span> <span class="nf">basicStatsMetric</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">rmsThreshold</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">maxThreshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minThreshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">medianThreshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">meanThreshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">varianceThreshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stdThreshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">generateMasks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">masksByTime</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads in stream object and creates Trace data, and outputs basic statistic (Trace ID, Number of Samples, Start Time, End Time, Minimum, Maximum, Median, Mean, Variance, Standard Deviation, Masks)</span>
+
+<span class="sd">    :param st: obspy stream object</span>
+<span class="sd">    :type st: obspy.core.stream.Stream</span>
+<span class="sd">    :param rmsTheshold: RMS threshold, if value above theshold then values are masked.</span>
+<span class="sd">    :type rmsThreshold: int</span>
+<span class="sd">    :param maxThreshold: Max value threshold, if value above theshold then values are masked.</span>
+<span class="sd">    :type maxThreshold: int</span>
+<span class="sd">    :param minThreshold: Min value threshold, if value above theshold then values are masked.</span>
+<span class="sd">    :type minThreshold: int</span>
+<span class="sd">    :param medianThreshold:  Median value threshold, if value above theshold then values are masked.</span>
+<span class="sd">    :type medianThreshold: int</span>
+<span class="sd">    :param meanThreshold: Mean value threshold, if value above theshold then values are masked.</span>
+<span class="sd">    :type meanThreshold: int</span>
+<span class="sd">    :param varianceThreshold: Variance threshold, if value above theshold then values are masked.</span>
+<span class="sd">    :type varianceThreshold: int</span>
+<span class="sd">    :param stdThreshold:  Standard deviation threshold, if value above theshold then values are masked.</span>
+<span class="sd">    :type stdThreshold: int</span>
+<span class="sd">    :param generateMasks: Return generated masks.</span>
+<span class="sd">    :type generateMasks: bool</span>
+<span class="sd">    :param masksByTime: Boolean to determine whether masks are generated by time. If True, masks will be generated with a start/end time, if false, they will be generated as boolean array.</span>
+<span class="sd">    :type masksByTime: bool</span>
+<span class="sd">    :param logger: If using a logger, (you must create one using the util.logger class)</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+<span class="sd">    :param database: database object</span>
+<span class="sd">    :type database: pycheron.db.sqllite_db.Database</span>
+
+<span class="sd">    :return: a dictionary with the following keys and types:</span>
+
+<span class="sd">                * snclq (`str`)</span>
+<span class="sd">                * number_of_samples (`int`)</span>
+<span class="sd">                * start_time (`str`)</span>
+<span class="sd">                * end_time (`str`)</span>
+<span class="sd">                * minimum (`float`)</span>
+<span class="sd">                * maximum (`float`)</span>
+<span class="sd">                * median (`float`)</span>
+<span class="sd">                * mean (`float`)</span>
+<span class="sd">                * variance (`float`)</span>
+<span class="sd">                * standard_deviation (`float`)</span>
+<span class="sd">                * rms (`float`)</span>
+<span class="sd">                * metric_name (`str`)</span>
+<span class="sd">                * min_mask (`list` or `numpy.ndarray`)</span>
+<span class="sd">                * max_mask (`list` or `numpy.ndarray`)</span>
+<span class="sd">                * median_mask (`list` or `numpy.ndarray`)</span>
+<span class="sd">                * mean_mask (`list` or `numpy.ndarray`)</span>
+<span class="sd">                * variance_mask (`list` or `numpy.ndarray`)</span>
+<span class="sd">                * std_mask (`list` or `numpy.ndarray`)</span>
+<span class="sd">                * rms_mask (`list` or `numpy.ndarray`)</span>
+
+<span class="sd">    :rtype: dict</span>
+
+<span class="sd">    **Examples**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        #test data</span>
+<span class="sd">        data = &#39;test/test_data/7a_cabn_bhe.884965.tar.mseed&#39;</span>
+<span class="sd">        #reading in stream</span>
+<span class="sd">        st = obspy.read(data)</span>
+<span class="sd">        #Calculate stats</span>
+<span class="sd">        stats = basicStatsMetric(st)</span>
+<span class="sd">        print stats</span>
+<span class="sd">        &gt;&gt;&gt; [{&#39;rms&#39;: 1426.1056439005754, &#39;number_of_samples&#39;: 3456410, &#39;metric_name&#39;: &#39;basicStatsMetric&#39;, &#39;max_mask&#39;: None, &#39;std_mask&#39;: None, &#39;standard_deviation&#39;: 1412.9280231274283, &#39;start_time&#39;: UTCDateTime(2013, 11, 1, 0, 0), &#39;median&#39;: 27.0, &#39;maximum&#39;: 10336, &#39;snclq&#39;: u&#39;7A.CABN..BHE&#39;, &#39;min_mask&#39;: None, &#39;variance_mask&#39;: None, &#39;minimum&#39;: -6870, &#39;end_time&#39;: UTCDateTime(2013, 11, 2, 0, 0, 10, 225000), &#39;median_mask&#39;: None, &#39;variance&#39;: 1996365.598538783, &#39;mean_mask&#39;: None, &#39;rms_mask&#39;: None, &#39;mean&#39;: 193.42106665586547}]</span>
+
+<span class="sd">    If `generateMasks=True`, masks will be generated for those values that have thresholds.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        #Calculate stats with masks</span>
+<span class="sd">        stats = basicStatsMetric(st, generateMasks=True)</span>
+<span class="sd">        print stats</span>
+<span class="sd">        &gt;&gt;&gt; [{&#39;rms&#39;: 1426.1056439005754, &#39;number_of_samples&#39;: 3456410, &#39;metric_name&#39;: &#39;basicStatsMetric&#39;, &#39;max_mask&#39;: &#39;No masks were created: Either threshold was set to None or value was below threshold&#39;, &#39;std_mask&#39;: &#39;No masks were created: Either threshold was set to None or value was below threshold&#39;, &#39;standard_deviation&#39;: 1412.9280231274283, &#39;start_time&#39;: UTCDateTime(2013, 11, 1, 0, 0), &#39;median&#39;: 27.0, &#39;maximum&#39;: 10336, &#39;snclq&#39;: u&#39;7A.CABN..BHE&#39;, &#39;min_mask&#39;: &#39;No masks were created: Either threshold was set to None or value was below threshold&#39;, &#39;variance_mask&#39;: &#39;No masks were created: Either threshold was set to None or value was below threshold&#39;, &#39;minimum&#39;: -6870, &#39;end_time&#39;: UTCDateTime(2013, 11, 2, 0, 0, 10, 225000), &#39;median_mask&#39;: &#39;No masks were created: Either threshold was set to None or value was below threshold&#39;, &#39;variance&#39;: 1996365.598538783, &#39;mean_mask&#39;: &#39;No masks were created: Either threshold was set to None or value was below threshold&#39;, &#39;rms_mask&#39;: &#39;No masks were created: Either threshold was set to None or value was below threshold&#39;, &#39;mean&#39;: 193.42106665586547}]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Initialize d to make list of dictionaries</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Loop through stream object and get starttime, endtime, snclq, and length for each trace then calculate stats.</span>
+    <span class="c1"># Store in list of dictionaries.</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="p">)):</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">fs</span> <span class="o">=</span> <span class="n">trace</span>
+        <span class="n">starttime</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+        <span class="n">endtime</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+        <span class="n">snclq</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+
+        <span class="c1"># Access trace data in NumPy array format</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="c1"># Calculates Stats from Array</span>
+        <span class="c1"># Minimum, Maximum, Median, Mean, Variance, Standard Deviation</span>
+        <span class="n">minstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">maxstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">medianstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">meanstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">variancestats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">stdstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">rmsstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+
+        <span class="c1"># initializing masks</span>
+        <span class="n">minMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">maxMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">medMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">meanMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">varMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">stdMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">rmsMask</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># creating masks</span>
+        <span class="k">if</span> <span class="n">generateMasks</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Minimum</span>
+            <span class="n">minMask</span> <span class="o">=</span> <span class="n">_makeMask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">minThreshold</span><span class="p">,</span> <span class="n">minstats</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span><span class="n">greaterThan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">masksByTime</span><span class="p">)</span>
+            <span class="c1"># Maximum</span>
+            <span class="n">maxMask</span> <span class="o">=</span> <span class="n">_makeMask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">maxThreshold</span><span class="p">,</span> <span class="n">maxstats</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span>  <span class="n">time</span><span class="o">=</span><span class="n">masksByTime</span><span class="p">)</span>
+            <span class="c1"># Median</span>
+            <span class="n">medMask</span> <span class="o">=</span> <span class="n">_makeMask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">medianThreshold</span><span class="p">,</span> <span class="n">medianstats</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span>  <span class="n">time</span><span class="o">=</span><span class="n">masksByTime</span><span class="p">)</span>
+            <span class="c1"># Mean</span>
+            <span class="n">meanMask</span> <span class="o">=</span> <span class="n">_makeMask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">meanThreshold</span><span class="p">,</span> <span class="n">meanstats</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span>  <span class="n">time</span><span class="o">=</span><span class="n">masksByTime</span><span class="p">)</span>
+            <span class="c1"># Variance</span>
+            <span class="n">varMask</span> <span class="o">=</span> <span class="n">_makeMask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">varianceThreshold</span><span class="p">,</span> <span class="n">variancestats</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span>  <span class="n">time</span><span class="o">=</span><span class="n">masksByTime</span><span class="p">)</span>
+            <span class="c1"># Standard Deviation</span>
+            <span class="n">stdMask</span> <span class="o">=</span> <span class="n">_makeMask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">stdThreshold</span><span class="p">,</span> <span class="n">stdstats</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span>  <span class="n">time</span><span class="o">=</span><span class="n">masksByTime</span><span class="p">)</span>
+            <span class="c1"># RMS</span>
+            <span class="n">rmsMask</span> <span class="o">=</span> <span class="n">_makeMask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">rmsThreshold</span><span class="p">,</span> <span class="n">rmsstats</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span>  <span class="n">time</span><span class="o">=</span><span class="n">masksByTime</span><span class="p">)</span>
+
+        <span class="c1"># Create index of keys</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;snclq&#39;</span><span class="p">,</span> <span class="s1">&#39;number_of_samples&#39;</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">,</span> <span class="s1">&#39;minimum&#39;</span><span class="p">,</span> <span class="s1">&#39;maximum&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;variance&#39;</span><span class="p">,</span> <span class="s1">&#39;standard_deviation&#39;</span><span class="p">,</span> <span class="s1">&#39;rms&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_name&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Dictionary of data</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">length</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">endtime</span><span class="p">,</span>
+                  <span class="n">index</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">minstats</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">maxstats</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">medianstats</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">meanstats</span><span class="p">,</span>
+                  <span class="n">index</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">variancestats</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">stdstats</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">rmsstats</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="s2">&quot;basicStatsMetric&quot;</span><span class="p">,</span>
+                  <span class="s2">&quot;min_mask&quot;</span><span class="p">:</span> <span class="n">minMask</span><span class="p">,</span> <span class="s2">&quot;max_mask&quot;</span><span class="p">:</span> <span class="n">maxMask</span><span class="p">,</span> <span class="s2">&quot;median_mask&quot;</span><span class="p">:</span> <span class="n">medMask</span><span class="p">,</span> <span class="s2">&quot;mean_mask&quot;</span><span class="p">:</span> <span class="n">meanMask</span><span class="p">,</span>
+                  <span class="s2">&quot;variance_mask&quot;</span><span class="p">:</span> <span class="n">varMask</span><span class="p">,</span> <span class="s2">&quot;std_mask&quot;</span><span class="p">:</span> <span class="n">stdMask</span><span class="p">,</span> <span class="s2">&quot;rms_mask&quot;</span><span class="p">:</span> <span class="n">rmsMask</span>
+                  <span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<span class="k">def</span> <span class="nf">_makeMask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">stat</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">greaterThan</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Makes QC Mask</span>
+<span class="sd">    :param data: (arr) trace data</span>
+<span class="sd">    :param threshold: (int) threshold value</span>
+<span class="sd">    :param stat: (int) value to be compared to threshold</span>
+<span class="sd">    :param greaterThan: (bool) If value should be greater than theshold. Default = True. If false, value shoudl be less</span>
+<span class="sd">    than theshold</span>
+<span class="sd">    :return: (arr) Boolean array of 0 and 1s, 0 is False. 1 is True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">time</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">greaterThan</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stat</span> <span class="o">&gt;</span> <span class="n">threshold</span> <span class="ow">and</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">mask</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stat</span> <span class="o">&lt;</span> <span class="n">threshold</span> <span class="ow">and</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">mask</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">time</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">greaterThan</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stat</span> <span class="o">&gt;</span> <span class="n">threshold</span> <span class="ow">and</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                <span class="n">mask</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">mask</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stat</span> <span class="o">&lt;</span> <span class="n">threshold</span> <span class="ow">and</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">)</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                <span class="n">mask</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">mask</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">mask</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

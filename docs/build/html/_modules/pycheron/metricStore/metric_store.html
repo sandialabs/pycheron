@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metricStore.metric_store &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.metricStore.metric_store</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">author: tganter</span>
+<span class="sd">date: 5.10.17</span>
+<span class="sd">version: v0.1</span>
+<span class="sd">modified: N/A</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dir_path</span> <span class="o">+</span> <span class="s1">&#39;/..&#39;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="k">import</span> <span class="n">UTCDateTime</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">calendar</span> <span class="k">import</span> <span class="n">monthrange</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;MetricStore&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="MetricStore"><a class="viewcode-back" href="../../../pycheron.metricStore.html#pycheron.metricStore.metric_store.MetricStore">[docs]</a><span class="k">class</span> <span class="nc">MetricStore</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class contains average stats for each unique snclq.  The stats are</span>
+<span class="sd">    possibly metric values but may also be statistics important to the</span>
+<span class="sd">    metric function but hidden from the user. metric values may be a number</span>
+<span class="sd">    or an array-like sequence of numbers. This can vary but it needs to be</span>
+<span class="sd">    consistent for any specific SNCLQ/metric_name combination.</span>
+
+<span class="sd">    Data is updated as 1-day values, which are stored in local memory. The</span>
+<span class="sd">    single-day data is gathered and once a full month of data is in local</span>
+<span class="sd">    memory, the data is averaged and stored to non-volatile memory.  This is</span>
+<span class="sd">    designed to be used in a streaming manner, as can be seen in the example in</span>
+<span class="sd">    __main__.  If a discontiguous date or SNCLQ is added to the metric</span>
+<span class="sd">    store, the previous per-day data is cleared.</span>
+
+<span class="sd">    The actual files are handles as follows:</span>
+<span class="sd">    -new file per SNCL</span>
+<span class="sd">    -new DataFrame per metric</span>
+<span class="sd">    -new row per year and month</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param id: Unique ID for a store (integer)</span>
+<span class="sd">        Each time a new id is provided a new subdirectory is created where</span>
+<span class="sd">        that store&#39;s data is contained.  A new store may be created if,</span>
+<span class="sd">        for example, a new version of the code is developed it is desired</span>
+<span class="sd">        that the old data be left untouched, or multiple datasets are are</span>
+<span class="sd">        being processed and it is desired that their data be kept separate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_storedir</span> <span class="o">=</span> <span class="n">dir_path</span> <span class="o">+</span> <span class="s1">&#39;/streaming/data/</span><span class="si">%03d</span><span class="s1">/&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storedir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storedir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_day_tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DayTracker</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MetricStore.metric_names"><a class="viewcode-back" href="../../../pycheron.metricStore.html#pycheron.metricStore.metric_store.MetricStore.metric_names">[docs]</a>    <span class="k">def</span> <span class="nf">metric_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the names of each metric that has already been added to the</span>
+<span class="sd">        metric store for this SNCLQ</span>
+<span class="sd">        :param snclq:</span>
+<span class="sd">        :return: list of strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">storepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storepath</span><span class="p">(</span><span class="n">snclq</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">storepath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">storepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="c1"># remove the &#39;/&#39; prepended by HDF5 store</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)):</span>
+            <span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">names</span></div>
+
+<div class="viewcode-block" id="MetricStore.put"><a class="viewcode-back" href="../../../pycheron.metricStore.html#pycheron.metricStore.metric_store.MetricStore.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span>
+            <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        put new metric value into local memory, then if the date is the last</span>
+<span class="sd">        day in the month and the rest of the month is in local memory,</span>
+<span class="sd">        write the full month&#39;s data to the store.  The data written to the</span>
+<span class="sd">        store for a month is the average of the values for each day.</span>
+
+<span class="sd">        :param snclq:</span>
+<span class="sd">        :param metric_name: a unique metric name;</span>
+<span class="sd">            not necessarily something that the user would need!</span>
+<span class="sd">        :param metric_value: new value (must be a number or array-like)</span>
+<span class="sd">        :param overwrite: boolean; if False, the non-volatile store will not be</span>
+<span class="sd">            modified</span>
+<span class="sd">        :return: True on successful write to store</span>
+
+<span class="sd">        NOTE: it is important that the metric_value is a consistent</span>
+<span class="sd">        dimension for each unique metric, or averaging will throw an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_day_tracker</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span> <span class="n">date</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">reshape</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MetricStore.get_days"><a class="viewcode-back" href="../../../pycheron.metricStore.html#pycheron.metricStore.metric_store.MetricStore.get_days">[docs]</a>    <span class="k">def</span> <span class="nf">get_days</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the per-day data currently stored in volatile memory. Each time</span>
+<span class="sd">        a discontinuous date is added to the store, the previously stored</span>
+<span class="sd">        days will be cleared.</span>
+<span class="sd">        :param snclq:</span>
+<span class="sd">        :param metric_name: unique name for a metric</span>
+<span class="sd">        :return: tuple of lists: (values, dates)</span>
+<span class="sd">         &quot;values&quot; is a list of numbers or arrays, whatever was provided as</span>
+<span class="sd">            metric_value</span>
+<span class="sd">         &quot;dates&quot; is a list of datetime objects that are always quantized to</span>
+<span class="sd">            day, i.e. hour=0, minute=0, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_day_tracker</span><span class="o">.</span><span class="n">get_stored_data</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MetricStore.get"><a class="viewcode-back" href="../../../pycheron.metricStore.html#pycheron.metricStore.metric_store.MetricStore.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">year_month</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          Get the value of a metric for a specified snclq and year_month</span>
+<span class="sd">        :param snclq:</span>
+<span class="sd">        :param metric_name: string name of metric</span>
+<span class="sd">        :param year_month: tuple of two integers: (year, month)</span>
+<span class="sd">            OR any object that contains &quot;year&quot; and &quot;month&quot; attributes</span>
+<span class="sd">        :return: metric value or None if entry is missing</span>
+<span class="sd">            metric value is an array of numbers or a number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">storepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storepath</span><span class="p">(</span><span class="n">snclq</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">storepath</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">storepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">metric_name</span> <span class="ow">in</span> <span class="n">store</span><span class="p">:</span>
+                    <span class="n">ym_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_year_month_index</span><span class="p">(</span><span class="n">year_month</span><span class="p">)</span>
+
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">df</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span>
+                        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;data corrupted!&#39;</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="n">df</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ym_index</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ym_index</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="k">return</span> <span class="n">data</span></div>
+
+    <span class="sd">&quot;&quot;&quot;private methods&quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">_DayTracker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object that manages the per-day data that is stored in volatile</span>
+<span class="sd">        memory before the average for a whole month is written to the store</span>
+<span class="sd">        in non-volatile memory.&quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="mi">31</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_size</span> <span class="o">=</span> <span class="n">max_size</span>
+
+        <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span> <span class="n">date</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">              Add a new entry to the tracker</span>
+<span class="sd">            :param snclq:</span>
+<span class="sd">            :param metric_name:</span>
+<span class="sd">            :param metric_value:</span>
+<span class="sd">            :param date: UTCDateTime or something that can be converted to one</span>
+<span class="sd">            :return: True or False</span>
+<span class="sd">                True implies a new complete month of data is available,</span>
+<span class="sd">                i.e. the last day of the month was just added and the rest</span>
+<span class="sd">                of the month is in the cache</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quantized_day</span><span class="p">(</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">date</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_same</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                        <span class="ow">and</span> <span class="n">date</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                either:</span>
+<span class="sd">                   1) the snclq or metric_name is inconsistent</span>
+<span class="sd">                   2) the new date is not the day after the last stored date</span>
+<span class="sd">                therefore, flush the cached days</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">)</span>
+
+            <span class="c1"># check that metric_value dimensions are consistent</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_value</span><span class="p">),</span> \
+                    <span class="s1">&#39;inconsistent metric_value length</span><span class="se">\n</span><span class="s1">expected: &#39;</span> \
+                    <span class="s1">&#39;</span><span class="si">%d</span><span class="se">\n</span><span class="s1">actual: </span><span class="si">%d</span><span class="se">\n</span><span class="s1">&#39;</span> \
+                    <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_value</span><span class="p">))</span>
+
+            <span class="c1"># add new data entry</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+
+            <span class="c1"># remove oldest data if past cache size</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_size</span><span class="p">::]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_size</span><span class="p">::]</span>
+
+            <span class="c1"># new month of data ready?</span>
+            <span class="k">return</span> <span class="p">((</span><span class="n">date</span> <span class="o">+</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span><span class="o">.</span><span class="n">month</span> <span class="o">!=</span> <span class="n">date</span><span class="o">.</span><span class="n">month</span>
+                    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">date</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">get_stored_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_same</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">([],</span> <span class="p">[])</span>
+
+        <span class="k">def</span> <span class="nf">get_year_month</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">month</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">get_year_month_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_year_month</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_year_month</span><span class="p">()</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">date</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">date</span><span class="o">.</span><span class="n">year</span> <span class="o">==</span> <span class="n">year</span> <span class="ow">and</span> <span class="n">date</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="n">month</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">!=</span> <span class="n">monthrange</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="c1"># not a complete month of data!</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_is_same</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">snclq</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">snclq</span> <span class="ow">and</span> <span class="n">metric_name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span>
+
+        <span class="k">def</span> <span class="nf">_flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">snclq</span> <span class="o">=</span> <span class="n">snclq</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric_name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dates</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">_quantized_day</span><span class="p">(</span><span class="n">datetime</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">datetime</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">%</span> <span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_storepath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;returns the path to the SNCLQ-specific store&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storedir</span> <span class="o">+</span> <span class="n">snclq</span> <span class="o">+</span> <span class="s1">&#39;.h5&#39;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_year_month_index</span><span class="p">(</span><span class="n">year_month</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a year_month to a index string and also checks for valid input</span>
+<span class="sd">        :param year_month: either:</span>
+<span class="sd">            1) an object with &#39;year&#39; and &#39;month&#39; attributes</span>
+<span class="sd">            2) a tuple of the format (year, month), both as integers</span>
+<span class="sd">        :return: index string for accessing into an HDF5 store</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">year_month</span><span class="p">,</span> <span class="s1">&#39;year&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">year_month</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">):</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">year_month</span><span class="o">.</span><span class="n">year</span>
+            <span class="n">month</span> <span class="o">=</span> <span class="n">year_month</span><span class="o">.</span><span class="n">month</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">year_month</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;invalid input year_month&#39;</span> \
+                                         <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">must be datetime-like object or &#39;</span> \
+                                         <span class="s1">&#39;tuple containing (year, month)&#39;</span>
+            <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span> <span class="o">=</span> <span class="n">year_month</span>
+
+        <span class="c1"># check that year and month values are valid</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%4d</span><span class="s1">-</span><span class="si">%2d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span>
+                <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write or re-write the entry for the specified snclq and</span>
+<span class="sd">        metric_name and year_month. Uses the current day-data in the day</span>
+<span class="sd">        tracker.  This function is called every time the new entry in the</span>
+<span class="sd">        day tracker completes the month&quot;&quot;&quot;</span>
+
+        <span class="c1"># data ready to be written to store</span>
+        <span class="n">new_data</span><span class="p">,</span> <span class="n">year_month</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_day_tracker</span><span class="o">.</span><span class="n">get_year_month_data</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">overwrite</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">year_month</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="c1"># data already written, don&#39;t overwrite</span>
+            <span class="k">return</span>
+
+        <span class="c1"># average the data over all days in the month</span>
+        <span class="n">avg_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_data</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">ym_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_year_month_index</span><span class="p">(</span><span class="n">year_month</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storepath</span><span class="p">(</span><span class="n">snclq</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">metric_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">store</span>
+                        <span class="c1"># or... the new metric_value and stored metric_value</span>
+                        <span class="c1"># have inconsistent lengths</span>
+                        <span class="ow">or</span> <span class="p">(</span><span class="n">reshape</span>
+                            <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">avg_data</span><span class="p">)</span> <span class="o">!=</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
+                    <span class="c1"># first entry for this metric</span>
+                    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">avg_data</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">ym_index</span><span class="p">])</span>
+                    <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="c1"># overwrite or append index depending on if it is already</span>
+                        <span class="c1"># in the data frame</span>
+                        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">avg_data</span><span class="p">)</span> <span class="o">==</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> \
+                            <span class="s1">&#39;new metric_value and stored metric_value have &#39;</span> \
+                            <span class="s1">&#39;inconsistent lengths but reshape=False! Either &#39;</span> \
+                            <span class="s1">&#39;call with reshape=True or make sure the &#39;</span> \
+                            <span class="s1">&#39;dimensions are consistent. WARNING: reshape &#39;</span> \
+                            <span class="s1">&#39;will clear any stored values for the current &#39;</span> \
+                            <span class="s1">&#39;snclq/metric_name&#39;</span> \
+                            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Length in store: </span><span class="si">%d</span><span class="s1">&#39;</span> \
+                            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Length of new:   </span><span class="si">%d</span><span class="s1">&#39;</span> \
+                            <span class="o">%</span> <span class="p">(</span><span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">avg_data</span><span class="p">))</span>
+                        <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ym_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">avg_data</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span>
+                        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;data corrupted!&#39;</span></div>
+
+
+<span class="k">class</span> <span class="nc">MultiSnclqMetricStore</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is a copy-paste of the MetricStore function that Kale and I are</span>
+<span class="sd">    going to modify in the middle of a meeting. NOTE: none of this has been</span>
+<span class="sd">    tested as of 6/6/17 but it should &quot;theoretically&quot; work fine.</span>
+
+<span class="sd">    Functionality:</span>
+<span class="sd">    This class operates the exact same way as MetricStore, and in this sense</span>
+<span class="sd">    docstrings for MetricStore may be used to help understand its functionality</span>
+<span class="sd">    WITH THE EXCEPTION that instead of having a single day_tracker that</span>
+<span class="sd">    caches day-data, there will be a new day_tracker for each unique SNCLQ.</span>
+<span class="sd">    This means that it will take up more volatile memory, but that adding</span>
+<span class="sd">    new data from one snclq won&#39;t imply clearing the cache of day-data for</span>
+<span class="sd">    the other snclq&#39;s</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param id: Unique ID for a store (integer)</span>
+<span class="sd">        Each time a new id is provided a new subdirectory is created where</span>
+<span class="sd">        that store&#39;s data is contained.  A new store may be created if,</span>
+<span class="sd">        for example, a new version of the code is developed it is desired</span>
+<span class="sd">        that the old data be left untouched, or multiple datasets are are</span>
+<span class="sd">        being processed and it is desired that their data be kept separate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_storedir</span> <span class="o">=</span> <span class="n">pycheron_dir</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;streaming/data/</span><span class="si">%03d</span><span class="s1">/&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storedir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storedir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_day_trackers</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">metric_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the names of each metric that has already been added to the</span>
+<span class="sd">        metric store for this SNCLQ</span>
+<span class="sd">        :param snclq:</span>
+<span class="sd">        :return: list of strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">storepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storepath</span><span class="p">(</span><span class="n">snclq</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">storepath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">storepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="c1"># remove the &#39;/&#39; prepended by HDF5 store</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)):</span>
+            <span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">names</span>
+
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span>
+            <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        put new metric value into local memory, then if the date is the last</span>
+<span class="sd">        day in the month and the rest of the month is in local memory,</span>
+<span class="sd">        write the full month&#39;s data to the store.  The data written to the</span>
+<span class="sd">        store for a month is the average of the values for each day.</span>
+
+<span class="sd">        :param snclq:</span>
+<span class="sd">        :param metric_name: a unique metric name;</span>
+<span class="sd">            not necessarily something that the user would need!</span>
+<span class="sd">        :param metric_value: new value (must be a number or array-like)</span>
+<span class="sd">        :param overwrite: boolean; if False, the non-volatile store will not be</span>
+<span class="sd">            modified</span>
+<span class="sd">        :return: True on successful write to store</span>
+
+<span class="sd">        NOTE: it is important that the metric_value is a consistent</span>
+<span class="sd">        dimension for each unique metric, or averaging will throw an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">day_tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_day_tracker</span><span class="p">(</span><span class="n">snclq</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">day_tracker</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span> <span class="n">date</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">reshape</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_days</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the per-day data currently stored in volatile memory. Each time</span>
+<span class="sd">        a discontinuous date is added to the store, the previously stored</span>
+<span class="sd">        days will be cleared.</span>
+<span class="sd">        :param snclq:</span>
+<span class="sd">        :param metric_name: unique name for a metric</span>
+<span class="sd">        :return: tuple of lists: (values, dates)</span>
+<span class="sd">         &quot;values&quot; is a list of numbers or arrays, whatever was provided as</span>
+<span class="sd">            metric_value</span>
+<span class="sd">         &quot;dates&quot; is a list of datetime objects that are always quantized to</span>
+<span class="sd">            day, i.e. hour=0, minute=0, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">day_tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_day_tracker</span><span class="p">(</span><span class="n">snclq</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">day_tracker</span><span class="o">.</span><span class="n">get_stored_data</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">year_month</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          Get the value of a metric for a specified snclq and year_month</span>
+<span class="sd">        :param snclq:</span>
+<span class="sd">        :param metric_name: string name of metric</span>
+<span class="sd">        :param year_month: tuple of two integers: (year, month)</span>
+<span class="sd">            OR any object that contains &quot;year&quot; and &quot;month&quot; attributes</span>
+<span class="sd">        :return: metric value or None if entry is missing</span>
+<span class="sd">            metric value is an array of numbers or a number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">storepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storepath</span><span class="p">(</span><span class="n">snclq</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">storepath</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">storepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">metric_name</span> <span class="ow">in</span> <span class="n">store</span><span class="p">:</span>
+                    <span class="n">ym_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_year_month_index</span><span class="p">(</span><span class="n">year_month</span><span class="p">)</span>
+
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">df</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span>
+                        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;data corrupted!&#39;</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="n">df</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ym_index</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ym_index</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="sd">&quot;&quot;&quot;private methods&quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">_DayTracker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object that manages the per-day data that is stored in volatile</span>
+<span class="sd">        memory before the average for a whole month is written to the store</span>
+<span class="sd">        in non-volatile memory.&quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="mi">31</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_size</span> <span class="o">=</span> <span class="n">max_size</span>
+
+        <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span> <span class="n">date</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">              Add a new entry to the tracker</span>
+<span class="sd">            :param snclq:</span>
+<span class="sd">            :param metric_name:</span>
+<span class="sd">            :param metric_value:</span>
+<span class="sd">            :param date: UTCDateTime or something that can be converted to one</span>
+<span class="sd">            :return: True or False</span>
+<span class="sd">                True implies a new complete month of data is available,</span>
+<span class="sd">                i.e. the last day of the month was just added and the rest</span>
+<span class="sd">                of the month is in the cache</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quantized_day</span><span class="p">(</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">date</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_same</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                        <span class="ow">and</span> <span class="n">date</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)):</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                either:</span>
+<span class="sd">                   1) the snclq or metric_name is inconsistent</span>
+<span class="sd">                   2) the new date is not the day after the last stored date</span>
+<span class="sd">                therefore, flush the cached days</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">)</span>
+
+            <span class="c1"># check that metric_value dimensions are consistent</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_value</span><span class="p">),</span> \
+                    <span class="s1">&#39;inconsistent metric_value length</span><span class="se">\n</span><span class="s1">expected: &#39;</span> \
+                    <span class="s1">&#39;</span><span class="si">%d</span><span class="se">\n</span><span class="s1">actual: </span><span class="si">%d</span><span class="se">\n</span><span class="s1">&#39;</span> \
+                    <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_value</span><span class="p">))</span>
+
+            <span class="c1"># add new data entry</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+
+            <span class="c1"># remove oldest data if past cache size</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_size</span><span class="p">::]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_size</span><span class="p">::]</span>
+
+            <span class="c1"># new month of data ready?</span>
+            <span class="k">return</span> <span class="p">((</span><span class="n">date</span> <span class="o">+</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span><span class="o">.</span><span class="n">month</span> <span class="o">!=</span> <span class="n">date</span><span class="o">.</span><span class="n">month</span>
+                    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">date</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">get_stored_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_same</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">([],</span> <span class="p">[])</span>
+
+        <span class="k">def</span> <span class="nf">get_year_month</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">month</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">get_year_month_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_year_month</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_year_month</span><span class="p">()</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">date</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">date</span><span class="o">.</span><span class="n">year</span> <span class="o">==</span> <span class="n">year</span> <span class="ow">and</span> <span class="n">date</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="n">month</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">!=</span> <span class="n">monthrange</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="c1"># not a complete month of data!</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_is_same</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">snclq</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">snclq</span> <span class="ow">and</span> <span class="n">metric_name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span>
+
+        <span class="k">def</span> <span class="nf">_flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">snclq</span> <span class="o">=</span> <span class="n">snclq</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric_name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dates</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">_quantized_day</span><span class="p">(</span><span class="n">datetime</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">datetime</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">%</span> <span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_storepath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;returns the path to the SNCLQ-specific store&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storedir</span> <span class="o">+</span> <span class="n">snclq</span> <span class="o">+</span> <span class="s1">&#39;.h5&#39;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_year_month_index</span><span class="p">(</span><span class="n">year_month</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a year_month to a index string and also checks for valid input</span>
+<span class="sd">        :param year_month: either:</span>
+<span class="sd">            1) an object with &#39;year&#39; and &#39;month&#39; attributes</span>
+<span class="sd">            2) a tuple of the format (year, month), both as integers</span>
+<span class="sd">        :return: index string for accessing into an HDF5 store</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">year_month</span><span class="p">,</span> <span class="s1">&#39;year&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">year_month</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">):</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">year_month</span><span class="o">.</span><span class="n">year</span>
+            <span class="n">month</span> <span class="o">=</span> <span class="n">year_month</span><span class="o">.</span><span class="n">month</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">year_month</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;invalid input year_month&#39;</span> \
+                                         <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">must be datetime-like object or &#39;</span> \
+                                         <span class="s1">&#39;tuple containing (year, month)&#39;</span>
+            <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span> <span class="o">=</span> <span class="n">year_month</span>
+
+        <span class="c1"># check that year and month values are valid</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%4d</span><span class="s1">-</span><span class="si">%2d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span>
+                <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write or re-write the entry for the specified snclq and</span>
+<span class="sd">        metric_name and year_month. Uses the current day-data in the day</span>
+<span class="sd">        tracker.  This function is called every time the new entry in the</span>
+<span class="sd">        day tracker completes the month&quot;&quot;&quot;</span>
+
+        <span class="c1"># data ready to be written to store</span>
+        <span class="n">day_tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_day_tracker</span><span class="p">(</span><span class="n">snclq</span><span class="p">)</span>
+        <span class="n">new_data</span><span class="p">,</span> <span class="n">year_month</span> <span class="o">=</span> <span class="n">day_tracker</span><span class="o">.</span><span class="n">get_year_month_data</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">overwrite</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">year_month</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="c1"># data already written, don&#39;t overwrite</span>
+            <span class="k">return</span>
+
+        <span class="c1"># average the data over all days in the month</span>
+        <span class="n">avg_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_data</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">ym_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_year_month_index</span><span class="p">(</span><span class="n">year_month</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storepath</span><span class="p">(</span><span class="n">snclq</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">metric_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">store</span>
+                        <span class="c1"># or... the new metric_value and stored metric_value</span>
+                        <span class="c1"># have inconsistent lengths</span>
+                        <span class="ow">or</span> <span class="p">(</span><span class="n">reshape</span>
+                            <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">avg_data</span><span class="p">)</span> <span class="o">!=</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
+                    <span class="c1"># first entry for this metric</span>
+                    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">avg_data</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">ym_index</span><span class="p">])</span>
+                    <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="c1"># overwrite or append index depending on if it is already</span>
+                        <span class="c1"># in the data frame</span>
+                        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">avg_data</span><span class="p">)</span> <span class="o">==</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> \
+                            <span class="s1">&#39;new metric_value and stored metric_value have &#39;</span> \
+                            <span class="s1">&#39;inconsistent lengths but reshape=False! Either &#39;</span> \
+                            <span class="s1">&#39;call with reshape=True or make sure the &#39;</span> \
+                            <span class="s1">&#39;dimensions are consistent. WARNING: reshape &#39;</span> \
+                            <span class="s1">&#39;will clear any stored values for the current &#39;</span> \
+                            <span class="s1">&#39;snclq/metric_name&#39;</span> \
+                            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Length in store: </span><span class="si">%d</span><span class="s1">&#39;</span> \
+                            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Length of new:   </span><span class="si">%d</span><span class="s1">&#39;</span> \
+                            <span class="o">%</span> <span class="p">(</span><span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">avg_data</span><span class="p">))</span>
+                        <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ym_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">avg_data</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="n">store</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span>
+                        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;data corrupted!&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_day_tracker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snclq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          Acquire (and create if necessary) a _DayTracker object for the</span>
+<span class="sd">          provided snclq. This way day data can be cached for each snclq</span>
+<span class="sd">          without worrying about flushing data for the other snclq&#39;s.</span>
+<span class="sd">        :param snclq:</span>
+<span class="sd">        :return: a _DayTracker object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">snclq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_day_trackers</span><span class="p">:</span>
+            <span class="c1"># this is a previously input SNCLQ, use the already-generated</span>
+            <span class="c1"># day tracker</span>
+            <span class="n">day_tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_day_trackers</span><span class="p">[</span><span class="n">snclq</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># this is not a previously input SNCLQ, create a new day tracker</span>
+            <span class="c1">#  for it</span>
+            <span class="n">day_tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DayTracker</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_day_trackers</span><span class="p">[</span><span class="n">snclq</span><span class="p">]</span> <span class="o">=</span> <span class="n">day_tracker</span>
+
+        <span class="k">return</span> <span class="n">day_tracker</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1"># initialize the metric store</span>
+    <span class="c1"># ms = MetricStore(id=0)</span>
+    <span class="n">ms</span> <span class="o">=</span> <span class="n">MultiSnclqMetricStore</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># specify whether or not we should overwrite the metric store data</span>
+    <span class="c1"># permanently</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># specify a unique snclq</span>
+    <span class="n">snclq</span> <span class="o">=</span> <span class="s1">&#39;LPAZ.BHZ&#39;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ms</span><span class="o">.</span><span class="n">metric_names</span><span class="p">(</span><span class="n">snclq</span><span class="p">))</span>
+
+    <span class="c1"># specify a unique metric_name</span>
+    <span class="n">metric_name</span> <span class="o">=</span> <span class="s1">&#39;calibration.env_var&#39;</span>
+
+    <span class="c1"># get that metric value for a specific year and month</span>
+    <span class="n">year_month</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">ms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">year_month</span><span class="p">)))</span>
+
+    <span class="k">for</span> <span class="n">number_of_days</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">36</span><span class="p">):</span>
+        <span class="c1"># move a day forward</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">*</span> <span class="n">number_of_days</span><span class="p">)</span>
+
+        <span class="c1"># create arbitrary data</span>
+        <span class="n">metric_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># if you try this instead, the inconsistent dimension will throw an</span>
+        <span class="c1"># error</span>
+        <span class="c1"># metric_value = np.random.randn(5)</span>
+
+        <span class="n">ms</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_value</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span>
+               <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span> <span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">number_of_days</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Data in local memory:&#39;</span><span class="p">)</span>
+            <span class="n">values</span><span class="p">,</span> <span class="n">dates</span> <span class="o">=</span> <span class="n">ms</span><span class="o">.</span><span class="n">get_days</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%2d</span><span class="s1">/</span><span class="si">%2d</span><span class="s1">/</span><span class="si">%4d</span><span class="s1">  -  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">dates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+                                              <span class="n">dates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">ms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">snclq</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">year_month</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

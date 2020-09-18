@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.psd.psdList &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.psd.psdList</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="k">import</span> <span class="ne">TimeoutError</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;psdList&#39;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">pycheron.psd.McNamaraPSD</span> <span class="k">import</span> <span class="n">McNamaraPSD</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.logger</span> <span class="k">import</span> <span class="n">Logger</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.getChannel</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">pebble</span> <span class="k">import</span> <span class="n">ProcessPool</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">from</span> <span class="nn">pathlib2</span> <span class="k">import</span> <span class="n">Path</span>
+
+<span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pycheron.psdListF</span> <span class="k">as</span> <span class="nn">psdListF</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">fpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="n">pwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pwd</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;------------------------------------------------------&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Building Fortran Library&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;------------------------------------------------------&quot;</span><span class="p">)</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;f2py&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;psdListF&quot;</span><span class="p">,</span> <span class="s2">&quot;--quiet&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/fftpack/fftpack.f&quot;</span><span class="p">,</span>
+             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/fftpack/psdListF.f90&quot;</span><span class="p">])</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">pwd</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pycheron.psdListF</span> <span class="k">as</span> <span class="nn">psdListF</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">psdListF</span>
+
+
+<div class="viewcode-block" id="psdList"><a class="viewcode-back" href="../../../pycheron.psd.psdList.html#pycheron.psd.psdList.psdList">[docs]</a><span class="k">def</span> <span class="nf">psdList</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fortran</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    :param st: Obspy Stream</span>
+<span class="sd">    :type st: obspy.core.stream.Stream</span>
+<span class="sd">    :param processes: Number of processes to create. **Note:** It is advised you do not use more than 7 processors if</span>
+<span class="sd">        on a personal computer.</span>
+<span class="sd">    :type processes: int</span>
+<span class="sd">    :param logger: logger object</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+<span class="sd">    :param fortran: Use fortran lib or not. **Note:** This currently is not available on windows.</span>
+<span class="sd">    :type fortran: bool</span>
+
+<span class="sd">    :return: List of psds, with the following access flags:</span>
+
+<span class="sd">             * ``psd[i][j][0]`` = frequency</span>
+<span class="sd">             * ``psd[i][j][1]`` = psd</span>
+<span class="sd">             * ``psd[i][j][2]`` = snclq</span>
+<span class="sd">             * ``psd[i][j][3]`` = Starttime of data segment</span>
+<span class="sd">             * ``psd[i][j][4]`` = Starttime of data segment</span>
+
+<span class="sd">             where ``i`` = which trace in stream, ``j`` = which data segment</span>
+
+<span class="sd">    :rtype: list</span>
+
+
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # import function</span>
+<span class="sd">        from pycheron.psd.psdList import psdList</span>
+
+<span class="sd">        # test data</span>
+<span class="sd">        data1 = &#39;test/test_data/7a_cabn_bhe.884965.tar.mseed&#39;</span>
+
+<span class="sd">        # reading in stream</span>
+<span class="sd">        st = obspy.read(data1)</span>
+
+<span class="sd">        # print out stream information</span>
+<span class="sd">        print st</span>
+
+<span class="sd">        # creating list of psds (uncorrected)</span>
+<span class="sd">        psd = psdList(st)</span>
+
+<span class="sd">        # The output is a nested list. The first list (psd[i]) is a list of all of the different traces in the stream.</span>
+<span class="sd">        # Since the sample data only has one trace, the list has a length of one. The second nested list (psd[i][j])</span>
+<span class="sd">        # is a list of all of the shorter segments, which the function broke it up into. The last list</span>
+<span class="sd">        # (psd[i][j][k]) is the individual slice of the  data with frequency, psd, snclq, starttime and endtime.</span>
+
+<span class="sd">        # Output not show for brevity</span>
+<span class="sd">        print &#39;Frequency:&#39;, psd[0][0][0] #Frequency of first segment or first trace</span>
+<span class="sd">        print &#39;PSD:&#39;, psd[0][0][1] #PSD of first segment or first trace</span>
+<span class="sd">        print &#39;SNCLQ:&#39;, psd[0][0][2] #SNCLQ of first segment or first trace</span>
+<span class="sd">        print &#39;Starttime:&#39;, psd[0][0][3] #Starttime of data segment</span>
+<span class="sd">        print &#39;Endtime:&#39;, psd[0][0][4] #Endtime of data segment</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># Filters out SOH channel traces from stream</span>
+    <span class="n">stN</span> <span class="o">=</span> <span class="n">filterChannel</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+    <span class="c1"># If gaps, merge traces -- first create copy of stream so doesn&#39;t permanently change stream object</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stN</span><span class="o">.</span><span class="n">get_gaps</span><span class="p">())</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">stM</span> <span class="o">=</span> <span class="n">stN</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># Loop through traces in stream object and round sampling rates -- this is to get around the fact that for small</span>
+        <span class="c1"># deviations in sampling rate, e.g., 50 and 49.9999 we can merge the traces. For large deviations this will</span>
+        <span class="c1"># throw an error on merge, for small this should be fine</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stM</span><span class="p">)):</span>
+            <span class="n">tr1</span> <span class="o">=</span> <span class="n">stM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">stM</span> <span class="o">=</span> <span class="n">stM</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stM</span> <span class="o">=</span> <span class="n">stN</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Initialize output list</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">PSDList</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stM</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">ProcessPool</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fortran</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_pool_psd_fortran</span><span class="p">,</span> <span class="n">stM</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">PSDList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;psdList(): Fortran psdList Timed Out&quot;</span> <span class="o">%</span> <span class="n">error</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;psdList(): Fortran PSD Complete&quot;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_pool_psd_python</span><span class="p">,</span> <span class="n">stM</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">PSDList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;psdList(): Python psdList Timed Out&quot;</span> <span class="o">+</span> <span class="n">error</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;psdList(): Python PSD Complete&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stM</span><span class="p">)):</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">stM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">channel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">PSDList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">fortran</span><span class="p">:</span>
+            <span class="n">psd</span> <span class="o">=</span> <span class="n">_pool_psd_fortran</span><span class="p">(</span><span class="n">stM</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">psd</span> <span class="o">=</span> <span class="n">_pool_psd_python</span><span class="p">(</span><span class="n">stM</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">stM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">PSDList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psd</span><span class="p">)</span>
+        <span class="n">channel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">PSDList</span></div>
+
+
+<span class="k">def</span> <span class="nf">_pool_psd_fortran</span><span class="p">(</span><span class="n">tr</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">&lt;</span> <span class="mi">3600</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="c1"># Create temp to fill psds into output for every run</span>
+
+    <span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span>
+    <span class="c1"># Set high frequency boundary, which will always be set to Nyquist no matter the channel band code</span>
+    <span class="n">hiFreq</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+
+    <span class="c1"># Set center frequency for octaves to be aligned, e.g., alignment frequency from which octaves will be generated</span>
+    <span class="n">alignFreq</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+    <span class="c1"># Choose chunk size based on channel band code (=sampling rate). See:</span>
+    <span class="c1"># http://www.fdsn.org/seed_manual/SEEDManual_V2.4.pdf , Appendix A</span>
+    <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">3600</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="mf">0.001</span>
+
+    <span class="k">elif</span> <span class="n">channel</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="mf">0.0001</span>
+        <span class="c1"># Special for VH</span>
+        <span class="n">alignFreq</span> <span class="o">=</span> <span class="mf">0.025</span>
+
+    <span class="k">elif</span> <span class="n">channel</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">3600</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="mf">0.0025</span>
+
+    <span class="c1"># Changed to z = 10, loFreq = 0.6 from IRISSeismic 1.4.5 to 1.4.6, but keeping at 1.4.5 options for now because</span>
+    <span class="c1"># 10s increments take too long for processing but do increase the statistical significance -- think about in</span>
+    <span class="c1"># future</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mi">3600</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="mf">0.005</span>
+    <span class="c1"># else:</span>
+    <span class="c1">#    z = 10</span>
+    <span class="c1">#    loFreq = 0.6</span>
+
+    <span class="c1"># initialize</span>
+    <span class="n">endtime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+    <span class="n">starttime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">starttime</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">z</span>
+    <span class="n">secs</span> <span class="o">=</span> <span class="n">endtime</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="n">secsLeft</span> <span class="o">=</span> <span class="n">secs</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">st</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">nDim</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">secsLeft</span> <span class="o">&gt;=</span> <span class="o">.</span><span class="mi">99</span> <span class="o">*</span> <span class="n">z</span><span class="p">:</span>
+        <span class="n">nDim</span> <span class="o">=</span> <span class="n">nDim</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">st</span> <span class="o">+</span> <span class="p">(</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">secsLeft</span> <span class="o">=</span> <span class="n">secs</span> <span class="o">-</span> <span class="n">st</span>
+
+    <span class="n">psd</span><span class="p">,</span> <span class="n">truncY</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="n">psdListF</span><span class="o">.</span><span class="n">psdlist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">secs</span><span class="p">,</span> <span class="n">loFreq</span><span class="p">,</span> <span class="n">hiFreq</span><span class="p">,</span> <span class="n">alignFreq</span><span class="p">,</span> <span class="n">nDim</span><span class="p">)</span>
+
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">freq</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">truncY</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">psd</span><span class="p">)):</span>
+        <span class="n">psdtrunc</span> <span class="o">=</span> <span class="n">psd</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="n">truncY</span><span class="p">]</span>
+        <span class="n">psds</span> <span class="o">=</span> <span class="p">[</span><span class="n">freq</span><span class="p">,</span> <span class="n">psdtrunc</span><span class="p">,</span> <span class="p">[</span><span class="n">tr</span><span class="o">.</span><span class="n">get_id</span><span class="p">()],</span> <span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()]</span>
+        <span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psds</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">temp</span>
+
+
+<span class="k">def</span> <span class="nf">_pool_psd_python</span><span class="p">(</span><span class="n">tr</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">&lt;</span> <span class="mi">3600</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="c1"># Create temp to fill psds into output for every run</span>
+
+    <span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span>
+    <span class="c1"># Set high frequency boundary, which will always be set to Nyquist no matter the channel band code</span>
+    <span class="n">hiFreq</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+
+    <span class="c1"># Set center frequency for octaves to be aligned, e.g., alignment frequency from which octaves will be generated</span>
+    <span class="n">alignFreq</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+    <span class="c1"># Choose chunk size based on channel band code (=sampling rate). See:</span>
+    <span class="c1"># http://www.fdsn.org/seed_manual/SEEDManual_V2.4.pdf , Appendix A</span>
+    <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">3600</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="mf">0.001</span>
+
+    <span class="k">elif</span> <span class="n">channel</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="mf">0.0001</span>
+        <span class="c1"># Special for VH</span>
+        <span class="n">alignFreq</span> <span class="o">=</span> <span class="mf">0.025</span>
+
+    <span class="k">elif</span> <span class="n">channel</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">3600</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="mf">0.0025</span>
+
+    <span class="c1"># Changed to z = 10, loFreq = 0.6 from IRISSeismic 1.4.5 to 1.4.6, but keeping at 1.4.5 options for now because</span>
+    <span class="c1"># 10s increments take too long for processing but do increase the statistical significance -- think about in</span>
+    <span class="c1"># future</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mi">3600</span>
+        <span class="n">loFreq</span> <span class="o">=</span> <span class="mf">0.005</span>
+    <span class="c1"># else:</span>
+    <span class="c1">#    z = 10</span>
+    <span class="c1">#    loFreq = 0.6</span>
+
+    <span class="c1"># initialize</span>
+    <span class="n">endtime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+    <span class="n">starttime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">starttime</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">z</span>
+    <span class="n">secs</span> <span class="o">=</span> <span class="n">endtime</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="n">secsLeft</span> <span class="o">=</span> <span class="n">secs</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="n">secsLeft</span> <span class="o">&gt;=</span> <span class="mf">0.99</span> <span class="o">*</span> <span class="n">z</span><span class="p">:</span>
+        <span class="c1"># slice chunk out of trace</span>
+        <span class="n">sl</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+
+        <span class="c1"># check if Dead channel</span>
+        <span class="c1"># if not isDC(sl): //TODO Changethis in future to run dead channels</span>
+        <span class="c1"># calculate PSDs</span>
+        <span class="n">psds</span> <span class="o">=</span> <span class="n">McNamaraPSD</span><span class="p">(</span><span class="n">sl</span><span class="p">,</span> <span class="n">loFreq</span><span class="p">,</span> <span class="n">hiFreq</span><span class="p">,</span> <span class="n">alignFreq</span><span class="p">,</span> <span class="n">binned</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psds</span><span class="p">)</span>
+
+        <span class="c1"># Increment the window with 50% overlap</span>
+        <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">start</span> <span class="o">+=</span> <span class="n">z</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">end</span> <span class="o">+=</span> <span class="n">z</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">secsLeft</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="k">return</span> <span class="n">temp</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.sigpro.STALTA &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">pycheron.sigpro.STALTA</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="module-pycheron.sigpro.STALTA">
+<span id="pycheron-sigpro-stalta"></span><h1>pycheron.sigpro.STALTA<a class="headerlink" href="#module-pycheron.sigpro.STALTA" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pycheron.sigpro.STALTA.STALTA">
+<code class="descname">STALTA</code><span class="sig-paren">(</span><em>tr</em>, <em>staSecs=3</em>, <em>ltaSecs=30</em>, <em>algorithm='classic_LR'</em>, <em>increment=1</em>, <em>demean=True</em>, <em>detrend=True</em>, <em>taper=0</em>, <em>logger=None</em>, <em>fortran=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/sigpro/STALTA.html#STALTA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.sigpro.STALTA.STALTA" title="Permalink to this definition">¶</a></dt>
+<dd><p>The STALTA method applies one of several STA/LTA “first break picking” algorithms to obspy trace data in
+order to automatically detect seismic events.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tr</strong> (<em>obspy.core.trace.Trace</em>) – obspy trace object</li>
+<li><strong>staSecs</strong> (<em>int</em>) – length of the short averaging window in secs</li>
+<li><strong>ltaSecs</strong> (<em>int</em>) – length of long averaging window in secs</li>
+<li><strong>algorithm</strong> (<em>str</em>) – algorithm to be used. Options include <code class="docutils literal notranslate"><span class="pre">classic_LR</span></code>, <code class="docutils literal notranslate"><span class="pre">classic_RR</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">EarleAndShearer_envelope</span></code></li>
+<li><strong>increment</strong> (<em>str</em>) – the increment to use when sliding the averaging windows to the next location. Note for
+higher resolution channels, picking an increment of 2/sampling rate can greatly speed up
+processing times and still generate reasonable results.</li>
+<li><strong>demean</strong> (<em>bool</em>) – boolean flag determining whether to demean the data before applying the algorithm</li>
+<li><strong>detrend</strong> (<em>bool</em>) – boolean flag determining whether to detrend the data before applying the algorithm</li>
+<li><strong>taper</strong> (<em>int</em>) – proportion of the signal to be tapered at each end before applying the algorithm</li>
+<li><strong>logger</strong> (<a class="reference internal" href="pycheron.util.logger.html#pycheron.util.logger.Logger" title="pycheron.util.logger.Logger"><em>pycheron.util.logger.Logger</em></a>) – logger object</li>
+<li><strong>fortran</strong> (<em>bool</em>) – Use Fortran libs or not. If libs will not compile or on a Windows Machine, set to False</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matrix of values of the same length as the data in tr. Note the returned vector will contain
+NaNs near the edges of the trace where insufficient data are available to fill windows. Additional NaN
+values will appear for every index that is skipped over when the increment parameter is greater than 1.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.array</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>By default, this method uses the <code class="docutils literal notranslate"><span class="pre">&quot;classic_LR&quot;</span></code> algorithm which calculates the average power in the trace data
+over a short window (STA) and a long window (LTA). With this algorithm, windows are “left/right aligned” meaning
+that the point for which STA/LTA is calculated is at the lefttmost edge of the STA window and the rightmost edge
+of the LTA window. The resulting STA/LTA ratio thus has the same number of points as the original data. This is a
+standard method of “first break picking” and can be used to identify the onset of a seismic event. <a class="footnote-reference" href="#id7" id="id1">[1]</a> <a class="footnote-reference" href="#id8" id="id2">[2]</a> <a class="footnote-reference" href="#id9" id="id3">[3]</a></p>
+<p><strong>Methodology</strong></p>
+<ol class="arabic simple">
+<li><code class="docutils literal notranslate"><span class="pre">algorithm</span> <span class="pre">=</span> <span class="pre">&quot;classic_RR&quot;</span></code>. This is the original STA/LTA algorithm with “right alignment” <a class="footnote-reference" href="#id10" id="id4">[4]</a></li>
+</ol>
+<div class="math">
+<p><img src="_images/math/a04fd733cb0320f1be3ae1cd5ba0704fa33bf4e2.png" alt="STA(x_{i}) = (1/ns)\sum_{j = i-ns}^{i} x_{i}^{2}
+
+LTA(x_{i}) = (1/nl)\sum_{j = i-nl}^{i} x_{i}^{2}
+
+r_{i} = STA_{i}/LTA_{i}"/></p>
+</div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">[---------- LTA ---------*]</span>
+<span class="go">                [-- STA -*]</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><code class="docutils literal notranslate"><span class="pre">algorithm</span> <span class="pre">=</span> <span class="pre">&quot;classic_LR&quot;</span></code> (default). This algorithm has the index at the left edge of the STA window and the
+right edge of the LTA window. <a class="footnote-reference" href="#id11" id="id5">[5]</a></li>
+</ol>
+<div class="math">
+<p><img src="_images/math/8f60791e75f5da372a117c79e88a25eec388c596.png" alt="STA(x_{i}) = (1/ns)\sum_{j = i+ns}^{i} x_{i}^{2}
+
+LTA(x_{i}) = (1/nl)\sum_{j = i-nl}^{i} x_{i}^{2}
+
+r_{i} = STA_{i}/LTA_{i}"/></p>
+</div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">[---------- LTA --------*]</span>
+<span class="go">                       [*- STA --]</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><code class="docutils literal notranslate"><span class="pre">algorithm</span> <span class="pre">=</span> <span class="pre">&quot;EarleAndShearer_envelope&quot;</span></code> <a class="footnote-reference" href="#id12" id="id6">[6]</a></li>
+</ol>
+<div class="math">
+<p><img src="_images/math/3661018bf085c30217b35d7fa8ab8d94469f5391.png" alt="STA(x_{i}) = (1/ns)\sum_{j=i}^{i+ns} mod(H(x))_{i}
+
+LTA(x_{i}) = (1/nl)\sum_{j=i-nl}^{i} mod(H(x))_{i}
+
+r_{i} = STA_{i}/LTA_{i}"/></p>
+</div><p>where: <em>H(x)</em> is the hilbert transform of the data and <em>mod(H(x))</em> is the ‘envelope’ of the seismic signal</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">[---------- LTA ---------*]</span>
+<span class="go">                        [*- STA --]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Because the Hilbert transform involves performing an FFT of the data it can take significantly longer than
+the “classic” algorithms for longer seismic signals (&gt;500,000 pts)}</p>
+</div>
+<p><strong>Example</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">obspy.clients.fdsn</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">UTCDateTime</span>
+<span class="kn">from</span> <span class="nn">pycheron.sigpro.STALTA</span> <span class="kn">import</span> <span class="n">STALTA</span>
+
+<span class="c1">#Instantiate client object</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;IRIS&quot;</span><span class="p">)</span>
+
+<span class="c1">#Grab data from 2010-02-27 to 2010-02-28</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2010-02-27T00:00:00.000&quot;</span><span class="p">)</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_waveforms</span><span class="p">(</span><span class="s2">&quot;IU&quot;</span><span class="p">,</span><span class="s2">&quot;ANMO&quot;</span><span class="p">,</span><span class="s2">&quot;00&quot;</span><span class="p">,</span><span class="s2">&quot;BHZ&quot;</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">t</span><span class="o">+</span><span class="mi">1440</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+<span class="n">tr</span> <span class="o">=</span> <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">picker</span> <span class="o">=</span> <span class="n">STALTA</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">30</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Plotting</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="c1"># Plot the trace and overlay the picker (on separate axes for easier viewing)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="c1"># Uses output from above example</span>
+<span class="n">ln1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;raw data&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Number of points&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Amplitude&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+
+<span class="c1"># Create picker axis and plot</span>
+<span class="n">ax2</span><span class="o">=</span><span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="c1"># Uses output from above example</span>
+<span class="n">ln2</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">picker</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;picker&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Amplitude&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span><span class="p">)</span>
+
+<span class="c1"># Create combined legend</span>
+<span class="n">lns</span> <span class="o">=</span> <span class="n">ln1</span><span class="o">+</span><span class="n">ln2</span>
+<span class="n">labs</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span><span class="o">.</span><span class="n">get_label</span><span class="p">()</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">lns</span><span class="p">]</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">lns</span><span class="p">,</span><span class="n">labs</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/stalta.png" src="_images/stalta.png" />
+<p class="rubric">References</p>
+<table class="docutils footnote" frame="void" id="id7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>First break picking: multi-purpose STA/LTA trigger algorithm, <a class="reference external" href="http://en.wikipedia.org/wiki/First_break_picking">http://en.wikipedia.org/wiki/First_break_picking</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>“A Comparison of Select Trigger Algorithms for Automated Global Seismic Phase and Event Detection”
+<a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.116.245&amp;rep=rep1&amp;type=pdf">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.116.245&amp;rep=rep1&amp;type=pdf</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id9" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td>Wong, “Automatic time-picking of first arrivals on noisy microseismic data”
+<a class="reference external" href="http://www.crewes.org/ForOurSponsors/ConferenceAbstracts/2009/CSEG/Wong_CSEG_2009.pdf">http://www.crewes.org/ForOurSponsors/ConferenceAbstracts/2009/CSEG/Wong_CSEG_2009.pdf</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id10" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[4]</a></td><td>Wong, GEOPHYSICS, VOL. 75, NO. 4 (JULY-AUGUST 2010); P. V67-V76 Automatic first-breaks picking: New
+strategies and algorithms”. <a class="reference external" href="http://www.fcaglp.unlp.edu.ar/~velis/papers/PickingGeop10.pdf">http://www.fcaglp.unlp.edu.ar/~velis/papers/PickingGeop10.pdf</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id11" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[5]</a></td><td>Wong, “Adaptive microseismic event detection and automatic time picking”
+<a class="reference external" href="http://www.cspg.org/documents/Conventions/Archives/Annual/2012/279_GC2012_Adaptive_Microseismic_Event_Detection.pdf">http://www.cspg.org/documents/Conventions/Archives/Annual/2012/279_GC2012_Adaptive_Microseismic_Event_Detection.pdf</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id12" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[6]</a></td><td>Earle and Shearer, “Characterization of Global Seismograms Using an Automatic-Picking Algorithm” Bulletin of the
+Seismological Society of America, Vol. 84, No. 2, pp. 366-376, April 1994</td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

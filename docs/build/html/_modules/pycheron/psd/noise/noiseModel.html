@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.psd.noise.noiseModel &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html"><span><img src="../../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../../install.html">Install</a></li>
+                <li><a href="../../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.psd.noise.noiseModel</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;noiseModel&#39;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="noiseModel"><a class="viewcode-back" href="../../../../pycheron.psd.noise.noiseModel.html#pycheron.psd.noise.noiseModel.noiseModel">[docs]</a><span class="k">def</span> <span class="nf">noiseModel</span><span class="p">(</span><span class="n">freq</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The noiseModels function returns the New High Noise Model and New Low Noise Model from the Peterson paper.</span>
+<span class="sd">    Values are returned for the specific frequencies specified in the freq argument. [#]_ [#]_ [#]_</span>
+
+<span class="sd">    New Low/High Noise Model in acceleration (referenced to 1 (m/s^2)^2/Hz):</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        NLNM_{acc}/NHNM_{acc} = A + B*\log_{10}(T)</span>
+
+<span class="sd">    where, T = minimum period</span>
+
+<span class="sd">    If velocity desired:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        NLNM_{vel}/NHNM_{vel} = NLNM_{acc} + 20.0\log_{10}(P/2*\pi)</span>
+
+<span class="sd">    Source code to compare:</span>
+<span class="sd">      * https://github.com/g2e/seizmo/blob/master/noise/nlnm.m</span>
+<span class="sd">      * https://github.com/g2e/seizmo/blob/master/noise/nhnm.m</span>
+
+
+<span class="sd">    :param freq: array of frequencies</span>
+<span class="sd">    :type freq: numpy.ndarray</span>
+
+<span class="sd">    :return:</span>
+
+<span class="sd">        * nlnm - low noise model</span>
+<span class="sd">        * nhnm - high noise model</span>
+
+<span class="sd">    :rtype:</span>
+
+<span class="sd">        * numpy.ndarray</span>
+<span class="sd">        * numpy.ndarray</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from pycheron.psd.noise.noiseModel import noiseModel</span>
+<span class="sd">        from pycheron.psd.noise.getNoise import getNoise</span>
+<span class="sd">        from pycheron.psd.psdList import psdList</span>
+
+<span class="sd">        #test data</span>
+<span class="sd">        data = &#39;test/test_data/6e_sp06_ehe.407438.tar.mseed&#39;</span>
+
+<span class="sd">        # reading in stream</span>
+<span class="sd">        st = obspy.read(data)</span>
+
+<span class="sd">        # calculating psds</span>
+<span class="sd">        psds = psdList(st)</span>
+<span class="sd">        # Get instrument corrected psds</span>
+<span class="sd">        f,n,psd = getNoise(psds)</span>
+
+<span class="sd">        freq = f[0]</span>
+<span class="sd">        period = 1/freq</span>
+<span class="sd">        # calculating nhnm, nlnm</span>
+<span class="sd">        nlnm,nhnm = noiseModel(freq)</span>
+
+<span class="sd">    **Plotting**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import matplotlib.pyplot as plt</span>
+
+<span class="sd">        # Normally shown on log xscale need to update</span>
+<span class="sd">        plt.plot(nlnm[::-1])</span>
+<span class="sd">        plt.plot(nhnm[::-1])</span>
+<span class="sd">        plt.title(&#39;Noise Models&#39;)</span>
+<span class="sd">        plt.xlabel(&#39;Period (s)&#39;)</span>
+<span class="sd">        plt.ylabel(&#39;Power (dB)&#39;)</span>
+
+
+<span class="sd">    .. image:: _static/noiseModel.png</span>
+
+<span class="sd">    .. rubric:: References</span>
+
+<span class="sd">    .. [#] Peterson, J, 1993, Observations and Modeling of Seismic Background Noise, U.S.G.S. OFR-93-322</span>
+<span class="sd">    .. [#] McNamara and Buland, 2003, Ambient Noise Levels in the Continental United States</span>
+<span class="sd">           (https://pdfs.semanticscholar.org/ed3a/a907fd7a541c8bfb691ddf896df495c406dc.pdf)</span>
+<span class="sd">    .. [#] McNamara and Boaz, 2005, Seismic Noise Analysis System Using Power Spectral</span>
+<span class="sd">           Density Probability Density Functions: A Stand-Alone Software Package</span>
+<span class="sd">           (https://pubs.usgs.gov/of/2005/1438/pdf/OFR-1438.pdf)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Obtain period from frequency input</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">freq</span>
+
+    <span class="c1"># ------------NLMN---------------------------------------------------------</span>
+    <span class="c1"># Create NLNM table information: minimum period, a, b based on above equation</span>
+    <span class="n">minPeriod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">.</span><span class="mi">10</span><span class="p">,</span> <span class="o">.</span><span class="mi">17</span><span class="p">,</span> <span class="o">.</span><span class="mi">40</span><span class="p">,</span> <span class="o">.</span><span class="mi">80</span><span class="p">,</span> <span class="mf">1.24</span><span class="p">,</span> <span class="mf">2.40</span><span class="p">,</span> <span class="mf">4.30</span><span class="p">,</span> <span class="mf">5.00</span><span class="p">,</span> <span class="mf">6.00</span><span class="p">,</span> <span class="mf">10.00</span><span class="p">,</span> <span class="mf">12.00</span><span class="p">,</span> <span class="mf">15.60</span><span class="p">,</span> <span class="mf">21.90</span><span class="p">,</span> <span class="mf">31.60</span><span class="p">,</span> <span class="mf">45.00</span><span class="p">,</span>
+                          <span class="mf">70.00</span><span class="p">,</span> <span class="mf">101.00</span><span class="p">,</span> <span class="mf">154.00</span><span class="p">,</span> <span class="mf">328.00</span><span class="p">,</span> <span class="mf">600.00</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">100000</span><span class="p">])</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">162.36</span><span class="p">,</span> <span class="o">-</span><span class="mf">166.70</span><span class="p">,</span> <span class="o">-</span><span class="mf">170.00</span><span class="p">,</span> <span class="o">-</span><span class="mf">166.40</span><span class="p">,</span> <span class="o">-</span><span class="mf">168.60</span><span class="p">,</span> <span class="o">-</span><span class="mf">159.98</span><span class="p">,</span> <span class="o">-</span><span class="mf">141.10</span><span class="p">,</span> <span class="o">-</span><span class="mf">71.36</span><span class="p">,</span> <span class="o">-</span><span class="mf">97.26</span><span class="p">,</span> <span class="o">-</span><span class="mf">132.18</span><span class="p">,</span> <span class="o">-</span><span class="mf">205.27</span><span class="p">,</span>
+                  <span class="o">-</span><span class="mf">37.65</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.37</span><span class="p">,</span> <span class="o">-</span><span class="mf">160.58</span><span class="p">,</span> <span class="o">-</span><span class="mf">187.50</span><span class="p">,</span> <span class="o">-</span><span class="mf">216.47</span><span class="p">,</span> <span class="o">-</span><span class="mf">185.00</span><span class="p">,</span> <span class="o">-</span><span class="mf">168.34</span><span class="p">,</span> <span class="o">-</span><span class="mf">217.43</span><span class="p">,</span> <span class="o">-</span><span class="mf">258.28</span><span class="p">,</span> <span class="o">-</span><span class="mf">346.88</span><span class="p">,</span> <span class="o">-</span><span class="mf">346.88</span><span class="p">])</span>
+
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.64</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="o">-</span><span class="mf">8.30</span><span class="p">,</span> <span class="mf">28.90</span><span class="p">,</span> <span class="mf">52.48</span><span class="p">,</span> <span class="mf">29.81</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.77</span><span class="p">,</span> <span class="o">-</span><span class="mf">66.49</span><span class="p">,</span> <span class="o">-</span><span class="mf">31.57</span><span class="p">,</span> <span class="mf">36.16</span><span class="p">,</span> <span class="o">-</span><span class="mf">104.33</span><span class="p">,</span> <span class="o">-</span><span class="mf">47.10</span><span class="p">,</span> <span class="o">-</span><span class="mf">16.28</span><span class="p">,</span>
+                  <span class="mf">0.00</span><span class="p">,</span> <span class="mf">15.70</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="o">-</span><span class="mf">7.61</span><span class="p">,</span> <span class="mf">11.90</span><span class="p">,</span> <span class="mf">26.60</span><span class="p">,</span> <span class="mf">48.75</span><span class="p">,</span> <span class="mf">48.75</span><span class="p">])</span>
+
+    <span class="c1"># Create &quot;breaks&quot; (bins) based on the minimum period, to figure out the appropriate a and b for each period. Return</span>
+    <span class="c1"># indices of the bins to which each value belongs to</span>
+    <span class="n">nlnmBreaks</span> <span class="o">=</span> <span class="n">minPeriod</span>
+    <span class="n">nlnmRows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">nlnmBreaks</span><span class="p">)</span>
+
+    <span class="c1"># Create nlnm using equation NLNMacc = A + B*log10(T) referred to 1 (m/s^2)^2/Hz, where T = period, a and b are</span>
+    <span class="c1"># calculated from above</span>
+    <span class="c1"># Subtract 1 to agree with R code indexing to ensure grabbing the appropriate numbers</span>
+    <span class="n">nlnm</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">nlnmRows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="n">nlnmRows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
+
+    <span class="c1"># If not acceleration use the following equation: NLNMvel/NHNMvel = NLNMacc + 20.0log10(P/2*pi) db ref 1 (m/sec)^2</span>
+
+    <span class="c1"># ------------NHMN---------------------------------------------------------</span>
+    <span class="c1"># Create NHNM table information: minimum period, a, b based on above equation</span>
+    <span class="n">minPeriod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">.</span><span class="mi">10</span><span class="p">,</span> <span class="o">.</span><span class="mi">22</span><span class="p">,</span> <span class="o">.</span><span class="mi">32</span><span class="p">,</span> <span class="o">.</span><span class="mi">80</span><span class="p">,</span> <span class="mf">3.80</span><span class="p">,</span> <span class="mf">4.60</span><span class="p">,</span> <span class="mf">6.30</span><span class="p">,</span> <span class="mf">7.90</span><span class="p">,</span> <span class="mf">15.40</span><span class="p">,</span> <span class="mf">20.00</span><span class="p">,</span> <span class="mf">354.80</span><span class="p">,</span> <span class="mi">100000</span><span class="p">])</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">108.73</span><span class="p">,</span> <span class="o">-</span><span class="mf">150.34</span><span class="p">,</span> <span class="o">-</span><span class="mf">122.31</span><span class="p">,</span> <span class="o">-</span><span class="mf">116.85</span><span class="p">,</span> <span class="o">-</span><span class="mf">108.48</span><span class="p">,</span> <span class="o">-</span><span class="mf">74.66</span><span class="p">,</span> <span class="mf">0.66</span><span class="p">,</span> <span class="o">-</span><span class="mf">93.37</span><span class="p">,</span> <span class="mf">73.54</span><span class="p">,</span> <span class="o">-</span><span class="mf">151.52</span><span class="p">,</span> <span class="o">-</span><span class="mf">206.66</span><span class="p">,</span> <span class="o">-</span><span class="mf">206.66</span><span class="p">])</span>
+
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">17.23</span><span class="p">,</span> <span class="o">-</span><span class="mf">80.50</span><span class="p">,</span> <span class="o">-</span><span class="mf">23.87</span><span class="p">,</span> <span class="mf">32.51</span><span class="p">,</span> <span class="mf">18.08</span><span class="p">,</span> <span class="o">-</span><span class="mf">32.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">127.18</span><span class="p">,</span> <span class="o">-</span><span class="mf">22.42</span><span class="p">,</span> <span class="o">-</span><span class="mf">162.98</span><span class="p">,</span> <span class="mf">10.01</span><span class="p">,</span> <span class="mf">31.63</span><span class="p">,</span> <span class="mf">31.64</span><span class="p">])</span>
+
+    <span class="c1"># Create &quot;breaks&quot; (bins) based on the minimum period, to figure out the appropriate a and b for each period. Return</span>
+    <span class="c1"># indices of the bins to which each value belongs to</span>
+    <span class="n">nhnmBreaks</span> <span class="o">=</span> <span class="n">minPeriod</span>
+    <span class="n">nhnmRows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">nhnmBreaks</span><span class="p">)</span>
+
+    <span class="c1"># Create nhnm using equation NHNMacc = A + B*log10(T) referred to 1 (m/s^2)^2/Hz, where T = period, a and b are</span>
+    <span class="c1"># calculated from above</span>
+    <span class="c1"># Subtract 1 to agree with R code indexing to ensure grabbing the appropriate numbers</span>
+    <span class="n">nhnm</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">nhnmRows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="n">nhnmRows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">nlnm</span><span class="p">,</span> <span class="n">nhnm</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

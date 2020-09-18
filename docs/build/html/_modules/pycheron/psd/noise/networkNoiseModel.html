@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.psd.noise.networkNoiseModel &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html"><span><img src="../../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../../install.html">Install</a></li>
+                <li><a href="../../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.psd.noise.networkNoiseModel</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">obspy</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">pycheron.db.sqllite_db</span> <span class="k">import</span> <span class="n">Database</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.psdList</span> <span class="k">import</span> <span class="n">psdList</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.psdStatistics</span> <span class="k">import</span> <span class="n">psdStatistics</span>
+
+<span class="kn">from</span> <span class="nn">pycheron.util.logger</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.getSta</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.getChannel</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.format</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;ggplot&#39;</span><span class="p">)</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;networkNoiseModel&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="networkNoiseModel"><a class="viewcode-back" href="../../../../pycheron.psd.noise.networkNoiseModel.html#pycheron.psd.noise.networkNoiseModel.networkNoiseModel">[docs]</a><span class="k">def</span> <span class="nf">networkNoiseModel</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">evalresp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates Network Noise Model for network.</span>
+
+<span class="sd">    :param st: Stream of data that includes stations from network. Recommended that length &gt; 1 Week</span>
+<span class="sd">                OR Database object</span>
+<span class="sd">    :type st: obspy.core.stream.Stream or pycheron.db.sqllite_db.Database</span>
+<span class="sd">    :param plot: To plot or not (Default = False)</span>
+<span class="sd">    :type plot: bool</span>
+<span class="sd">    :param fname: If plotting at want to save the output</span>
+<span class="sd">    :type fname: bool</span>
+<span class="sd">    :param evalresp: IRIS evalresp file or array</span>
+<span class="sd">    :type evalresp: numpy.ndarray</span>
+<span class="sd">    :param network: If using database, **must** supply the network</span>
+<span class="sd">    :type network: str</span>
+<span class="sd">    :param station: If using database, and want to use specific stations for noise model</span>
+<span class="sd">    :type station: str</span>
+<span class="sd">    :param channel: If using database, and want to use specific channels for noise model</span>
+<span class="sd">    :type channel: str</span>
+<span class="sd">    :param session: specific session in database</span>
+<span class="sd">    :type session: str</span>
+<span class="sd">    :param database: Database object to save to</span>
+<span class="sd">    :type database: pycheron.db.sqllite_db.Database</span>
+<span class="sd">    :param logger: Logger object</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+<span class="sd">    :param location: If using database, and want to use specific location for noise model</span>
+<span class="sd">    :type location: str</span>
+
+<span class="sd">    :return:</span>
+
+<span class="sd">        * Dataframe of Network Noise Model from all \*\*E/\*\*N Stations</span>
+<span class="sd">        * Dataframe of Network Noise Model from all \*\*Z Stations</span>
+
+<span class="sd">    :rtype: dict</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from pycheron.psd.noise.networkNoiseModel import networkNoiseModel</span>
+<span class="sd">        from obspy import UTCDateTime</span>
+<span class="sd">        from obspy.clients.fdsn import Client</span>
+
+<span class="sd">        client = Client(&quot;IRIS&quot;)</span>
+<span class="sd">        t = UTCDateTime(&quot;2017-09-10T00:00:00&quot;)</span>
+<span class="sd">        te = UTCDateTime(&quot;2017-09-11T00:00:00&quot;)</span>
+<span class="sd">        st = client.get_waveforms(&quot;AG&quot;, &quot;*&quot;, &quot;*&quot;, &quot;*&quot;, t, te)</span>
+
+<span class="sd">        model = networkNoiseModel(st)</span>
+
+<span class="sd">    **Plotting**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import matplotlib.pyplot as plt</span>
+
+<span class="sd">        # uses output from above example</span>
+<span class="sd">        plt.semilogx(model[&quot;enModel&quot;], &#39;orangered&#39;, label=&quot;E/N Network Model&quot;)</span>
+
+<span class="sd">        plt.semilogx(model[&quot;zModel&quot;], &#39;c&#39;, label=&quot;Z Network Model&quot;)</span>
+
+<span class="sd">        plt.xlabel(&quot;Period&quot;)</span>
+<span class="sd">        plt.ylabel(&quot;Power(dB)&quot;)</span>
+<span class="sd">        plt.title(&quot;Noise Model for Network: &quot; + st[0].get_id().split(&quot;.&quot;)[0])</span>
+<span class="sd">        plt.grid(True, &quot;both&quot;, &quot;both&quot;)</span>
+<span class="sd">        plt.legend()</span>
+
+<span class="sd">    .. image:: _static/networkNoiseModel.png</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Initiate empty pandas dataframes</span>
+    <span class="n">df_sta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">dfz_sta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="n">noise_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">mode_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">snclq_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># If dealing with obspy stream, get unique stations and network name, then loop through stations</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">obspy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">Stream</span><span class="p">):</span>
+        <span class="n">sta</span> <span class="o">=</span> <span class="n">getUniqSta</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Loop through unique stations</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sta</span><span class="p">)):</span>
+            <span class="c1"># Obtain all traces in stream that match the specified station</span>
+            <span class="n">stN</span> <span class="o">=</span> <span class="n">getSta</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">sta</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="c1"># get psds for subset stream object and calculate psd statistics</span>
+
+            <span class="n">network</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">quality</span> <span class="o">=</span> <span class="n">parse_snclq</span><span class="p">(</span><span class="n">stN</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_id</span><span class="p">())</span>
+
+            <span class="c1"># If database object, check to see if we already have the psds calculated</span>
+            <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
+                <span class="n">tb</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">get_metric</span><span class="p">(</span><span class="s2">&quot;psdMetric&quot;</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="n">network</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
+                                         <span class="n">location</span><span class="o">=</span><span class="n">location</span><span class="p">,</span>
+                                         <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+
+                <span class="c1"># if returns no data, calculate and insert into db</span>
+                <span class="k">if</span> <span class="n">tb</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="n">psds</span> <span class="o">=</span> <span class="n">psdList</span><span class="p">(</span><span class="n">stN</span><span class="p">)</span>
+                    <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">psds</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tb_psds</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">uncorrected_psds</span><span class="p">[</span><span class="n">tb</span><span class="o">.</span><span class="n">channel</span> <span class="o">==</span> <span class="n">channel</span><span class="p">]</span>
+                    <span class="n">psds</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tb_psds</span><span class="p">)):</span>
+                        <span class="n">psd</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">extract_masks</span><span class="p">(</span><span class="n">tb_psds</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                        <span class="n">psds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psd</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">psds</span> <span class="o">=</span> <span class="n">psdList</span><span class="p">(</span><span class="n">stN</span><span class="p">)</span>
+
+
+            <span class="n">stats</span> <span class="o">=</span> <span class="n">psdStatistics</span><span class="p">(</span><span class="n">psds</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span> <span class="p">,</span><span class="n">evalresp</span><span class="o">=</span><span class="n">evalresp</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
+            <span class="c1"># get period where freq &lt; 10Hz</span>
+            <span class="n">sta_n</span> <span class="o">=</span> <span class="n">sta</span>
+            <span class="c1"># Again, why are we limiting the period/frequency to less than 10 Hz here?</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">per</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">psds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># per = 1 / psds[0][0][0][np.where(psds[0][0][0] &lt; 10)]</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">sta_n</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">continue</span>
+            <span class="c1"># get NLNM where freq &lt; 10Hz</span>
+            <span class="n">nlnm</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;nlnm&quot;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">per</span><span class="p">)]</span>
+            <span class="c1"># get channels for df  index</span>
+            <span class="n">chan</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># extract each channel modes</span>
+            <span class="n">df_chan</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="n">dfz_chan</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">)):</span>
+                <span class="c1"># getting mode for each channel</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">mode</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s2">&quot;mode&quot;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">per</span><span class="p">)]</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">chan</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">getChannelName</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s2">&quot;snclq&quot;</span><span class="p">]))</span>
+                <span class="c1"># adding modes to df</span>
+                <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">mode</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mode</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                <span class="n">df_chan</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># adding indexes</span>
+            <span class="n">df_chan</span><span class="p">[</span><span class="s2">&quot;snclq&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan</span>
+            <span class="n">df_chan</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">df_chan</span><span class="p">[</span><span class="s2">&quot;snclq&quot;</span><span class="p">])</span>
+            <span class="n">df_chan</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;snclq&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># creating copy of df, so wont get index error as I am dropping Z channels</span>
+            <span class="n">df_chan_copy</span> <span class="o">=</span> <span class="n">df_chan</span>
+            <span class="c1"># loop through to find z channel</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_chan</span><span class="o">.</span><span class="n">index</span><span class="p">)):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">):</span>
+                    <span class="c1"># make z channel have own df</span>
+                    <span class="n">dfz_chan</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                    <span class="c1"># drop z channel from E/N df</span>
+                    <span class="n">df_chan_copy</span> <span class="o">=</span> <span class="n">df_chan_copy</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="n">name</span><span class="p">])</span>
+            <span class="c1"># reassigning the df with dropped Z channels to original df</span>
+            <span class="n">df_chan</span> <span class="o">=</span> <span class="n">df_chan_copy</span>
+            <span class="c1"># getting the mean between E/N station modes</span>
+            <span class="n">mode_sta_en</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="c1"># adding values to final network df</span>
+            <span class="k">if</span> <span class="n">mode_sta_en</span><span class="o">.</span><span class="n">empty</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">df_sta2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">mode_sta_en</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mode_sta_en</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">,</span>
+                                       <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">sta</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+                <span class="n">df_sta</span> <span class="o">=</span> <span class="n">df_sta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_sta2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dfz_chan</span><span class="o">.</span><span class="n">empty</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">dfz_sta2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">dfz_chan</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dfz_chan</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">sta</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+                <span class="n">dfz_sta</span> <span class="o">=</span> <span class="n">dfz_sta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dfz_sta2</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">database</span> <span class="o">=</span> <span class="n">st</span>
+        <span class="n">tb</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">get_metric</span><span class="p">(</span><span class="s2">&quot;psdMetric&quot;</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="n">network</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
+                                 <span class="n">location</span><span class="o">=</span><span class="n">location</span><span class="p">,</span>
+                                 <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">tb</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;networkNoiseModel Error: No psdMetric found for specific network in Database, please run psdMetric first&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">sta</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tb</span><span class="o">.</span><span class="n">station</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sta</span><span class="p">)):</span>
+            <span class="n">station</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">tb</span><span class="o">.</span><span class="n">station</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="n">tb_psds</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">uncorrected_psds</span><span class="p">[</span><span class="n">tb</span><span class="o">.</span><span class="n">station</span> <span class="o">==</span> <span class="n">station</span><span class="p">]</span>
+            <span class="n">chan_psds</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tb_psds</span><span class="p">)):</span>
+                <span class="n">psd</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">extract_masks</span><span class="p">(</span><span class="n">tb_psds</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                <span class="n">chan_psds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psd</span><span class="p">)</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="n">psdStatistics</span><span class="p">(</span><span class="n">chan_psds</span><span class="p">,</span> <span class="n">evalresp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
+
+            <span class="c1"># get period where freq &lt; 10Hz</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chan_psds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">per</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">freq</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="c1"># del sta_n[i]</span>
+                <span class="k">continue</span>
+            <span class="c1"># get NLNM where freq &lt; 10Hz</span>
+            <span class="c1"># get NLNM where freq &lt; 10Hz</span>
+            <span class="n">nlnm</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;nlnm&quot;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">per</span><span class="p">)]</span>
+            <span class="c1"># get channels for df  index</span>
+            <span class="n">chan</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># extract each channel modes</span>
+            <span class="n">df_chan</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="n">dfz_chan</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">)):</span>
+                <span class="c1"># getting mode for each channel</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">mode</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s2">&quot;mode&quot;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">per</span><span class="p">)]</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">chan</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">getChannelName</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s2">&quot;snclq&quot;</span><span class="p">]))</span>
+                <span class="c1"># adding modes to df</span>
+                <span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">mode</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mode</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">)</span>
+                <span class="n">df_chan</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># adding indexes</span>
+            <span class="n">df_chan</span><span class="p">[</span><span class="s2">&quot;snclq&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan</span>
+
+
+            <span class="c1"># creating copy of df, so wont get index error as I am dropping Z channels</span>
+            <span class="n">df_chan_copy</span> <span class="o">=</span> <span class="n">df_chan</span>
+            <span class="c1"># loop through to find z channel</span>
+
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_chan</span><span class="o">.</span><span class="n">index</span><span class="p">)):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">snclq</span>
+                <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">):</span>
+                    <span class="c1"># make z channel have own df</span>
+                    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">df_chan</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_chan</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">))</span> <span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">df_chan</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+                    <span class="n">dfz_chan</span> <span class="o">=</span> <span class="n">dfz_chan</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="c1"># drop z channel from E/N df</span>
+                    <span class="n">df_chan_copy</span> <span class="o">=</span> <span class="n">df_chan_copy</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="c1"># reassigning the df with dropped Z channels to original df</span>
+            <span class="n">df_chan</span> <span class="o">=</span> <span class="n">df_chan_copy</span>
+
+            <span class="n">df_chan</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">df_chan</span><span class="p">[</span><span class="s2">&quot;snclq&quot;</span><span class="p">])</span>
+            <span class="n">df_chan</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;snclq&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">dfz_chan</span> <span class="o">=</span> <span class="n">dfz_chan</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">dfz_chan</span><span class="p">[</span><span class="s2">&quot;snclq&quot;</span><span class="p">])</span>
+            <span class="n">dfz_chan</span> <span class="o">=</span> <span class="n">dfz_chan</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;snclq&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="c1"># getting the mean between E/N station modes</span>
+                <span class="n">mode_sta_en</span> <span class="o">=</span> <span class="n">df_chan</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mode_sta_en</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dfz_chan</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="n">mode_sta_z</span> <span class="o">=</span> <span class="n">dfz_chan</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mode_sta_z</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+            <span class="c1"># adding values to final network df</span>
+            <span class="k">if</span> <span class="n">mode_sta_en</span><span class="o">.</span><span class="n">empty</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">df_sta2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">mode_sta_en</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mode_sta_en</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">,</span>
+                                       <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">station</span><span class="p">])</span>
+                <span class="n">df_sta</span> <span class="o">=</span> <span class="n">df_sta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_sta2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dfz_chan</span><span class="o">.</span><span class="n">empty</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">dfz_sta2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">mode_sta_z</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mode_sta_z</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="n">per</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">station</span><span class="p">])</span>
+                <span class="n">dfz_sta</span> <span class="o">=</span> <span class="n">dfz_sta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dfz_sta2</span><span class="p">)</span>
+
+            <span class="c1"># adding mode, noise matrix, and snclq data to list for out dict</span>
+            <span class="n">noise_tmp</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">mode_tmp</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">snclq_tmp</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">)):</span>
+                <span class="n">noise_tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s2">&quot;noise_matrix_frequency&quot;</span><span class="p">])</span>
+                <span class="n">mode_tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s2">&quot;mode&quot;</span><span class="p">])</span>
+                <span class="n">snclq_tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="s2">&quot;snclq&quot;</span><span class="p">])</span>
+
+            <span class="n">noise_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">noise_tmp</span><span class="p">)</span>
+            <span class="n">mode_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mode_tmp</span><span class="p">)</span>
+            <span class="n">snclq_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snclq_tmp</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">df_sta</span><span class="o">.</span><span class="n">empty</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="c1"># Get difference between station values and nlnm</span>
+        <span class="n">df_diff</span> <span class="o">=</span> <span class="n">df_sta</span> <span class="o">-</span> <span class="n">nlnm</span>
+        <span class="c1"># Remove stations with mode value differences &gt;-80 db</span>
+        <span class="n">df_diff_bool</span> <span class="o">=</span> <span class="n">df_diff</span><span class="p">[</span><span class="n">df_diff</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">80</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Convert back to a dataframe</span>
+        <span class="n">df_diff_bool</span> <span class="o">=</span> <span class="n">df_diff_bool</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+        <span class="c1"># Get index where values = True</span>
+        <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df_diff_bool</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># If inds is not empty, then drop rows in df_sta where df_diff_bool is True using index</span>
+        <span class="k">if</span> <span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">df_sta</span> <span class="o">=</span> <span class="n">df_sta</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">dfz_sta</span><span class="o">.</span><span class="n">empty</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="c1"># Get difference between station values and nlnm</span>
+        <span class="n">dfz_diff</span> <span class="o">=</span> <span class="n">dfz_sta</span> <span class="o">-</span> <span class="n">nlnm</span>
+        <span class="c1"># Remove stations with mode value differences &gt;-80 db</span>
+        <span class="n">dfz_diff_bool</span> <span class="o">=</span> <span class="n">dfz_diff</span><span class="p">[</span><span class="n">dfz_diff</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">80</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Convert back to a dataframe</span>
+        <span class="n">dfz_diff_bool</span> <span class="o">=</span> <span class="n">dfz_diff_bool</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+        <span class="c1"># Get index where values = True</span>
+        <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dfz_diff_bool</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># If inds is not empty then drop rows in dfz_sta where dfz_diff_bool is True using the index</span>
+        <span class="k">if</span> <span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">dfz_sta</span> <span class="o">=</span> <span class="n">dfz_sta</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># Create E/N network noise model (&quot;enModel&quot;) and Z network noise model (&quot;zModel&quot;) based on mean of remaining</span>
+    <span class="c1"># stations within output dictionary</span>
+    <span class="n">df_sta_out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">df_sta_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">df_sta</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+    <span class="n">df_sta_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">df_sta</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+
+    <span class="n">dfz_sta_out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">dfz_sta_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">dfz_sta</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+    <span class="n">dfz_sta_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">dfz_sta</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+
+
+
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;enModel&quot;</span><span class="p">:</span> <span class="n">df_sta_out</span><span class="p">,</span> <span class="s2">&quot;zModel&quot;</span><span class="p">:</span> <span class="n">dfz_sta_out</span><span class="p">,</span>
+           <span class="s2">&quot;stations_en&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_sta</span><span class="o">.</span><span class="n">index</span><span class="p">),</span> <span class="s2">&quot;stations_z&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">dfz_sta</span><span class="o">.</span><span class="n">index</span><span class="p">),</span>
+           <span class="s2">&quot;metric_name&quot;</span><span class="p">:</span> <span class="s2">&quot;networkNoiseModel&quot;</span><span class="p">,</span> <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span>
+           <span class="s2">&quot;psdStats&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">:</span> <span class="n">noise_matrix</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="n">mode_list</span><span class="p">,</span> <span class="s2">&quot;snclq&quot;</span><span class="p">:</span> <span class="n">snclq_list</span><span class="p">}}</span>
+
+    <span class="k">if</span> <span class="n">plot</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;enModel&quot;</span><span class="p">],</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;E/N Network Model&quot;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;zModel&quot;</span><span class="p">],</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Z Network Model&quot;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Period&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Power(dB)&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Noise Model for Network: &quot;</span> <span class="o">+</span> <span class="n">network</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">fname</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+
+            <span class="n">update</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;network_noise_image_path&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">}</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">update</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">Database</span><span class="p">)</span> <span class="ow">or</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

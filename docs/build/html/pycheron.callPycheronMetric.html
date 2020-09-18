@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.callPycheronMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">pycheron.callPycheronMetric</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="module-pycheron.callPycheronMetric">
+<span id="pycheron-callpycheronmetric"></span><h1>pycheron.callPycheronMetric<a class="headerlink" href="#module-pycheron.callPycheronMetric" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pycheron.callPycheronMetric.callPycheron">
+<code class="descname">callPycheron</code><span class="sig-paren">(</span><em>output_dir</em>, <em>data</em>, <em>datatype='dir'</em>, <em>calcAll=True</em>, <em>calcPsds=False</em>, <em>calcBasic=False</em>, <em>calcCorr=False</em>, <em>calcCrossCorr=False</em>, <em>calcGap=False</em>, <em>calcAmp=False</em>, <em>calcSNR=False</em>, <em>calcSOH=False</em>, <em>calcStalta=False</em>, <em>calcDcOffset=False</em>, <em>calcSpikes=False</em>, <em>calcAllDeadChan=False</em>, <em>calcTransfer=False</em>, <em>calcCal=False</em>, <em>network=None</em>, <em>station=None</em>, <em>byDay=True</em>, <em>startdate=None</em>, <em>enddate=None</em>, <em>jul_start=None</em>, <em>jul_end=None</em>, <em>generateMasks=False</em>, <em>masksByTime=True</em>, <em>rmsThreshold=50000</em>, <em>maxThreshold=None</em>, <em>minThreshold=None</em>, <em>medianThreshold=None</em>, <em>meanThreshold=None</em>, <em>varianceThreshold=None</em>, <em>stdThreshold=None</em>, <em>maxLagSecs=10</em>, <em>filt='lowpass'</em>, <em>freqmin=1.0</em>, <em>freqmax=100.0</em>, <em>corners=4</em>, <em>zerophase=False</em>, <em>maxorder=None</em>, <em>ba=False</em>, <em>freq_passband=False</em>, <em>windowSecs=1800</em>, <em>incrementSecs=None</em>, <em>threshold=0.9</em>, <em>separateMasks=True</em>, <em>completeDay=True</em>, <em>expLoPeriod=None</em>, <em>expHiPeriod=100</em>, <em>linLoPeriod=None</em>, <em>linHiPeriod=50</em>, <em>evalresp=None</em>, <em>dcExpThreshold=0.3</em>, <em>pctBelowNoiseThreshold=20</em>, <em>pctAboveNoiseThreshold=20</em>, <em>dcLinThreshold=2</em>, <em>num_gaps=10</em>, <em>pctBelowNoiseThresholdRESP=90</em>, <em>pctAboveNoiseThresholdRESP=90</em>, <em>minRep=10</em>, <em>algorithmSNR='splitWindow'</em>, <em>windowSecsSNR=60</em>, <em>snrThreshold=2</em>, <em>data_quality=False</em>, <em>activity=False</em>, <em>io_clock=False</em>, <em>windowSize=41</em>, <em>thresholdSpikes=10</em>, <em>selectivity=None</em>, <em>fixedThreshold=True</em>, <em>staSecs=3</em>, <em>ltaSecs=30</em>, <em>increment=1</em>, <em>algorithmSTA='classic_LR'</em>, <em>plots=True</em>, <em>pdfModel='gsn'</em>, <em>per_arr=None</em>, <em>showNoiseModel=True</em>, <em>showMaxMin=False</em>, <em>showMode=False</em>, <em>showMean=False</em>, <em>showMedian=True</em>, <em>showEnvelope=True</em>, <em>envelopeType='10_90'</em>, <em>showSingle=False</em>, <em>singleType=None</em>, <em>min_stations=5</em>, <em>rank_by=None</em>, <em>processesPSD=7</em>, <em>processesSpikes=7</em>, <em>log='pycheron.log'</em>, <em>fortran=True</em>, <em>timespan='all'</em>, <em>dcADF_win_size=500</em>, <em>dcADF_pval_thresh=0.01</em>, <em>dcADF_threshold=1.5</em>, <em>dcADF_use_thresh='pvalue'</em>, <em>dcMean_win_size=None</em>, <em>dcMean_thresh=0.05</em>, <em>cal_metric_store=None</em>, <em>dcExpThresholdHour=0.25</em>, <em>dcLinThresholdHour=2</em>, <em>byHourOn=False</em>, <em>database='pycheron.db'</em>, <em>session='None'</em>, <em>overwrite=True</em>, <em>to_csv=False</em>, <em>stationStartAt=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/callPycheronMetric.html#callPycheron"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.callPycheronMetric.callPycheron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pycheron wrapper script that runs the entire program. See the <a class="reference internal" href="tutorials.html"><span class="doc">Tutorials</span></a> for an in
+depth tutorial of usage.</p>
+<p><strong>General</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_dir</strong> (<em>string</em>) – Path to location where top level &lt;network_dir&gt; will be saved</li>
+<li><strong>data</strong> – <p>Data to be processed. Currently supports:</p>
+<ul>
+<li>MSEED: (str) Path to single .mseed file</li>
+<li>Wfdisc: (str) Path to .wfdisc file</li>
+<li>Stream: Obspy Stream Object</li>
+<li><dl class="first docutils">
+<dt>Directory: (str) Path to directory of multiple .mseed files. With filename format:</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">&lt;station&gt;_&lt;channel&gt;_&lt;julian</span> <span class="pre">day&gt;.mseed</span></code>. Use <a class="reference internal" href="pycheron.util.format.html"><span class="doc">pycheron.util.format</span></a> to format
+data correctly.</dd>
+</dl>
+</li>
+</ul>
+</li>
+<li><strong>datatype</strong> (<em>str</em>) – <p>The data type of parameter <em>data</em>.</p>
+<ul>
+<li>”mseed”: Use if <em>data</em> is single .mseed file</li>
+<li>”stream”: Use if <em>data</em> is Obspy Stream Object</li>
+<li>”wfdisc”: Use if <em>data</em> is path to .wfdisc file</li>
+<li>”dir”: Use if <em>data</em> is path to directory.</li>
+</ul>
+</li>
+<li><strong>calcAll</strong> (<em>bool</em>) – Calculate all metrics. If set to False, individual metrics will be ran based on
+parameters <code class="docutils literal notranslate"><span class="pre">calc&lt;Metric&gt;</span></code>.</li>
+<li><strong>network</strong> (<em>str</em>) – Network of stations. <strong>Note:</strong> Parameter required when using wfdic format.</li>
+<li><strong>station</strong> (<em>str</em>) – Specify station to process. <strong>Note:</strong> Only used if parameter <em>data</em> is wfdisc format.</li>
+<li><strong>byDay</strong> (<em>bool</em>) – Split data up by days into Stream (1 stream/day). This is useful if you want to avoid computer
+memory issues. Note: Only used if parameter <em>data</em> is wfdisc format or directory.</li>
+<li><strong>startdate</strong> (<em>str</em>) – Specific startdate. Used to slice Stream for specific time range. Format <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span> <span class="pre">HH:MM:SS</span></code></li>
+<li><strong>enddate</strong> (<em>str</em>) – Specific startdate. Used to slice Stream for specific time range. Format <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span> <span class="pre">HH:MM:SS</span></code></li>
+<li><strong>jul_start</strong> (<em>int</em>) – Julian start date of data. This is only used when parameter <em>datatype</em> is <code class="docutils literal notranslate"><span class="pre">&quot;dir&quot;</span></code> or. It will
+speed up file aggregtion, instead of looping and searching through a range of 365. It can also be
+used for when parameter <em>datatype</em> is <code class="docutils literal notranslate"><span class="pre">&quot;wfdisc&quot;</span></code> for selecting which date to start running on
+for a specific station.</li>
+<li><strong>jul_end</strong> (<em>int</em>) – Julian end date of data. This is only used when parameter <em>datatype</em> is <code class="docutils literal notranslate"><span class="pre">&quot;dir&quot;</span></code>. It will speed up
+file aggregtion, instead of looping and searching through a range of 365.</li>
+<li><strong>generateMasks</strong> (<em>bool</em>) – Generate QC Masks. If True, masks will be generated when a value exceeds threshold
+parameters.</li>
+<li><strong>masksByTime</strong> (<em>bool</em>) – If masks are generated, the output mask will be in time if True, else it will be a binary mask.</li>
+<li><strong>log</strong> (<em>str</em>) – If filename is input, then a logger will be output, (<code class="docutils literal notranslate"><span class="pre">Default</span> <span class="pre">=</span> <span class="pre">&quot;pycheron.log&quot;</span></code>)</li>
+<li><strong>fortran</strong> (<em>bool</em>) – Use Fortran libs or not. <strong>Note:</strong> If libs will not compile or on a Windows Machine, set to False.</li>
+<li><strong>database</strong> (<em>str</em>) – If database filename defined, a db will be created (<code class="docutils literal notranslate"><span class="pre">Default</span> <span class="pre">=</span> <span class="pre">&quot;pycheron.db&quot;</span></code>)</li>
+<li><strong>session</strong> (<em>str</em>) – Session name in database. Used for grouping different runs/experiments (<code class="docutils literal notranslate"><span class="pre">Default</span> <span class="pre">=</span> <span class="pre">&quot;None&quot;</span></code>).
+<strong>Note:</strong> the defualt is a String <code class="docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code>, not <code class="docutils literal notranslate"><span class="pre">None</span></code> (python Null). Do <strong>NOT</strong> set it
+<code class="docutils literal notranslate"><span class="pre">None</span></code> (python Null), otherwise it will not be able to filter correctly.</li>
+<li><strong>overwrite</strong> (<em>bool</em>) – If set to True, entries of the same snclq and start/end time will be overwritten.</li>
+<li><strong>to_csv</strong> (<em>bool</em>) – If set to true, database will output to csv files.</li>
+<li><strong>stationStartAt</strong> (<em>str</em>) – <strong>WFDISC ONLY</strong> Specify the station to start processing at, instead of at the beginning of
+the wfidisc file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>basicMetricStats</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcBasic</strong> (<em>bool</em>) – Calculates basicStatsMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>rmsThreshold</strong> (<em>int</em>) – QC Mask threshold for RMS in basicStats.</li>
+<li><strong>maxThreshold</strong> (<em>int</em>) – QC Mask threshold for Max in basicStats.</li>
+<li><strong>minThreshold</strong> (<em>int</em>) – QC Mask threshold for Min in basicStats.</li>
+<li><strong>medianThreshold</strong> (<em>int</em>) – QC Mask threshold for Median in basicStats.</li>
+<li><strong>meanThreshold</strong> (<em>int</em>) – QC Mask threshold for Mean in basicStats.</li>
+<li><strong>varianceThreshold</strong> (<em>int</em>) – QC Mask threshold for Variance in basicStats.</li>
+<li><strong>stdThreshold</strong> (<em>int</em>) – QC Mask threshold for STD in basicStats.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>correlationMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calcCorr</strong> (<em>bool</em>) – Calculates correlationMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Parameters for crossCorrMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcCrossCorr</strong> (<em>bool</em>) – Calculates crossCorrelationMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>maxLagSecs</strong> (<em>int</em>) – Maximum number of seconds of lag to use in crossCorrMetric. (Default = 10)</li>
+<li><strong>filt</strong> (<em>str</em>) – <p>Filter to use in crossCorrMetric. Current supported filters:</p>
+<ul>
+<li>bandpass</li>
+<li>bandstop</li>
+<li>enevelope</li>
+<li>highpass</li>
+<li>integer_decimation</li>
+<li>lowpass</li>
+<li>lowpass_cheby_2</li>
+</ul>
+<p>For more in-depth explaination of filters. Please see <a class="reference internal" href="pycheron.metrics.crossCorrMetric.html"><span class="doc">pycheron.metrics.crossCorrMetric</span></a></p>
+</li>
+<li><strong>freqmin</strong> (<em>int</em>) – Depending on the filter specified in parameter <em>filt</em> for crossCorrMetric, either pass band low
+corner frequency (bandpass, bandstop), filter corner frequency (lowpass), or the frequency
+above which signals are attenuated with 95 dB.</li>
+<li><strong>freqmax</strong> (<em>int</em>) – Depending on the filter specified in :param filt for crossCorrMetric, either passband high
+corner frequency (bandpass, bandstop), or filter corner frequency (highpass)</li>
+<li><strong>corners</strong> (<em>int</em>) – Filter corners/order for crossCorrMetric.</li>
+<li><strong>zerophase</strong> (<em>bool</em>) – If True, applies filter once forward and once backwards in crossCorrMetric. This results
+in twice the filter order but zero phase shift in the resulting filtered trace.</li>
+<li><strong>maxorder</strong> (<em>int</em>) – Maximal order of designed cheby2 filter in crossCorrMetric. <strong>Note:</strong> option for lowpass_cheby2
+only.</li>
+<li><strong>ba</strong> (<em>bool</em>) – If True, returns only the filter coefficients (b,a) instead of filtering. <strong>Note:</strong> option for
+lowpass_cheby2 only.</li>
+<li><strong>freq_passband</strong> (<em>bool</em>) – If True, return additionally to the filtered data, then iteratively determine the
+pass band frequency. <strong>Note:</strong> option for lowpass_cheby2 only.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DCOffSetTimesMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcDcOffset</strong> (<em>bool</em>) – Calculates DCOffSetTimesMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>windowSecs</strong> (<em>int</em>) – Chunk size (secs) used in DCOffset calculations</li>
+<li><strong>incrementSecs</strong> (<em>int</em>) – Increment (secs) for starttime of sequential chunks (Default = windowSecs/2)</li>
+<li><strong>threshold</strong> (<em>int</em>) – Threshold used in the detection metric</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>gapMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcGap</strong> (<em>bool</em>) – Calculates gapMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>separateMasks</strong> (<em>bool</em>) – If True, 2 masks will be create. 1 for gaps, and 1 for overlaps, if False these masks
+will be merged and 3 masks will be returned. Gaps, Overlaps, Combined.</li>
+<li><strong>completeDay</strong> (<em>bool</em>) – If True, if an individual day is does not start at 00:00:00 or end at 23:59:59, a small
+trace will be made to complete the day. This should be used if, for example, have only
+6 hours of data, but would like to consider that 6 hours out of a whole day, thus gaps
+would be found and masks would be created around that segment of data.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>psdMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcPsds</strong> (<em>bool</em>) – Calculates PSDS individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>expLoPeriod</strong> (<em>int</em>) – Low end of the period band used for calculating the exponential dead channel detector
+(<code class="docutils literal notranslate"><span class="pre">Default=</span> <span class="pre">4/trace</span> <span class="pre">sampling</span> <span class="pre">rate</span></code>)</li>
+<li><strong>expHiPeriod</strong> (<em>int</em>) – High end of the period band used for calculating the exponential dead channel detector</li>
+<li><strong>linLoPeriod</strong> (<em>int</em>) – Low end of the period band used for calculating the linear dead channel detector
+(<code class="docutils literal notranslate"><span class="pre">Default=</span> <span class="pre">16/trace</span> <span class="pre">sampling</span> <span class="pre">rate</span></code>)</li>
+<li><strong>linHiPeriod</strong> (<em>int</em>) – High end of the period band used for calculating the linear dead channel detector</li>
+<li><strong>evalresp</strong> (<em>str</em><em> or </em><em>numpy.ndarray</em>) – Response information obtained from numpy.ndarray of freq, amp, phase information matching output
+of <code class="docutils literal notranslate"><span class="pre">client.evalresp</span></code>, optional for <code class="docutils literal notranslate"><span class="pre">psdStatistics</span></code>. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, will pull from
+<code class="docutils literal notranslate"><span class="pre">client.evalresp</span></code>. Also accepts str path to RESP files</li>
+<li><strong>dcExpThreshold</strong> (<em>float</em>) – Dead channel exponent threshold.</li>
+<li><strong>pctBelowNoiseThreshold</strong> (<em>int</em>) – Percent below NLNM threshold.</li>
+<li><strong>pctAboveNoiseThreshold</strong> (<em>int</em>) – Percent above NLNM threshold.</li>
+<li><strong>dcLinThreshold</strong> (<em>int</em>) – Dead channel linear threshold.</li>
+<li><strong>num_gaps</strong> (<em>int</em>) – Number of gaps threshold.</li>
+<li><strong>pctBelowNoiseThresholdRESP</strong> (<em>int</em>) – Percent below NLNM for bad response threshold.</li>
+<li><strong>pctAboveNoiseThresholdRESP</strong> (<em>int</em>) – Percent above NLNM for bad response threshold.</li>
+<li><strong>processesPSD</strong> (<em>int</em>) – Number of processes to run. The max number of processes that can be run is
+equal to the length of the Stream. Not recommended to go above 7 processes.</li>
+<li><strong>dcExpThresholdHour</strong> (<em>int</em>) – dead channel exponent hourly threshold. Only used if <code class="docutils literal notranslate"><span class="pre">byHourOn</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code></li>
+<li><strong>dcLinThresholdHour</strong> (<em>int</em>) – dead channel linear hourly threshold. Only used if <code class="docutils literal notranslate"><span class="pre">byHouron</span></code> set to <code class="docutils literal notranslate"><span class="pre">True</span></code></li>
+<li><strong>byHourOn</strong> (<em>bool</em>) – Turn on hourly thresholding checks for <code class="docutils literal notranslate"><span class="pre">dead_channel_exponential</span></code>, <code class="docutils literal notranslate"><span class="pre">dead_channel_linear</span></code>,
+and dead_channel_gsn checks</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>repeatedAmplitudeMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcAmp</strong> (<em>bool</em>) – Calculates repeatedAmplitudeMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>minRep</strong> (<em>int</em>) – minimum number of repeated adjacent values in a series, &gt; 1.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>snrMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcSNR</strong> (<em>bool</em>) – (bool) Calculates snrMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>. (Default = False)</li>
+<li><strong>algorithmSNR</strong> (<em>str</em>) – <p>A named algorithm to use for calculating SNR. Options include:</p>
+<ul>
+<li>’splitWindow’</li>
+<li>’staltaTrigger’</li>
+<li>’pick’</li>
+</ul>
+<p>Please see <a class="reference internal" href="pycheron.metrics.snrMetric.html"><span class="doc">pycheron.metrics.snrMetric</span></a> for more detailed descriptions of algorithms.</p>
+</li>
+<li><strong>windowSecsSNR</strong> (<em>int</em>) – Width (secs) of the full window used in SNR calculation</li>
+<li><strong>snrThreshold</strong> (<em>int</em>) – SNR threshold at which if above, value would be masked.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>sohMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcSOH</strong> (<em>bool</em>) – Calculates sohMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>data_quality</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, only the data quality flags are returned.</li>
+<li><strong>activity</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, only the activity flags are returned.</li>
+<li><strong>io_clock</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, only the io/clock flags are returned.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>spikesMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcSpikes</strong> (<em>bool</em>) – Calculates spikesMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>windowSize</strong> (<em>int</em>) – Size of window to be used (e.g., window size to roll over)</li>
+<li><strong>thresholdSpikes</strong> (<em>int</em>) – Initial threshold value for outlier detection</li>
+<li><strong>selectivity</strong> (<em>float</em>) – <code class="docutils literal notranslate"><span class="pre">[0-1]</span></code> Used in determining outliers, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if <code class="docutils literal notranslate"><span class="pre">fixedThreshold</span> <span class="pre">=</span> <span class="pre">True</span></code></li>
+<li><strong>fixedThreshold</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, set the threshold = threshold and ignore selectivity. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, then
+the threshold is set to the maximum value of the hampel/hampelFilter function
+output multiplied by the selectivity</li>
+<li><strong>processesSpikes</strong> (<em>int</em>) – Number of processes to bring up. Not recommended to go above 7 on personal machines.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>staltaMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcStalta</strong> (<em>bool</em>) – Calculates staltaMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>staSecs</strong> (<em>int</em>) – Length of short term averaging window in secs</li>
+<li><strong>ltaSecs</strong> (<em>int</em>) – Length of long term averaging window in secs</li>
+<li><strong>increment</strong> (<em>int</em>) – Increment (in secs) used when sliding the average windows to the next location</li>
+<li><strong>algorithmSTA</strong> (<em>str</em>) – <p>Algorithm to be used. Currently supported algorithms include (for more information see
+references below and STALTA function docstrings):</p>
+<ul>
+<li>Classic_RR</li>
+<li>Classic_LR</li>
+<li>EarleAndShearer_envelope</li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Parameters for deadChannelMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calcAllDeadChan</strong> (<em>bool</em>) – Calculates deadChannelMetric, deanChanADF, and deadChanMeanMetric individually.
+<strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>deadChanADFMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dcADF_win_size</strong> (<em>int</em>) – window size to increment the data by in samples, each window will have a ADF run on it
+(<code class="docutils literal notranslate"><span class="pre">DEFAULT</span> <span class="pre">=</span> <span class="pre">500</span></code>, assumes 100sps). If None, window size determined by sample rate of each
+trace in the stream object</li>
+<li><strong>dcADF_pval_thresh</strong> (<em>float</em>) – p value threshold to trigger ADF rejection of null hypothesis (e.g., time series is
+assumed stationary with rejection of null hypothesis)</li>
+<li><strong>dcADF_threshold</strong> (<em>float</em>) – threshold to trigger ADF rejection of null hypothesis using difference between DF test statistic
+and 1% critical value</li>
+<li><strong>dcADF_use_thresh</strong> (<em>float</em>) – String option for choosing whether to use the pvalue_threshold or the threshold for
+determining whether null hypothesis fails (DEFAULT = pvalue). Options are pvalue or
+diffs.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>deadChanMeanMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dcMean_win_size</strong> (<em>int</em>) – number of samples to use for windowing. When <code class="docutils literal notranslate"><span class="pre">None</span></code>, determines the number
+of samples to use based on the sample rate</li>
+<li><strong>dcMean_thresh</strong> (<em>float</em>) – threshold to trigger deadChan for within rolling window. Recommended
+to keep this default value for triggered a dead channel</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>transferFunctionMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calcTransfer</strong> (<em>bool</em>) – Calculates transferFunctionMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>calibrationMetric</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calcCal</strong> (<em>bool</em>) – Calculates scalibrationMetric individually. <strong>Note:</strong> CalcAll must be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>cal_metric_store</strong> – (Default = None)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>plots</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>plots</strong> (<em>bool</em>) – (bool) If True, plots will be created. This will slow down the program considerably. It is
+recommended to use the bulk plotting functions once calculations are complete.</li>
+<li><strong>pdfModel</strong> (<em>str</em>) – <p>Noise Model. Supports:</p>
+<ul>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;gsn&quot;</span></code> - Global Seismic Network 2004</li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;nlnm&quot;</span></code> - New Low Noise Model</li>
+</ul>
+</li>
+<li><strong>per_arr</strong> (<em>numpy.array</em><em> or </em><em>list</em>) – Period array for PDF Mode Colorline plot. If none, periods will be:
+<code class="docutils literal notranslate"><span class="pre">[.1,</span> <span class="pre">1.0,</span> <span class="pre">6.5,</span> <span class="pre">10,</span> <span class="pre">30.8,</span> <span class="pre">103.7]</span></code>.</li>
+<li><strong>showNoiseModel</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, display noise models on the plot</li>
+<li><strong>showMaxMin</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, display max and min on the plot</li>
+<li><strong>showMode</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, display mode on the plot</li>
+<li><strong>showMean</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, display mean on the plot</li>
+<li><strong>showMedian</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, display median on the plot</li>
+<li><strong>showEnvelope</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, percentile envelope will be plotted</li>
+<li><strong>envelopeType</strong> (<em>bool</em>) – <p>Envelope to be plotted. Options:</p>
+<ul>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;10_90&quot;</span></code> - 10th and 90th percentile envelope</li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;05_95&quot;</span></code> - 5th annd 95th percentile envelope</li>
+</ul>
+</li>
+<li><strong>showSingle</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, plot single percentile.</li>
+<li><strong>singleType</strong> (<em>bool</em>) – <p>Single line percentile to be plotted. Options:</p>
+<ul>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;5&quot;</span></code> - 5th percentile</li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;10&quot;</span></code> - 10th percentile</li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;90&quot;</span></code> - 90th percentile</li>
+<li><code class="docutils literal notranslate"><span class="pre">&quot;95&quot;</span></code> - 95th percentile</li>
+</ul>
+</li>
+<li><strong>min_stations</strong> (<em>int</em>) – Minimum number of stations to have calculated before Station Ranking Plots will be
+plotted.</li>
+<li><strong>rank_by</strong> (<em>numpy.array</em><em> or </em><em>list</em>) – Array of periods to rank by in Station Ranking Plots. If None, periods will be
+<code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">6.5,</span> <span class="pre">30,</span> <span class="pre">100]</span></code></li>
+<li><strong>timespan</strong> (<em>int</em><em> or </em><em>string</em>) – Select the timespan for psd/pdf plots. Options are <code class="docutils literal notranslate"><span class="pre">1</span></code> (week), <code class="docutils literal notranslate"><span class="pre">2</span></code> (weeks), <code class="docutils literal notranslate"><span class="pre">4</span></code> (weeks).
+Any other option will defualt to plotting all psds (<code class="docutils literal notranslate"><span class="pre">Default=&quot;All&quot;</span></code>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

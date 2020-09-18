@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.psdMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.metrics.psdMetric</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;psdMetric&#39;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.psdList</span> <span class="k">import</span> <span class="n">psdList</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.psdStatistics</span> <span class="k">import</span> <span class="n">psdStatistics</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.getUniqueIds</span> <span class="k">import</span> <span class="n">getUniqueIds</span>
+<span class="kn">from</span> <span class="nn">pycheron.sigpro.unHistogram</span> <span class="k">import</span> <span class="n">unHistogram</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">pycheron.metrics.basicStatsMetric</span> <span class="k">import</span> <span class="n">basicStatsMetric</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">pycheron.util.logger</span> <span class="k">as</span> <span class="nn">Logger</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.masks</span> <span class="k">import</span> <span class="n">samples2time</span>
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="psdMetric"><a class="viewcode-back" href="../../../pycheron.metrics.psdMetric.html#pycheron.metrics.psdMetric.psdMetric">[docs]</a><span class="k">def</span> <span class="nf">psdMetric</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">expLoPeriod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">expHiPeriod</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">linLoPeriod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">linHiPeriod</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">evalresp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">generateMasks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dcExpThreshold</span><span class="o">=.</span><span class="mi">3</span><span class="p">,</span> <span class="n">dcExpThresholdHour</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">pctBelowNoiseThreshold</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+              <span class="n">pctAboveNoiseThreshold</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">rmsThreshold</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">dcLinThreshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dcLinThresholdHour</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_gaps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+              <span class="n">pctBelowNoiseThresholdRESP</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">pctAboveNoiseThresholdRESP</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="mi">6</span>
+              <span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fortran</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">masksByTime</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">byHourOn</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs a spectral analysis on seismic traces within stream object and returns PSD metrics.</span>
+
+<span class="sd">    :param st: obspy stream object</span>
+<span class="sd">    :type st: obspy.core.stream.Stream</span>
+<span class="sd">    :param expLoPeriod: Low end of the period band used for calculating the exponential dead channel detector (default = 4/trace sampling rate)</span>
+<span class="sd">    :type expLoPeriod: int</span>
+<span class="sd">    :param expHiPeriod: High end of the period band used for calculating the exponential dead channel detector</span>
+<span class="sd">    :type expHiPeriod: int</span>
+<span class="sd">    :param linLoPeriod: Low end of the period band used for calculating the linear dead channel detector (default = 4/trace sampling rate)</span>
+<span class="sd">    :type linLoPeriod: int</span>
+<span class="sd">    :param linHiPeriod: High end of the period band used for calculating the linear dead channel detector</span>
+<span class="sd">    :type linHiPeriod: int</span>
+<span class="sd">    :param evalresp: Response information obtained from numpy.ndarray of freq, amp, phase information</span>
+<span class="sd">                     matching output of client.evalresp, optional for psdStatistics. If None, will pull from</span>
+<span class="sd">                     `client.evalresp`</span>
+<span class="sd">    :type evalresp: numpy.ndarray</span>
+<span class="sd">    :param generateMasks: If True, boolean masks will be generated</span>
+<span class="sd">    :type generateMasks: bool</span>
+<span class="sd">    :param dcExpThreshold: Dead channel exponent threshold</span>
+<span class="sd">    :type dcExpThreshold: int</span>
+<span class="sd">    :param dcExpThresholdHour: Dead channel exponent hourly threshold. Only used if byHourOn is True</span>
+<span class="sd">    :type dcExpThresholdHour: int</span>
+<span class="sd">    :param pctBelowNoiseThreshold: Percent below NLNM threshold</span>
+<span class="sd">    :type pctBelowNoiseThreshold: int</span>
+<span class="sd">    :param pctAboveNoiseThreshold: Percent above NLNM threshold</span>
+<span class="sd">    :type pctAboveNoiseThreshold: int</span>
+<span class="sd">    :param pctBelowNoiseThresholdRESP: Percent below NLNM for bad response threshold</span>
+<span class="sd">    :type pctBelowNoiseThresholdRESP: int</span>
+<span class="sd">    :param pctAboveNoiseThresholdRESP: Percent above NLNM for bad response threshold.</span>
+<span class="sd">    :type pctAboveNoiseThresholdRESP: int</span>
+<span class="sd">    :param rmsThreshold: RMS threshold</span>
+<span class="sd">    :type rmsThreshold: int</span>
+<span class="sd">    :param dcLinThreshold: Dead channel linear threshold</span>
+<span class="sd">    :type dcLinThreshold: int</span>
+<span class="sd">    :param dcLinThresholdHour: Dead channel linear hourly threshold. Only used if byHouron set to True</span>
+<span class="sd">    :type dcLinThresholdHour: int</span>
+<span class="sd">    :param num_gaps: Number of gaps threshold.</span>
+<span class="sd">    :type num_gaps: int</span>
+<span class="sd">    :param processes: Number of processes to use for calculation. 6 is the recommendation for personal desktop computer.</span>
+<span class="sd">    :type processes: int</span>
+<span class="sd">    :param logger: logger object</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+<span class="sd">    :param fortran: Use Fortran libs or not. If libs will not compile or on a Windows Machine, set to False</span>
+
+<span class="sd">    :type fortran: bool</span>
+<span class="sd">    :param masksByTime: Boolean to determine whether masks are generated by time. If True, masks will be</span>
+<span class="sd">                                    generated with a start/end time, if false, they will be generated as boolean array.</span>
+<span class="sd">    :type masksByTime: bool</span>
+<span class="sd">    :param byHourOn: Turn on hourly thresholding checks for dead_channel_exponential, dead_channel_linear,</span>
+<span class="sd">                                 and dead_channel_gsn checks</span>
+<span class="sd">    :type byHourOn: bool</span>
+<span class="sd">    :param database: database object</span>
+<span class="sd">    :type database: pycheron.db.sqllite_db.Database</span>
+
+<span class="sd">    :return: List of dictionaries containing the following keys and types:</span>
+
+<span class="sd">                   * start_time (`str`)</span>
+<span class="sd">                   * end_time (`str`)</span>
+<span class="sd">                   * snclq (`str`)</span>
+<span class="sd">                   * percent_above_nhnm (`float`)</span>
+<span class="sd">                   * percent_below_nlnm (`float`)</span>
+<span class="sd">                   * dead_channel_exponent (`float`)</span>
+<span class="sd">                   * dead_channel_linear (`float`)</span>
+<span class="sd">                   * dead_channel_gsn (`bool`)</span>
+<span class="sd">                   * uncorrected_psds (`list`)</span>
+<span class="sd">                   * corrected_psds (`pandas.DataFrame`)</span>
+<span class="sd">                   * pdfs (`pandas.DataFrame`)</span>
+<span class="sd">                   * metric_name (`str`)</span>
+<span class="sd">                   * dc_mask (`numpy.ndarray`)</span>
+<span class="sd">                   * low_amp_mask (`numpy.ndarray`)</span>
+<span class="sd">                   * noise1_mask (`numpy.ndarray`)</span>
+<span class="sd">                   * noise2_mask (`numpy.ndarray`)</span>
+<span class="sd">                   * hi_amp_mask (`numpy.ndarray`)</span>
+<span class="sd">                   * bad_resp_mask (`numpy.ndarray`)</span>
+
+
+<span class="sd">    The following additional entries are included when byDayHourOn is `True`:</span>
+<span class="sd">        * dead_channel_exponent_hourly (`list`)</span>
+<span class="sd">        * dead_channel_linear_hourly (`list`)</span>
+<span class="sd">        * dead_channel_gsn_hourly (`list`)</span>
+<span class="sd">        * dead_chan_exp_hourly_masks (`numpy.ndarray`)</span>
+<span class="sd">        * dead_chan_lin_hourly_masks (`numpy.ndarray`)</span>
+<span class="sd">        * dead_chan_gsn_hourly_masks (`numpy.ndarray`)</span>
+
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    **Detailed Return Values:**</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">        :widths: 25 25 25 45</span>
+<span class="sd">        :header-rows: 1</span>
+
+<span class="sd">        * - Key</span>
+<span class="sd">          - Value</span>
+<span class="sd">          - Type</span>
+<span class="sd">          - Details</span>
+<span class="sd">        * - starttime</span>
+<span class="sd">          - trace start time</span>
+<span class="sd">          - `str`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - endtime</span>
+<span class="sd">          - trace end time</span>
+<span class="sd">          - `str`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - snclq</span>
+<span class="sd">          - Station.Network.Channel.Location.Quality</span>
+<span class="sd">          - `str`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - pct_above_nhnm</span>
+<span class="sd">          - percent above new high noise model</span>
+<span class="sd">          - `float`</span>
+<span class="sd">          - Percentage of PSD values that are above the new High Noise model for their frequency. Only frequencies less than</span>
+<span class="sd">            `sample_rate`/2 are considered to avoid instrument response effects as you approach the nyquist frequency. This</span>
+<span class="sd">            value is calculated over the entire time period</span>
+<span class="sd">        * - pct_below_nlnm</span>
+<span class="sd">          - percent below new low noise model</span>
+<span class="sd">          - `float`</span>
+<span class="sd">          - Percentage of PSD values that are below the new low noise model for their frequency. Only frequencies less than</span>
+<span class="sd">            `sample_rate`/2 are considered to avoid instrument response effects as you approach the nyquist frequency. This</span>
+<span class="sd">            value is calculated over the entire time period</span>
+<span class="sd">        * - dead_channel_exponent</span>
+<span class="sd">          - dead channel metric exponential fit</span>
+<span class="sd">          - `float`</span>
+<span class="sd">          -  A &quot;dead channel&quot; metric is calculated from the mean of all the PSDs generated (typically 47 for a 24 hour period).</span>
+<span class="sd">             Values of the PSD mean line over the band (expLoPeriod:expHiPeriod) are fit to an exponential.</span>
+<span class="sd">             The `dead_channel_exp metric` is the standard deviation of the fit residuals. Lower numbers indicate a better fit</span>
+<span class="sd">             and a higher likelihood that the mean PSD is exponential -- an indication of a &quot;dead channel&quot;</span>
+<span class="sd">        * - dead_channel_exponent_hourly</span>
+<span class="sd">          - dead channel metric exponential fit for each hour PSD</span>
+<span class="sd">          - `list`</span>
+<span class="sd">          -  A &quot;dead channel&quot; metric is calculated from each hourly PSD generated (typically 47 for a 24 hour</span>
+<span class="sd">             period). Values of the PSD line over the band (expLoPeriod:expHiPeriod (defaults to 1 at high period band) are</span>
+<span class="sd">             fit to an exponential. The `dead_channel_exp metric` is the standard deviation of the fit residuals (RMS error).</span>
+<span class="sd">             Lower numbers indicate a better fit and a higher likelihood that the mean PSD is exponential -- an indication</span>
+<span class="sd">             of a &quot;dead channel&quot;</span>
+<span class="sd">        * - dead_channel_linear</span>
+<span class="sd">          - dead channel metric linear fit</span>
+<span class="sd">          - `float`</span>
+<span class="sd">          - A &quot;dead channel&quot; metric is calculated from the mean of all the PSDs generated (typically 47 for a 24 hour</span>
+<span class="sd">            period). Values of the PSD mean line over the band (linLoPeriod:linHiPeriod) are fit to a line. The</span>
+<span class="sd">            dead_channel_lin metric is the standard deviation of the fit residuals. Lower numbers indicate a better fit and</span>
+<span class="sd">            a higher likelihood that the mean PSD is linear -- an indication of a &quot;dead channel&quot;</span>
+<span class="sd">        * - dead_channel_linear_hourly</span>
+<span class="sd">          - dead channel metric linear fit for each hour PSD</span>
+<span class="sd">          - `list`</span>
+<span class="sd">          - A &quot;dead channel&quot; metric is calculated from each of all the PSDs generated (typically 47 for a 24 hour</span>
+<span class="sd">            period). Values of the PSD line over the band (linLoPeriod:linHiPeriod) are fit to a line. The</span>
+<span class="sd">            dead_channel_lin metric is the standard deviation of the fit residuals (RMS error). Lower numbers indicate a</span>
+<span class="sd">            better fit and a higher likelihood that the mean PSD is linear -- an indication of a &quot;dead channel&quot;</span>
+<span class="sd">        * - dead_channel_gsn</span>
+<span class="sd">          - dead channel metric gsn fit</span>
+<span class="sd">          - `bool`</span>
+<span class="sd">          - Boolean metric using &#39;0&#39; or &#39;1&#39; to indicate if the average median deviation below the NLNM is sufficient to</span>
+<span class="sd">            label channel as dead or not. If average &gt; 5.0, mark dead_channel_gsn value = 1 (TRUE) (dead), else</span>
+<span class="sd">            mark value = 0 (FALSE) (not dead).</span>
+<span class="sd">        * - dead_channel_gsn_hourly</span>
+<span class="sd">          - dead channel metric gsn fit for each hour PSD</span>
+<span class="sd">          - `list`</span>
+<span class="sd">          - Boolean metric using &#39;0&#39; or &#39;1&#39; to indicate if the average median deviation below the NLNM is sufficient to</span>
+<span class="sd">            label channel as dead or not for each hourly PSD. If average &gt; 5.0, mark dead_channel_gsn value = 1 (TRUE)</span>
+<span class="sd">            (dead), else mark value = 0 (FALSE) (not dead).</span>
+<span class="sd">        * - uncorrected_psds</span>
+<span class="sd">          - list of uncorrected PSDs for each trace in stream as output from the psdList function</span>
+<span class="sd">          - `list`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - corrected_psds</span>
+<span class="sd">          - dataframe of starttime, endtime, frequency (Hz), power (dB) values of corrected PSDs</span>
+<span class="sd">          - `pandas.DataFrame`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - pdfs</span>
+<span class="sd">          - dataframe of frequency (Hz), hits (count), power (dB), and power_mode (dB) values for PDFs. Power mode is used</span>
+<span class="sd">            for the creation of colorgrids</span>
+<span class="sd">          - `pandas.DataFrame`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - metric_name</span>
+<span class="sd">          - name of metric</span>
+<span class="sd">          - `str`</span>
+<span class="sd">          - psdMetric</span>
+<span class="sd">        * - dc_mask</span>
+<span class="sd">          - dead channel mask (corresponds to `dead_channel_exp` &lt; `dcExpThreshold` and `avg_pctBelow` &gt; `pctBelowNoiseThreshold`)</span>
+<span class="sd">          - `numpy.ndarray`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - low_amp_mask</span>
+<span class="sd">          - low amplitude mask (corresponds to `dead_channel_exp` &gt;= `dcExpThreshold` and `avg_pctBelow` &gt; `pctBelowNoiseThreshold`)</span>
+<span class="sd">          - `numpy.ndarray`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - noise1_mask</span>
+<span class="sd">          - noise mask 1 (corresponds to `dead_channel_exp` &lt; `dcExpThreshold` and `avg_pctAbove` &gt; `pctAboveNoiseThreshold`)</span>
+<span class="sd">          - `numpy.ndarray`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - noise2_mask</span>
+<span class="sd">          - noise mask 2 (corresponds to `dead_channel_lin` &lt; `dcLinThreshold` and `avg_pctBelow` &lt;=</span>
+<span class="sd">            `pctBelowNoiseThreshold` and `gaps` &lt; `num_gaps`)</span>
+<span class="sd">          - `numpy.ndarray`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - hi_amp_mask</span>
+<span class="sd">          - high amplitude mask (corresponds to `rms` &gt; `rmsThreshold` and `avg_pctAbove` &gt; `pctAboveNoiseThreshold`)</span>
+<span class="sd">          - `numpy.ndarray`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - bad_resp_mask</span>
+<span class="sd">          - bad response mask (corresponds to `avg_pctAbove` &gt; `pctAboveNoiseThresholdRESP` or</span>
+<span class="sd">            `avg_pctBelow` &gt; `pctBelowNoiseThresholdRESP`</span>
+<span class="sd">          - `numpy.ndarray`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - dead_chan_exp_hourly_masks</span>
+<span class="sd">          - dead channel exponential hourly masks, masks generated when `dead_channel_exp_hou` &lt;= `dcExpThresholdHour`</span>
+<span class="sd">          - `numpy.ndarray`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - dead_chan_lin_hourly_masks</span>
+<span class="sd">          - dead channel linear hourly masks, masks generated when `dead_channel_lin_hour` &lt;= `dcLinThresholdHour`</span>
+<span class="sd">          - `numpy.ndarray`</span>
+<span class="sd">          -</span>
+<span class="sd">        * - dead_chan_gsn_hourly_masks</span>
+<span class="sd">          - dead channel gsn hourly masks, masks generated when `dead_channel_gsn_hour` == 1</span>
+<span class="sd">          - `numpy.ndarray`</span>
+<span class="sd">          -</span>
+
+<span class="sd">    **Methodology:**</span>
+
+<span class="sd">    #. Divide trace into Z-hour segments with 50% overlap</span>
+
+<span class="sd">    #. For each Z-hour segment</span>
+
+<span class="sd">       * Truncate segment to nearest power of 2 samples</span>
+<span class="sd">       * Generate an averages/smoothed PSD as follows</span>
+
+<span class="sd">         * Divide each truncated Z-hour segment into 13 segments with 75% overlap (Z/4 seconds length each)</span>
+<span class="sd">         * For each of the 13 segments</span>
+
+<span class="sd">           * Demean</span>
+<span class="sd">           * Detrend</span>
+<span class="sd">           * Apply 10% cosine taper</span>
+<span class="sd">           * FFT</span>
+<span class="sd">           * PSD</span>
+<span class="sd">           * Normalize the power at each PSD frequency, multiplying it by (2*dt/Nseg), where Nseg is the # of</span>
+<span class="sd">             samples in the segment</span>
+
+<span class="sd">         * Average the 13 resulting PSDs to get averaged PSD</span>
+<span class="sd">         * Multiply averaged PSD by 10% cosine taper scale factor (= 1.142857)</span>
+<span class="sd">         * Frequency smooth the averaged PSD over 1-octave intervals at 1/8 octave increments (reducing # freq samples</span>
+<span class="sd">           by a factor of 169; include 0.1 Hz as one of the geometric mean f values to sync f sampling)</span>
+<span class="sd">         * Store the smoothed, averaged Z-hour PSD</span>
+
+<span class="sd">    **Data Structure**</span>
+
+<span class="sd">    .. code-block:: console</span>
+
+<span class="sd">      [</span>
+<span class="sd">        trace 1 in stream {</span>
+<span class="sd">            start_time: starttime,</span>
+<span class="sd">            end_time: endtime,</span>
+<span class="sd">            snclq: snclq,</span>
+<span class="sd">            percent_above_nhnm: avg_pctAbove,</span>
+<span class="sd">            percent_below_nlnm: avg_pctBelow,</span>
+<span class="sd">            dead_channel_exponent: dead_channel_exp,</span>
+<span class="sd">            dead_channel_linear: dead_channel_lin,</span>
+<span class="sd">            dead_channel_gsn: dead_channel_gsn,</span>
+<span class="sd">            uncorrected_psds: [</span>
+<span class="sd">                psd 1 [</span>
+<span class="sd">                    [frequency array],</span>
+<span class="sd">                    [psd array],</span>
+<span class="sd">                    [snclq],</span>
+<span class="sd">                    starttime,</span>
+<span class="sd">                    endtime</span>
+<span class="sd">                ],</span>
+<span class="sd">                psd 2 [</span>
+<span class="sd">                    [frequency array],</span>
+<span class="sd">                    [psd array],</span>
+<span class="sd">                    [snclq],</span>
+<span class="sd">                    starttime,</span>
+<span class="sd">                    endtime</span>
+<span class="sd">                ],</span>
+<span class="sd">                .</span>
+<span class="sd">                .</span>
+<span class="sd">                .</span>
+<span class="sd">                psd 47 [</span>
+<span class="sd">                    ...</span>
+<span class="sd">                ]</span>
+<span class="sd">            ],</span>
+<span class="sd">            corrected_psds: DataFrame,</span>
+<span class="sd">            pdfs: DataFrame,</span>
+<span class="sd">            metric_name: &quot;psdMetric&quot;,</span>
+<span class="sd">            dc_mask: dcMask,</span>
+<span class="sd">            low_amp_mask: lowAmpMask,</span>
+<span class="sd">            noise1_mask: noise1Mask,</span>
+<span class="sd">            noise2_mask: noise2Mask,</span>
+<span class="sd">            hi_amp_mask: hiAmpMask,</span>
+<span class="sd">            bad_resp_mask: badRESPMask</span>
+<span class="sd">        },</span>
+<span class="sd">        trace 2 in stream{</span>
+<span class="sd">            ...</span>
+<span class="sd">        }</span>
+<span class="sd">      ]</span>
+
+
+<span class="sd">    **Examples**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        #test data</span>
+<span class="sd">        data = &#39;test/test_data/7a_cabn_bhe.884965.tar.mseed&#39;</span>
+<span class="sd">        #reading in stream</span>
+<span class="sd">        st = obspy.read(data)</span>
+<span class="sd">        #setting parameters</span>
+<span class="sd">        expLoPeriod=None #Default</span>
+<span class="sd">        expHiPeriod=100 #Default</span>
+<span class="sd">        linLoPeriod=None #Default</span>
+<span class="sd">        linHiPeriod=50 #Default</span>
+<span class="sd">        evalresp=None</span>
+<span class="sd">        #calculating metrics</span>
+<span class="sd">        psd = psdMetric(st, expLoPeriod, expHiPeriod, linLoPeriod, linHiPeriod,evalresp)</span>
+
+<span class="sd">        #print out example entries for the metrics,</span>
+<span class="sd">        print &#39;Startime:&#39;, psd[0][&#39;start_time&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; Startime: 2013-11-01T00:00:00.000000Z</span>
+<span class="sd">        print &#39;Endtime:&#39;, psd[0][&#39;end_time&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; Endtime: 2013-11-02T00:00:10.225000Z</span>
+<span class="sd">        print &#39;SNCLQ:&#39;, psd[0][&#39;snclq&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; SNCLQ: 7A.CABN..BHE</span>
+<span class="sd">        print &#39;Percent_above_nhnm:&#39;, psd[0][&#39;percent_above_nhnm&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; Percent_above_nhnm: 14.940378770166003</span>
+<span class="sd">        print &#39;Percent_below_nlnm:&#39;, psd[0][&#39;percent_below_nlnm&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; Percent_above_nhnm: 14.940378770166003</span>
+<span class="sd">        print &#39;Dead_Channel_Exponent:&#39;, psd[0][&#39;dead_channel_exponent&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; Dead_Channel_Exponent: 0.43778437537150205</span>
+<span class="sd">        print &#39;Dead_Channel_Linear:&#39;, psd[0][&#39;dead_channel_linear&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; Dead_Channel_Linear: 5.880220527414604</span>
+<span class="sd">        print &#39;Dead_Channel_GSN:&#39;, psd[0][&#39;dead_channel_gsn&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; Dead_Channel_GSN: 0</span>
+<span class="sd">        print psd[0] # output not shown for brevity</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Error check for empty stream objects</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">st</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;psdMetric(): stopping PSD calculation because stream is empty&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Use psdList() function to apply the McNamara algorithm and compute some basic stats with the psdStatistics()</span>
+    <span class="c1"># function</span>
+    <span class="c1"># Note: All details about choosing window sizes, etc. are done in the psdList function</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">psds</span> <span class="o">=</span> <span class="n">psdList</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">fortran</span><span class="o">=</span><span class="n">fortran</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;psdMetric(): psdList Completed&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">psds</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">evalresp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="n">psdStatistics</span><span class="p">(</span><span class="n">psds</span><span class="p">,</span> <span class="n">evalresp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="n">psdStatistics</span><span class="p">(</span><span class="n">psds</span><span class="p">,</span> <span class="n">evalresp</span><span class="o">=</span><span class="n">evalresp</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;psdMetric(): No PSDS Computed&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="c1"># Check if stats is empty, if so exit</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">stats</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;psdMetric(): Stats empty, exiting&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Determine if more than one SNCLQ in stream object. Only searching through first segment, as other segments should</span>
+    <span class="c1"># have snclq, i.e., 47 segments per SNCLQ</span>
+    <span class="n">snclq</span> <span class="o">=</span> <span class="n">getUniqueIds</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+
+
+    <span class="c1"># get number of gaps for masks</span>
+    <span class="n">gaps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">get_gaps</span><span class="p">())</span>
+
+    <span class="c1"># get rms for masks</span>
+    <span class="n">basicStats</span> <span class="o">=</span> <span class="n">basicStatsMetric</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">rmsThreshold</span><span class="o">=</span><span class="n">rmsThreshold</span><span class="p">)</span>
+    <span class="n">rms</span> <span class="o">=</span> <span class="n">basicStats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;rms&#39;</span><span class="p">]</span>
+
+    <span class="c1"># These SNCLQ checks exist in R, I don&#39;t think we need these as our code can handle more than one SNCLQ object in</span>
+    <span class="c1"># stream as written</span>
+    <span class="c1"># if len(snclq) &gt; 1:</span>
+    <span class="c1">#     ids = snclq</span>
+    <span class="c1">#     errorMsg = &#39;PSDMetric Error: More than one SNCLQ in stream %s&#39; % (ids)</span>
+    <span class="c1">#     sys.exit(errorMsg)</span>
+    <span class="c1"># else:</span>
+    <span class="c1">#     snclq = str(snclq[0])</span>
+
+    <span class="c1"># Do another check to verify obtained PSDs from psdList -- use the implicit booleanness of the empty list</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">psds</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;psdMetric(): No PSD returned for stream object containing </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">snclq</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Loop through psd stats and grab out useful metadata information, such as starttime, endtime, sampling rate.</span>
+    <span class="c1"># Essentially, if there is more than one snclq in the stream object this will loop through the various corresponding</span>
+    <span class="c1"># stats/psds and utilize the appropriate ones. Also calculates the expLo/linLoPeriods based on the appropriate</span>
+    <span class="c1"># streams</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">)):</span>
+        <span class="c1"># initialize masks</span>
+        <span class="n">dcMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">lowAmpMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">noise1Mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">noise2Mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">hiAmpMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">badRESPMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">dcExpByHourMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">dcLinByHourMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">dcGSNByHourMask</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">starttime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+        <span class="n">endtime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+        <span class="n">snclq_tr</span> <span class="o">=</span> <span class="n">snclq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">trStats</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">un_psds</span> <span class="o">=</span> <span class="n">psds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">samplingRate</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="k">if</span> <span class="n">expLoPeriod</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">expLoPeriod</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">/</span> <span class="n">samplingRate</span>
+        <span class="k">if</span> <span class="n">linLoPeriod</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">linLoPeriod</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">/</span> <span class="n">samplingRate</span>
+
+        <span class="c1"># pctAbove, pctBelow are functions of frequency returned by psdStats</span>
+        <span class="c1"># Note, we only use frequencies less than nyquist/1.5 when calculating avg_pctAbove and avg_pctBelow</span>
+        <span class="c1"># due to instrument response effects on PSD power as you approach the nyquist (= sample rate/2)</span>
+        <span class="c1"># This is reasonable for most cases, excluding older seismometers that may</span>
+        <span class="c1"># have relied upon anti-alias filters. We do not seek to accommodate these at this point in time.</span>
+
+        <span class="n">nyquist</span> <span class="o">=</span> <span class="n">samplingRate</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">avg_pctAbove</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;Percent_above_NHNM&#39;</span><span class="p">][</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">nyquist</span> <span class="o">/</span> <span class="mf">1.5</span><span class="p">])</span>
+        <span class="n">avg_pctBelow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;Percent_below_NLNM&#39;</span><span class="p">][</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">nyquist</span> <span class="o">/</span> <span class="mf">1.5</span><span class="p">])</span>
+
+        <span class="c1"># Dead Channel Exponential fit metric</span>
+        <span class="c1"># The dead_channel_exponential metric is calculated by fitting the PSD mean line as seen in a PDF plot to an</span>
+        <span class="c1"># exponential and calculating the standard deviation of the residuals.</span>
+        <span class="c1"># The mean of a healthy set of PSDs will have a very non-exponential shape and large residuals while a</span>
+        <span class="c1"># &quot;dead channel&quot; (aka digitizer noise) will have a PSD mean that appears as an exponential decay as a function</span>
+        <span class="c1"># of log10(period).</span>
+        <span class="c1"># The dead_channel_exp metric looks for an overall exponential decay regardless of the frequency range of the</span>
+        <span class="c1"># detector. As the frequency bands will be sensor specific because of the calculation in the psdList() function,</span>
+        <span class="c1"># we can by with just lopping an integer number of bands rather than specifying a band pass region we want.</span>
+        <span class="c1"># IRIS says this algorithm is purely heuristic and resulted from a visual assessment of PDF plots of channels</span>
+        <span class="c1"># known to be &quot;dead&quot;.</span>
+        <span class="c1"># The dead_channel_exp and dead_channel_lin metrics are not valid for LH? or VH? channels</span>
+        <span class="c1">#</span>
+        <span class="c1"># Exp fit steps:</span>
+        <span class="c1">#   1) Determine index range (inverted because of freq-&gt;period conversion)</span>
+        <span class="c1">#   2) Convert band from PSD mean to positive, non-zero values</span>
+        <span class="c1">#   3) Fit log10(PSD mean) vs. log10(period) to a line</span>
+        <span class="c1">#   4) Calculate the standard deviation of residuals of the fit (How close to exponential is the PSD mean line?)</span>
+
+        <span class="c1"># Convert frequency to period</span>
+        <span class="n">period</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Determine index range of period values that are greater than or equal to expHiPeriod and less than or equal</span>
+        <span class="c1"># to expLoPeriod.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;=</span> <span class="n">expHiPeriod</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">byHourOn</span><span class="p">:</span>
+                <span class="c1"># This cuts off the latter half of the PSD, which seems to work better, especially if there is concavity</span>
+                <span class="c1"># expHiPeriod = 1 //TODO this is causing errors where the first index is greater than the last</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;=</span> <span class="n">expHiPeriod</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;psdMetric(): Value Error - Max value could not be computed.&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">last</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">expLoPeriod</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;psdMetric(): Value Error - Min value could not be computed.&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># If doing deadChanExponential by hours too, to try to get more granularity on issues</span>
+        <span class="k">if</span> <span class="n">byHourOn</span><span class="p">:</span>
+            <span class="n">dead_channel_exp_hour</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">])):</span>
+                <span class="c1"># Adjust PSD to positive values for log calculation, if values still less than one, take min again.</span>
+                <span class="c1"># Subtracting from min of mean instead of min of itself is because for the PSD ones tested subtracting</span>
+                <span class="c1"># from itself seemed to actually change the shape of the PSD, which is contrary to what we are trying to</span>
+                <span class="c1"># do</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">positivePSD</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">]</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;Mean&#39;</span><span class="p">][</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">positivePSD</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="n">positivePSD</span> <span class="o">=</span> <span class="n">positivePSD</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">positivePSD</span><span class="p">)</span> <span class="o">+</span> <span class="o">.</span><span class="mi">1</span>
+
+                    <span class="c1"># Exponential fit; fit log10(PSD) vs. log10(period) to a line; used polyfit here instead of</span>
+                    <span class="c1"># np.linalg.lstsq as R codes are simply fitting to line, and polyfit will take the input directly in 1D.</span>
+                    <span class="c1"># np.linalg.lstsq creates more output than is necessary (condenses code from 8 lines to 1 line)</span>
+                    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">[</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">positivePSD</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+                    <span class="c1"># Calculate standard deviation of the residuals of the fits to obtain dead_channel_exp metric</span>
+                    <span class="n">dead_channel_exp_hour</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">positivePSD</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">[</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">])</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]))))</span>
+
+                    <span class="c1"># Exp fit is not valid for data 1sps and below, in order to ensure this isn&#39;t used in</span>
+                    <span class="c1"># thresholding/throwing out data for such channels we do the lazy way and simply overwrite it as</span>
+                    <span class="c1"># &#39;Not Valid&#39;, as data &gt;= 1 sps can still be used with GSN metric, thus we don&#39;t want to limit the 1sps</span>
+                    <span class="c1"># and less data from continuing on with the subsequent calculations</span>
+                    <span class="k">if</span> <span class="n">samplingRate</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">dead_channel_exp_hour</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Metric not valid for sample rate&#39;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+        <span class="c1"># Convert band from PSD mean to positive, non-zero values</span>
+        <span class="n">positiveMean</span> <span class="o">=</span> <span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;Mean&#39;</span><span class="p">][</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">]</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;Mean&#39;</span><span class="p">][</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">])</span> <span class="o">+</span> <span class="o">.</span><span class="mi">1</span>
+
+        <span class="c1"># Exponential fit; fit log10(PSDmean) vs. log10(period) to a line; used polyfit here instead of np.linalg.lstsq</span>
+        <span class="c1"># as R codes are simply fitting to line, and polyfit will take the input directly in 1D. np.linalg.lstsq creates</span>
+        <span class="c1"># more output than is necessary (condenses code from 8 lines to 1 line)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">[</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">positiveMean</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Calculate standard deviation of the residuals of the fits (RMS error) to obtain dead_channel_exp metric</span>
+        <span class="n">dead_channel_exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">positiveMean</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">[</span><span class="n">first</span><span class="p">:</span><span class="n">last</span><span class="p">])</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+        <span class="c1"># Exp fit is not valid for data 1sps and below, in order to ensure this isn&#39;t used in thresholding/throwing out</span>
+        <span class="c1"># data for such channels we do the lazy way and simply overwrite it as &#39;Not Valid&#39;, as data &gt;= 1 sps can still</span>
+        <span class="c1"># be used with GSN metric, thus we don&#39;t want to limit the 1sps and less data from continuing on with the</span>
+        <span class="c1"># subsequent calculations</span>
+        <span class="k">if</span> <span class="n">samplingRate</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">dead_channel_exp</span> <span class="o">=</span> <span class="s1">&#39;Metric not valid for sample rate&#39;</span>
+
+        <span class="c1"># Linear fit: Another metric fitting the PSD mean line as a linear function of log10(period) over a specific</span>
+        <span class="c1"># band. Some types of sensor malfunction result in a flat spectra that is different</span>
+        <span class="c1"># from a curve produced by digitizer noise. Be aware that some normal noise patterns will also score low on this</span>
+        <span class="c1"># metric.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Linear fit steps:</span>
+        <span class="c1">#   1) Determine index range (inverted because of freq-&gt;period conversion)</span>
+        <span class="c1">#   2) Fit PSD mean vs. log10(period) to a line</span>
+        <span class="c1">#   3) Calculate the standard deviation of residuals of the fit</span>
+        <span class="c1"># The dead_channel_exp and dead_channel_lin metrics are not valid for LH? or VH? channels</span>
+
+        <span class="c1"># Determine index range of period values that are greater than or equal to linHiPeriod and less than or equal</span>
+        <span class="c1"># to linLoPeriod.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">firstLin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;=</span> <span class="n">linHiPeriod</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;psdMetric(): Value Error - Max value could not be computed.&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">lastLin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">linLoPeriod</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;psdMetric(): Value Error - Min value could not be computed.&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># If doing deadChanLinear by hours too, to try to get more granularity on issues</span>
+        <span class="k">if</span> <span class="n">byHourOn</span><span class="p">:</span>
+            <span class="n">dead_channel_lin_hour</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">])):</span>
+                <span class="c1"># Grab out values using the firstline and lastlin for each PSD</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">psdLin</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">firstLin</span><span class="p">:</span><span class="n">lastLin</span><span class="p">]</span>
+
+                    <span class="c1"># Linear fit; fit psd vs. log10(period) to a line. used polyfit here instead of np.linalg.lstsq</span>
+                    <span class="c1"># as R codes are simply fitting to line, and polyfit will take the input directly in 1D.</span>
+                    <span class="c1"># np.linalg.lstsq creates more output than is necessary (condenses code from 3 lines to 1 lines)</span>
+                    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">[</span><span class="n">firstLin</span><span class="p">:</span><span class="n">lastLin</span><span class="p">]),</span> <span class="n">psdLin</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+                    <span class="c1"># Calculate standard deviation of the residuals of the fits (RMS error) to obtain dead_channel_lin</span>
+                    <span class="c1"># metric</span>
+                    <span class="n">dead_channel_lin_hour</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">psdLin</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">[</span><span class="n">firstLin</span><span class="p">:</span><span class="n">lastLin</span><span class="p">])</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+                    <span class="c1"># Lin fit is not valid for data 1sps and below, in order to ensure this isn&#39;t used in</span>
+                    <span class="c1"># thresholding/throwing out data for such channels we do the lazy way and simply overwrite it as</span>
+                    <span class="c1"># &#39;Not Valid&#39;, as data &gt;= 1 sps can still be used with GSN metric, thus we don&#39;t want to limit the 1sps</span>
+                    <span class="c1"># and less data from continuing on with the subsequent calculations</span>
+                    <span class="k">if</span> <span class="n">samplingRate</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">dead_channel_lin_hour</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Metric not valid for sample rate&#39;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+        <span class="c1"># Grab out appropriate psdMean values using firstlin and lastLin</span>
+        <span class="n">psdMean</span> <span class="o">=</span> <span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;Mean&#39;</span><span class="p">][</span><span class="n">firstLin</span><span class="p">:</span><span class="n">lastLin</span><span class="p">]</span>
+
+        <span class="c1"># Linear fit; fit psd mean vs. log10(period) to a line. used polyfit here instead of np.linalg.lstsq</span>
+        <span class="c1"># as R codes are simply fitting to line, and polyfit will take the input directly in 1D. np.linalg.lstsq creates</span>
+        <span class="c1"># more output than is necessary (condenses code from 3 lines to 1 lines)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">[</span><span class="n">firstLin</span><span class="p">:</span><span class="n">lastLin</span><span class="p">]),</span> <span class="n">psdMean</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Calculate standard deviation of the residuals of the fits (RMS error) to obtain dead_channel_lin metric</span>
+        <span class="n">dead_channel_lin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">psdMean</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">period</span><span class="p">[</span><span class="n">firstLin</span><span class="p">:</span><span class="n">lastLin</span><span class="p">])</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c1"># Lin fit is not valid for data 1sps and below, in order to ensure this isn&#39;t used in thresholding and throwing</span>
+        <span class="c1"># out data for such channels we do the lazy way and simply overwrite it as &#39;Not Valid&#39;, as data &gt;= 1sps can</span>
+        <span class="c1"># still be used with GSN metric, thus we don&#39;t want to limit the 1sps and less data from continuing on with</span>
+        <span class="c1"># calculations</span>
+        <span class="k">if</span> <span class="n">samplingRate</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">dead_channel_lin</span> <span class="o">=</span> <span class="s1">&#39;Metric not valid for sample rate&#39;</span>
+
+        <span class="c1"># Note that the dead_channel_exp and dead_channel_lin metrics are not valid for LH? or VH? channels,</span>
+        <span class="c1"># thus another metric was added to deal with looking at a narrow band of the PDF to determine if</span>
+        <span class="c1"># the deviation below the NLNM is sufficient to label it as dead or not dead. This is a boolean metric using</span>
+        <span class="c1"># numeric indicators.</span>
+        <span class="c1">#</span>
+        <span class="c1"># GSN dead channel metric steps:</span>
+        <span class="c1">#  1) Only accept 1 SPS and greater sample rate</span>
+        <span class="c1">#  2) Get the PDF matrix and slice the 4 to 8 second period</span>
+        <span class="c1">#  3) Calculate the median value at each period step, writing result to a vector</span>
+        <span class="c1">#  4) Collect differences in the median vector from the equivalent NLNM vector [ NLNM(x) - Y(x) ]</span>
+        <span class="c1">#  5) Average the result of the differences</span>
+        <span class="c1">#  6) If average &gt; 5.0, mark dead_channel_gsn value = 1 (TRUE), else mark value = 0 (FALSE)</span>
+
+        <span class="n">dead_channel_gsn</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Use condition that sample rate must be &gt;= 1 sps</span>
+        <span class="k">if</span> <span class="n">samplingRate</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Grab out values of the PDF noise matrix &gt;= 4 seconds and &lt;= 8  seconds period</span>
+            <span class="n">firstGSN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">firstGSN</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lastGSN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="mi">8</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">psdSlice</span> <span class="o">=</span> <span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">][:,</span> <span class="n">firstGSN</span><span class="p">:</span><span class="n">lastGSN</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">unH_floor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">psdSlice</span><span class="p">))</span>
+            <span class="n">pdfSlice</span> <span class="o">=</span> <span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;PDFMatrix&#39;</span><span class="p">][:,</span> <span class="n">firstGSN</span><span class="p">:</span><span class="n">lastGSN</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Get column-wise median of &#39;counted&#39; binned dB values</span>
+            <span class="n">psdMedian</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">unHistogram</span><span class="p">(</span><span class="n">pdfSlice</span><span class="p">,</span> <span class="n">unH_floor</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Verify that we have an average low dB value in this case and treat this as a dead channel condition</span>
+            <span class="c1"># Grab out NLNM slice to match, reverse order to match how pulled in R</span>
+            <span class="n">nlnmSlice</span> <span class="o">=</span> <span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;NLNM&#39;</span><span class="p">][</span><span class="n">lastGSN</span><span class="p">:</span><span class="n">firstGSN</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Get difference between NLNM and values in psdMedian,then get average of differences (i.e., deviation)</span>
+            <span class="n">diffToNM</span> <span class="o">=</span> <span class="n">nlnmSlice</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">psdMedian</span><span class="p">)]</span> <span class="o">-</span> <span class="n">psdMedian</span>
+            <span class="n">avgDiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">diffToNM</span><span class="p">)</span>
+
+            <span class="c1"># Compare average to 5 db, save 1 if condition is true, and 0 if condition is false</span>
+            <span class="k">if</span> <span class="n">avgDiff</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="n">dead_channel_gsn</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dead_channel_gsn</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># If byHourOn, loop through individual PSD slices</span>
+            <span class="k">if</span> <span class="n">byHourOn</span><span class="p">:</span>
+                <span class="c1"># Create empty lists to append to</span>
+                <span class="n">dead_channel_gsn_hour</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">avgDiff</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="c1"># Loop through individual PSD slices for the period band of interest pulled above</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">psdSlice</span><span class="p">)):</span>
+                    <span class="c1"># Difference PSD from nlnmSlice for same periods, then take average</span>
+                    <span class="n">diffToNM</span> <span class="o">=</span> <span class="n">nlnmSlice</span> <span class="o">-</span> <span class="n">psdSlice</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="n">avgDiff</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">diffToNM</span><span class="p">))</span>
+
+                <span class="c1"># Loop through average diff and put</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">avgDiff</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="n">avgDiff</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                        <span class="n">dead_channel_gsn_hour</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">dead_channel_gsn_hour</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Create a corrected PSD data frame similar to that returned by</span>
+            <span class="c1"># http://service.iris.edu/mustang/noise-psd/1/</span>
+            <span class="c1"># Grab out all start times and endtimes from psds (output from psdList)</span>
+            <span class="n">startlist</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">endlist</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">psds</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">startlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+                <span class="n">endlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="mi">4</span><span class="p">])</span>
+            <span class="c1"># Create repeating elements of frequency based on number of rows in trStats[&#39;noise_matrix_noise&#39;]</span>
+            <span class="c1"># (output from PSDStatistics)</span>
+            <span class="n">freqV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">]))</span>
+
+            <span class="c1"># Concatenate power values from trStats[&#39;noise_matrix_noise&#39;] (output from PSDStatistics) into single array</span>
+            <span class="n">powerV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">])</span>
+
+            <span class="c1"># Create list of repeated values of start list based on the number of columns in noise matrix and length of</span>
+            <span class="c1"># startlist</span>
+            <span class="n">startV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">startlist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">startlist</span><span class="p">)))</span>
+            <span class="n">endV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">endlist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">endlist</span><span class="p">)))</span>
+
+            <span class="c1"># Finally, now create the dataframe of corrected PSDs</span>
+            <span class="n">cPsdDF</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(((</span><span class="s1">&#39;starttime&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">startV</span><span class="p">)),</span> <span class="p">((</span><span class="s1">&#39;endtime&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">endV</span><span class="p">))),</span>
+                                               <span class="p">((</span><span class="s1">&#39;frequency&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">freqV</span><span class="p">))),</span> <span class="p">((</span><span class="s1">&#39;power&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">powerV</span><span class="p">))))))</span>
+
+            <span class="c1"># Create similar dataframe for PDFs</span>
+            <span class="c1"># Concatenate power values from trStats[&#39;PDFMatrix&#39;] (output from PSDStatistics) into single array</span>
+            <span class="n">hitsV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;PDFMatrix&#39;</span><span class="p">])</span>
+
+            <span class="c1"># Create repeating elements of PDFBins based on number of rows in trStats[&#39;PDFMatrix&#39;]</span>
+            <span class="c1"># (output from PSDStatistics)</span>
+            <span class="n">binV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;PDFBins&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;PDFMatrix&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+
+            <span class="c1"># Create repeating elements of frequency based on number of rows in trStats[&#39;PDFMatrix&#39;]</span>
+            <span class="c1"># (output from PSDStatistics) and length of trStats[&#39;noise_matrix_frequency&#39;]</span>
+            <span class="n">freq2V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;PDFMatrix&#39;</span><span class="p">]),</span>
+                                                                           <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">])))</span>
+
+            <span class="c1"># Create repeating elements of power mode based on number of rows in trStats[&#39;PDFMatrix&#39;]</span>
+            <span class="c1"># (output from PSDStatistics) and length of trStats[&#39;Mode&#39;]</span>
+            <span class="n">modeV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;Mode&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;PDFMatrix&#39;</span><span class="p">]),</span>
+                                                         <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">])))</span>
+
+            <span class="c1"># Create dataframe now</span>
+            <span class="n">pdfDF</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="n">freq2V</span><span class="p">,</span> <span class="s1">&#39;power&#39;</span><span class="p">:</span> <span class="n">binV</span><span class="p">,</span> <span class="s1">&#39;hits&#39;</span><span class="p">:</span> <span class="n">hitsV</span><span class="p">,</span> <span class="s1">&#39;power_mode&#39;</span><span class="p">:</span> <span class="n">modeV</span><span class="p">})</span>
+
+            <span class="c1"># Filter out values in the dataframe to only include values where hits &gt; 0</span>
+            <span class="n">pdfDf</span> <span class="o">=</span> <span class="n">pdfDF</span><span class="p">[</span><span class="n">pdfDF</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">pctBelowNLNM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;Percent_below_NLNM&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">]))</span>
+            <span class="n">pctAboveNLNM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;Percent_above_NHNM&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">]))</span>
+
+            <span class="k">if</span> <span class="n">generateMasks</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">masksByTime</span><span class="p">:</span>
+                    <span class="c1"># dead channel mask</span>
+                    <span class="k">if</span> <span class="n">dead_channel_exp</span> <span class="o">&lt;</span> <span class="n">dcExpThreshold</span> <span class="ow">and</span> <span class="n">avg_pctBelow</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">:</span>
+                        <span class="c1"># entire mask is 1</span>
+                        <span class="n">dcMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cPsdDF</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">dcMask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># low Amp</span>
+                    <span class="k">if</span> <span class="n">dead_channel_exp</span> <span class="o">&gt;=</span> <span class="n">dcExpThreshold</span> <span class="ow">and</span> <span class="n">avg_pctBelow</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">:</span>
+                        <span class="n">lowAmpMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cPsdDF</span><span class="p">))</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctBelowNLNM</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">)</span>
+                        <span class="n">lowAmpMask</span><span class="p">[</span><span class="n">index_pct</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">lowAmpMask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># noise1</span>
+                    <span class="k">if</span> <span class="n">dead_channel_exp</span> <span class="o">&lt;</span> <span class="n">dcExpThreshold</span> <span class="ow">and</span> <span class="n">avg_pctAbove</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThreshold</span><span class="p">:</span>
+                        <span class="n">noise1Mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cPsdDF</span><span class="p">))</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctAboveNLNM</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThreshold</span><span class="p">)</span>
+                        <span class="n">noise1Mask</span><span class="p">[</span><span class="n">index_pct</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">noise1Mask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># noise 2</span>
+                    <span class="k">if</span> <span class="n">dead_channel_lin</span> <span class="o">&lt;</span> <span class="n">dcLinThreshold</span> <span class="ow">and</span> <span class="n">avg_pctBelow</span> <span class="o">&lt;=</span> <span class="n">pctBelowNoiseThreshold</span> <span class="ow">and</span> <span class="n">gaps</span> <span class="o">&lt;</span> <span class="n">num_gaps</span><span class="p">:</span>
+                        <span class="n">noise2Mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cPsdDF</span><span class="p">))</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctBelowNLNM</span> <span class="o">&lt;=</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">)</span>
+                        <span class="n">noise2Mask</span><span class="p">[</span><span class="n">index_pct</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">noise2Mask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># hiAmp</span>
+                    <span class="k">if</span> <span class="n">rms</span> <span class="o">&gt;</span> <span class="n">rmsThreshold</span> <span class="ow">and</span> <span class="n">avg_pctAbove</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThreshold</span><span class="p">:</span>
+                        <span class="n">hiAmpMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cPsdDF</span><span class="p">))</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctBelowNLNM</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">)</span>
+                        <span class="n">hiAmpMask</span><span class="p">[</span><span class="n">index_pct</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">hiAmpMask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># bad resp</span>
+                    <span class="k">if</span> <span class="n">avg_pctAbove</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThresholdRESP</span> <span class="ow">or</span> <span class="n">avg_pctBelow</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThresholdRESP</span><span class="p">:</span>
+                        <span class="n">badRESPMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cPsdDF</span><span class="p">))</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctBelowNLNM</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThresholdRESP</span><span class="p">)</span>
+                        <span class="n">index_pct_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctAboveNLNM</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThresholdRESP</span><span class="p">)</span>
+                        <span class="n">badRESPMask</span><span class="p">[</span><span class="n">index_pct</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">badRESPMask</span><span class="p">[</span><span class="n">index_pct_1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">badRESPMask</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="k">if</span> <span class="n">byHourOn</span><span class="p">:</span>  <span class="c1"># This doesn&#39;t seem right</span>
+                        <span class="c1"># Dead Channel Exponential masks by hour</span>
+                        <span class="n">dcExpByHourMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cPsdDF</span><span class="p">))</span>
+                        <span class="n">deadChanExpHour</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">dead_channel_exp_hour</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">]))</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">deadChanExpHour</span><span class="p">)):</span>
+                            <span class="k">if</span> <span class="n">deadChanExpHour</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">dcExpThresholdHour</span><span class="p">:</span>
+                                <span class="n">dcExpByHourMask</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">dcExpByHourMask</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+                        <span class="c1"># Dead Channel Linear masks by hour</span>
+                        <span class="n">dcLinByHourMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cPsdDF</span><span class="p">))</span>
+                        <span class="n">deadChanLinHour</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">dead_channel_lin_hour</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">]))</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">deadChanLinHour</span><span class="p">)):</span>
+                            <span class="k">if</span> <span class="n">deadChanLinHour</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">dcLinThresholdHour</span><span class="p">:</span>
+                                <span class="n">dcLinByHourMask</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">dcLinByHourMask</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+                        <span class="c1"># Dead Channel GSN masks by hour</span>
+                        <span class="n">dcGSNByHourMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">dead_channel_gsn_hour</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">]))</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># dead channel mask</span>
+                    <span class="k">if</span> <span class="n">dead_channel_exp</span> <span class="o">&lt;</span> <span class="n">dcExpThreshold</span> <span class="ow">and</span> <span class="n">avg_pctBelow</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">:</span>
+                        <span class="c1"># entire mask is 1</span>
+                        <span class="n">dcMask</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;Starttime&quot;</span><span class="p">:</span> <span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="s2">&quot;Endtime&quot;</span><span class="p">:</span> <span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()}]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">dcMask</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="c1"># low Amp</span>
+                    <span class="k">if</span> <span class="n">dead_channel_exp</span> <span class="o">&gt;=</span> <span class="n">dcExpThreshold</span> <span class="ow">and</span> <span class="n">avg_pctBelow</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">:</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctBelowNLNM</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">lowAmpMask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_pct</span><span class="p">,</span> <span class="n">samplingRate</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">lowAmpMask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># noise1</span>
+                    <span class="k">if</span> <span class="n">dead_channel_exp</span> <span class="o">&lt;</span> <span class="n">dcExpThreshold</span> <span class="ow">and</span> <span class="n">avg_pctAbove</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThreshold</span><span class="p">:</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctAboveNLNM</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThreshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">noise1Mask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_pct</span><span class="p">,</span> <span class="n">samplingRate</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">noise1Mask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># noise 2</span>
+                    <span class="k">if</span> <span class="n">dead_channel_lin</span> <span class="o">&lt;</span> <span class="n">dcLinThreshold</span> <span class="ow">and</span> <span class="n">avg_pctBelow</span> <span class="o">&lt;=</span> <span class="n">pctBelowNoiseThreshold</span> <span class="ow">and</span> <span class="n">gaps</span> <span class="o">&lt;</span> <span class="n">num_gaps</span><span class="p">:</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctBelowNLNM</span> <span class="o">&lt;=</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">noise2Mask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_pct</span><span class="p">,</span> <span class="n">samplingRate</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">noise2Mask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># hiAmp</span>
+                    <span class="k">if</span> <span class="n">rms</span> <span class="o">&gt;</span> <span class="n">rmsThreshold</span> <span class="ow">and</span> <span class="n">avg_pctAbove</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThreshold</span><span class="p">:</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctBelowNLNM</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThreshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">hiAmpMask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_pct</span><span class="p">,</span> <span class="n">samplingRate</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">hiAmpMask</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># bad resp</span>
+                    <span class="k">if</span> <span class="n">avg_pctAbove</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThresholdRESP</span> <span class="ow">or</span> <span class="n">avg_pctBelow</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThresholdRESP</span><span class="p">:</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctBelowNLNM</span> <span class="o">&gt;</span> <span class="n">pctBelowNoiseThresholdRESP</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">index_pct_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pctAboveNLNM</span> <span class="o">&gt;</span> <span class="n">pctAboveNoiseThresholdRESP</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">badRESPMask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_pct</span><span class="p">,</span> <span class="n">samplingRate</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+                        <span class="n">badRESPMask</span> <span class="o">=</span> <span class="n">badRESPMask</span> <span class="o">+</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_pct_1</span><span class="p">,</span> <span class="n">samplingRate</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">badRESPMask</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="k">if</span> <span class="n">byHourOn</span><span class="p">:</span>
+                        <span class="c1"># Dead Channel Exponential masks by hour</span>
+                        <span class="n">deadChanExpHour</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">dead_channel_exp_hour</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">]))</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">deadChanExpHour</span> <span class="o">&lt;=</span> <span class="n">dcExpThresholdHour</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">dcExpByHourMask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_pct</span><span class="p">,</span> <span class="n">samplingRate</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">dcExpByHourMask</span><span class="p">:</span>
+                            <span class="n">dcExpByHourMask</span> <span class="o">=</span> <span class="kc">None</span>
+
+                        <span class="c1"># Dead Channel Linear masks by hour</span>
+                        <span class="n">deadChanLinHour</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">dead_channel_lin_hour</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">]))</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">deadChanLinHour</span> <span class="o">&lt;=</span> <span class="n">dcLinThresholdHour</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">dcLinByHourMask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_pct</span><span class="p">,</span> <span class="n">samplingRate</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">dcLinByHourMask</span><span class="p">:</span>
+                            <span class="n">dcLinByHourMask</span> <span class="o">=</span> <span class="kc">None</span>
+
+                        <span class="c1"># Dead Channel GSN</span>
+                        <span class="n">deadChanGSNHour</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">dead_channel_gsn_hour</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">trStats</span><span class="p">[</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">]))</span>
+                        <span class="n">index_pct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">deadChanGSNHour</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">dcGSNByHourMask</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">index_pct</span><span class="p">,</span> <span class="n">samplingRate</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">dcGSNByHourMask</span><span class="p">:</span>
+                            <span class="n">dcGSNByHourMask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">byHourOn</span><span class="p">:</span>
+            <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">snclq_tr</span><span class="p">,</span>
+                       <span class="s1">&#39;percent_above_nhnm&#39;</span><span class="p">:</span> <span class="n">avg_pctAbove</span><span class="p">,</span> <span class="s1">&#39;percent_below_nlnm&#39;</span><span class="p">:</span> <span class="n">avg_pctBelow</span><span class="p">,</span>
+                       <span class="s1">&#39;dead_channel_exponent&#39;</span><span class="p">:</span> <span class="n">dead_channel_exp</span><span class="p">,</span> <span class="s1">&#39;dead_channel_exponent_hourly&#39;</span><span class="p">:</span> <span class="n">dead_channel_exp_hour</span><span class="p">,</span>
+                       <span class="s1">&#39;dead_channel_linear&#39;</span><span class="p">:</span> <span class="n">dead_channel_lin</span><span class="p">,</span> <span class="s1">&#39;dead_channel_linear_hourly&#39;</span><span class="p">:</span> <span class="n">dead_channel_lin_hour</span><span class="p">,</span>
+                       <span class="s1">&#39;dead_channel_gsn&#39;</span><span class="p">:</span> <span class="n">dead_channel_gsn</span><span class="p">,</span> <span class="s1">&#39;dead_channel_gsn_hourly&#39;</span><span class="p">:</span> <span class="n">dead_channel_gsn_hour</span><span class="p">,</span>
+                       <span class="s1">&#39;uncorrected_psds&#39;</span><span class="p">:</span> <span class="n">un_psds</span><span class="p">,</span> <span class="s1">&#39;corrected_psds&#39;</span><span class="p">:</span> <span class="n">cPsdDF</span><span class="p">,</span> <span class="s1">&#39;pdfs&#39;</span><span class="p">:</span> <span class="n">pdfDf</span><span class="p">,</span> <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;psdMetric&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;dc_mask&#39;</span><span class="p">:</span> <span class="n">dcMask</span><span class="p">,</span> <span class="s1">&#39;low_amp_mask&#39;</span><span class="p">:</span> <span class="n">lowAmpMask</span><span class="p">,</span> <span class="s1">&#39;noise1_mask&#39;</span><span class="p">:</span> <span class="n">noise1Mask</span><span class="p">,</span>
+                       <span class="s1">&#39;noise2_mask&#39;</span><span class="p">:</span> <span class="n">noise2Mask</span><span class="p">,</span> <span class="s1">&#39;hi_amp_mask&#39;</span><span class="p">:</span> <span class="n">hiAmpMask</span><span class="p">,</span> <span class="s1">&#39;bad_resp_mask&#39;</span><span class="p">:</span> <span class="n">badRESPMask</span><span class="p">,</span>
+                       <span class="s1">&#39;dead_chan_exp_hourly_masks&#39;</span><span class="p">:</span> <span class="n">dcExpByHourMask</span><span class="p">,</span> <span class="s1">&#39;dead_chan_lin_hourly_masks&#39;</span><span class="p">:</span> <span class="n">dcLinByHourMask</span><span class="p">,</span>
+                       <span class="s1">&#39;dead_chan_gsn_hourly_masks&#39;</span><span class="p">:</span> <span class="n">dcGSNByHourMask</span><span class="p">}</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">snclq_tr</span><span class="p">,</span>
+                       <span class="s1">&#39;percent_above_nhnm&#39;</span><span class="p">:</span> <span class="n">avg_pctAbove</span><span class="p">,</span> <span class="s1">&#39;percent_below_nlnm&#39;</span><span class="p">:</span> <span class="n">avg_pctBelow</span><span class="p">,</span>
+                       <span class="s1">&#39;dead_channel_exponent&#39;</span><span class="p">:</span> <span class="n">dead_channel_exp</span><span class="p">,</span> <span class="s1">&#39;dead_channel_linear&#39;</span><span class="p">:</span> <span class="n">dead_channel_lin</span><span class="p">,</span>
+                       <span class="s1">&#39;dead_channel_gsn&#39;</span><span class="p">:</span> <span class="n">dead_channel_gsn</span><span class="p">,</span> <span class="s1">&#39;uncorrected_psds&#39;</span><span class="p">:</span> <span class="n">un_psds</span><span class="p">,</span> <span class="s1">&#39;corrected_psds&#39;</span><span class="p">:</span> <span class="n">cPsdDF</span><span class="p">,</span>
+                       <span class="s1">&#39;pdfs&#39;</span><span class="p">:</span> <span class="n">pdfDf</span><span class="p">,</span> <span class="s2">&quot;metric_name&quot;</span><span class="p">:</span> <span class="s2">&quot;psdMetric&quot;</span><span class="p">,</span> <span class="s2">&quot;dc_mask&quot;</span><span class="p">:</span> <span class="n">dcMask</span><span class="p">,</span> <span class="s1">&#39;low_amp_mask&#39;</span><span class="p">:</span> <span class="n">lowAmpMask</span><span class="p">,</span>
+                       <span class="s1">&#39;noise1_mask&#39;</span><span class="p">:</span> <span class="n">noise1Mask</span><span class="p">,</span> <span class="s2">&quot;noise2_mask&quot;</span><span class="p">:</span> <span class="n">noise2Mask</span><span class="p">,</span> <span class="s1">&#39;hi_amp_mask&#39;</span><span class="p">:</span> <span class="n">hiAmpMask</span><span class="p">,</span>
+                       <span class="s1">&#39;bad_resp_mask&#39;</span><span class="p">:</span> <span class="n">badRESPMask</span><span class="p">}</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

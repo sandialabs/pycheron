@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.spikesMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.metrics.spikesMetric</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;spikesMetric&#39;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.noise.findOutliers</span> <span class="k">import</span> <span class="n">findOutliers</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.masks</span> <span class="k">import</span> <span class="n">samples2time</span>
+<span class="kn">import</span> <span class="nn">pycheron.util.logger</span> <span class="k">as</span> <span class="nn">Logger</span>
+
+
+<div class="viewcode-block" id="spikesMetric"><a class="viewcode-back" href="../../../pycheron.metrics.spikesMetric.html#pycheron.metrics.spikesMetric.spikesMetric">[docs]</a><span class="k">def</span> <span class="nf">spikesMetric</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">windowSize</span><span class="o">=</span><span class="mi">41</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">selectivity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fixedThreshold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">generateMasks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">masksByTime</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fortran</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Determines number of spikes in a seismic stream.</span>
+
+<span class="sd">:param st: (stream) - obspy stream object</span>
+<span class="sd">:type st: obspy.core.stream.Stream</span>
+<span class="sd">:param windowSize: size of window to be used (e.g., window size to roll over.</span>
+<span class="sd">:type windowSize: int</span>
+<span class="sd">:param threshold: initial threshold value for outlier detection.</span>
+<span class="sd">:type threshold: float</span>
+<span class="sd">:param selectivity: Range from 0-1 used in determining outliers, or None if fixedThreshold = TRUE</span>
+<span class="sd">:type selectivity: float</span>
+<span class="sd">:param fixedThreshold: (boolean) - if `True`, set the threshold = threshold and ignore selectivity. If `False`, then</span>
+<span class="sd">                                   the threshold is set to the maximum value of the hampel/hampelFilter function</span>
+<span class="sd">                                   output multiplied by the selectivity</span>
+<span class="sd">:type fixedThreshold: bool</span>
+<span class="sd">:param generateMasks: If `True`, a boolean mask array is created for spike values, if `False` mask returns</span>
+<span class="sd">                                  `None`.</span>
+<span class="sd">:type generateMasks: bool</span>
+<span class="sd">:param masksByTime: Boolean to determine whether masks are generated by time. If True, masks will be</span>
+<span class="sd">                             generated with a start/end time, if false, they will be generated as boolean array.</span>
+<span class="sd">:type masksByTime: bool</span>
+<span class="sd">:param processes: Number of processes to use for calculation.</span>
+<span class="sd">:type processes: int</span>
+<span class="sd">:param logger: logger object</span>
+<span class="sd">:type logger: pycheron.util.logger.Logger</span>
+<span class="sd">:param fortran: Use Fortran libs or not. If libs will not compile or on a Windows Machine, set to `False`</span>
+<span class="sd">:type fortran: bool</span>
+<span class="sd">:param database: database object</span>
+<span class="sd">:type database: pycheron.db.sqllite_db.Database</span>
+
+<span class="sd">:return: list of dictionaries with following keys and types:</span>
+
+<span class="sd">    * snclq (`str`)</span>
+<span class="sd">    * spike_times (`list`)</span>
+<span class="sd">    * total_spike_count (`int`)</span>
+<span class="sd">    * non_adjacent_spikes (`int`)</span>
+<span class="sd">    * start_time (`str`)</span>
+<span class="sd">    * end_time (`str`)</span>
+<span class="sd">    * mask (`numpy.ndarray` or `list`)</span>
+<span class="sd">    * metric_name (`str`)</span>
+
+<span class="sd">:rtype: list</span>
+
+<span class="sd">**Parameter Notes**</span>
+
+<span class="sd">* threshold (`float`)</span>
+<span class="sd">    * Threshold level is similar to a sigma value for normally distributed data. Hampel filter values</span>
+<span class="sd">      above 6.0 indicate a data value that is extremely unlikely to be part of a normal distribution</span>
+<span class="sd">      (~1/500 million) and therefore likely to be an outlier. By choosing a relatively large value for</span>
+<span class="sd">      threshold min one can make it less likely that we will generate false positives. False positives</span>
+<span class="sd">      can include high frequency environmental noise.</span>
+<span class="sd">* selectivity (`float`)</span>
+<span class="sd">    * The selectivity is a value between 0 and 1 and is used to generate an appropriate threshold for</span>
+<span class="sd">      outlier detection based on the statistics of the incoming data. A lower value for selectivity</span>
+<span class="sd">      will result in more outliers while a value closer to 1.0 will result in fewer.</span>
+
+<span class="sd">**Example**</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    #test data</span>
+<span class="sd">    data = &#39;test/test_data/spike_example_1hrseg.mseed&#39;</span>
+
+<span class="sd">    #reading in stream</span>
+<span class="sd">    st = obspy.read(data)</span>
+
+<span class="sd">    #setting parameters</span>
+<span class="sd">    windowSize=41</span>
+<span class="sd">    threshold=6</span>
+<span class="sd">    selectivity=None</span>
+<span class="sd">    fixedThreshold = True</span>
+
+<span class="sd">    spikes = spikesMetric(st, windowSize, threshold, selectivity, fixedThreshold)</span>
+<span class="sd">    print spikes</span>
+<span class="sd">    &gt;&gt;&gt; [{&#39;total_spike_count&#39;: 117, &#39;non-adjacent_spikes&#39;: 51, &#39;masks&#39;: None, &#39;metric_name&#39;: &#39;spikesMetric&#39;, &#39;spike_times&#39;: [&#39;2013-01-03T15:03:38.598133&#39;, &#39;2013-01-03T15:03:38.623133&#39;, &#39;2013-01-03T15:03:45.273133&#39;, &#39;2013-01-03T15:03:45.298133&#39;, &#39;2013-01-03T15:03:51.123133&#39;, &#39;2013-01-03T15:03:51.148133&#39;, &#39;2013-01-03T15:05:38.523133&#39;, &#39;2013-01-03T15:05:38.548133&#39;, &#39;2013-01-03T15:05:38.573133&#39;, &#39;2013-01-03T15:05:38.598133&#39;, &#39;2013-01-03T15:07:41.123133&#39;, &#39;2013-01-03T15:07:41.148133&#39;, &#39;2013-01-03T15:07:41.173133&#39;, &#39;2013-01-03T15:07:41.198133&#39;, &#39;2013-01-03T15:07:45.223133&#39;, &#39;2013-01-03T15:08:09.048133&#39;, &#39;2013-01-03T15:08:09.073133&#39;, &#39;2013-01-03T15:08:31.373133&#39;, &#39;2013-01-03T15:08:31.398133&#39;, &#39;2013-01-03T15:08:31.423133&#39;, &#39;2013-01-03T15:08:38.323133&#39;, &#39;2013-01-03T15:09:00.998133&#39;, &#39;2013-01-03T15:09:01.023133&#39;, &#39;2013-01-03T15:09:01.048133&#39;, &#39;2013-01-03T15:10:50.348133&#39;, &#39;2013-01-03T15:11:22.448133&#39;, &#39;2013-01-03T15:11:46.698133&#39;, &#39;2013-01-03T15:12:54.573133&#39;, &#39;2013-01-03T15:12:58.423133&#39;, &#39;2013-01-03T15:12:58.448133&#39;, &#39;2013-01-03T15:12:58.473133&#39;, &#39;2013-01-03T15:12:58.498133&#39;, &#39;2013-01-03T15:13:39.798133&#39;, &#39;2013-01-03T15:13:39.823133&#39;, &#39;2013-01-03T15:15:34.948133&#39;, &#39;2013-01-03T15:15:34.973133&#39;, &#39;2013-01-03T15:15:34.998133&#39;, &#39;2013-01-03T15:15:40.148133&#39;, &#39;2013-01-03T15:15:40.173133&#39;, &#39;2013-01-03T15:15:56.348133&#39;, &#39;2013-01-03T15:17:23.873133&#39;, &#39;2013-01-03T15:17:54.773133&#39;, &#39;2013-01-03T15:18:13.398133&#39;, &#39;2013-01-03T15:18:13.423133&#39;, &#39;2013-01-03T15:18:13.448133&#39;, &#39;2013-01-03T15:18:13.473133&#39;, &#39;2013-01-03T15:18:13.498133&#39;, &#39;2013-01-03T15:20:50.623133&#39;, &#39;2013-01-03T15:21:11.648133&#39;, &#39;2013-01-03T15:21:11.673133&#39;, &#39;2013-01-03T15:21:11.698133&#39;, &#39;2013-01-03T15:21:11.723133&#39;, &#39;2013-01-03T15:22:33.198133&#39;, &#39;2013-01-03T15:23:09.323133&#39;, &#39;2013-01-03T15:23:18.023133&#39;, &#39;2013-01-03T15:23:18.048133&#39;, &#39;2013-01-03T15:24:47.298133&#39;, &#39;2013-01-03T15:24:47.323133&#39;, &#39;2013-01-03T15:26:31.873133&#39;, &#39;2013-01-03T15:26:31.898133&#39;, &#39;2013-01-03T15:26:31.923133&#39;, &#39;2013-01-03T15:26:31.948133&#39;, &#39;2013-01-03T15:26:31.973133&#39;, &#39;2013-01-03T15:31:11.073133&#39;, &#39;2013-01-03T15:31:29.698133&#39;, &#39;2013-01-03T15:31:29.723133&#39;, &#39;2013-01-03T15:31:29.748133&#39;, &#39;2013-01-03T15:31:29.773133&#39;, &#39;2013-01-03T15:37:07.423133&#39;, &#39;2013-01-03T15:37:07.448133&#39;, &#39;2013-01-03T15:37:07.473133&#39;, &#39;2013-01-03T15:37:07.498133&#39;, &#39;2013-01-03T15:37:07.523133&#39;, &#39;2013-01-03T15:37:07.548133&#39;, &#39;2013-01-03T15:37:07.573133&#39;, &#39;2013-01-03T15:37:07.598133&#39;, &#39;2013-01-03T15:37:18.973133&#39;, &#39;2013-01-03T15:37:45.498133&#39;, &#39;2013-01-03T15:37:58.373133&#39;, &#39;2013-01-03T15:38:22.623133&#39;, &#39;2013-01-03T15:38:37.473133&#39;, &#39;2013-01-03T15:38:51.573133&#39;, &#39;2013-01-03T15:38:51.598133&#39;, &#39;2013-01-03T15:38:51.623133&#39;, &#39;2013-01-03T15:38:51.648133&#39;, &#39;2013-01-03T15:40:32.023133&#39;, &#39;2013-01-03T15:40:32.048133&#39;, &#39;2013-01-03T15:40:32.073133&#39;, &#39;2013-01-03T15:40:32.098133&#39;, &#39;2013-01-03T15:42:54.048133&#39;, &#39;2013-01-03T15:44:49.098133&#39;, &#39;2013-01-03T15:44:58.923133&#39;, &#39;2013-01-03T15:45:32.723133&#39;, &#39;2013-01-03T15:45:32.748133&#39;, &#39;2013-01-03T15:45:32.773133&#39;, &#39;2013-01-03T15:45:32.798133&#39;, &#39;2013-01-03T15:45:32.823133&#39;, &#39;2013-01-03T15:46:02.973133&#39;, &#39;2013-01-03T15:46:02.998133&#39;, &#39;2013-01-03T15:46:03.023133&#39;, &#39;2013-01-03T15:46:03.048133&#39;, &#39;2013-01-03T15:46:03.073133&#39;, &#39;2013-01-03T15:46:03.098133&#39;, &#39;2013-01-03T15:52:56.948133&#39;, &#39;2013-01-03T15:54:04.098133&#39;, &#39;2013-01-03T15:54:21.848133&#39;, &#39;2013-01-03T15:54:31.323133&#39;, &#39;2013-01-03T15:54:31.348133&#39;, &#39;2013-01-03T15:54:52.448133&#39;, &#39;2013-01-03T15:54:52.473133&#39;, &#39;2013-01-03T15:54:52.498133&#39;, &#39;2013-01-03T15:54:52.523133&#39;, &#39;2013-01-03T15:54:52.548133&#39;, &#39;2013-01-03T15:54:56.173133&#39;, &#39;2013-01-03T15:54:56.198133&#39;, &#39;2013-01-03T15:57:33.973133&#39;, &#39;2013-01-03T15:57:33.998133&#39;], &#39;start_time&#39;: &#39;2013-01-03T15:00:00.023133&#39;, &#39;snclq&#39;: u&#39;IU.RAO.10.BHZ&#39;, &#39;end_time&#39;: &#39;2013-01-03T16:00:03.723133&#39;}]</span>
+
+<span class="sd">**Plotting**</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    #Plot identified spikes on top of waveform</span>
+<span class="sd">    tr = st[0]</span>
+<span class="sd">    d = []</span>
+<span class="sd">    for i in spikes[0][&#39;spike_times&#39;]:</span>
+<span class="sd">        d.append(UTCDateTime(i)-tr.stats.starttime)</span>
+<span class="sd">    plt.plot(tr.times(),tr.data)</span>
+<span class="sd">    for i in d:</span>
+<span class="sd">         plt.axvline(x=i,color=&#39;black&#39;)</span>
+<span class="sd">    #plt.plot(d,tr.data[d],color=&#39;red&#39;,marker=&#39;o&#39;,markersize=4,linestyle=&#39;None&#39;)</span>
+<span class="sd">    plt.xlabel(&#39;Seconds from %s&#39; %str(tr.stats.starttime))</span>
+<span class="sd">    plt.xlim([min(tr.times()),max(tr.times())])</span>
+<span class="sd">    plt.ylabel(&#39;Amplitude&#39;)</span>
+<span class="sd">    plt.title(&#39;%s WindowSize 41, threshold 6&#39;%str(tr.id))</span>
+<span class="sd">    plt.show()</span>
+
+<span class="sd">.. image:: _static/spikeMetricPlot.png</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">logger</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Initialize output list and spikeTime list</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="p">)):</span>
+            <span class="n">arg</span> <span class="o">=</span> <span class="p">[</span><span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">windowSize</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">selectivity</span><span class="p">,</span> <span class="n">fixedThreshold</span><span class="p">,</span> <span class="n">generateMasks</span><span class="p">,</span> <span class="n">masksByTime</span><span class="p">,</span> <span class="n">fortran</span><span class="p">]</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_pool_spikes</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">windowSize</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">selectivity</span><span class="p">,</span> <span class="n">fixedThreshold</span><span class="p">,</span> <span class="n">generateMasks</span><span class="p">,</span> <span class="n">masksByTime</span><span class="p">,</span> <span class="n">fortran</span><span class="p">]</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">_pool_spikes</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<span class="k">def</span> <span class="nf">_pool_spikes</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">tr</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">windowSize</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">selectivity</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">fixedThreshold</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">generateMasks</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">masksByTime</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">fortran</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+    <span class="n">starttime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+    <span class="n">outliers</span> <span class="o">=</span> <span class="n">findOutliers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">windowSize</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">selectivity</span><span class="p">,</span> <span class="n">increment</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fixedThreshold</span><span class="o">=</span><span class="n">fixedThreshold</span><span class="p">,</span>
+                            <span class="n">fortran</span><span class="o">=</span><span class="n">fortran</span><span class="p">)</span>
+
+    <span class="c1"># There is at least one spike if there is at least one outlier.</span>
+    <span class="c1"># Ignore adjacent outliers when determining the count of spikes.</span>
+    <span class="c1"># But be sure there is at least one spike if there is at least one outlier</span>
+    <span class="n">spikeTime</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">outliers</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">countNonAdj</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">outliers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)))</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">totalCount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">outliers</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">totalCount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">countNonAdj</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># create mask</span>
+    <span class="n">masks</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">generateMasks</span> <span class="ow">and</span> <span class="n">outliers</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">masksByTime</span><span class="p">:</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">outliers</span><span class="p">),</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">masks</span><span class="p">[</span><span class="n">outliers</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># Calculate outlier time from starttime to put times in for spikes</span>
+    <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">outliers</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">+</span> <span class="n">o</span> <span class="o">/</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="n">spikeTime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">get_id</span><span class="p">(),</span>
+         <span class="s1">&#39;spike_times&#39;</span><span class="p">:</span> <span class="n">spikeTime</span><span class="p">,</span>
+         <span class="s1">&#39;total_spike_count&#39;</span><span class="p">:</span> <span class="n">totalCount</span><span class="p">,</span>
+         <span class="s1">&#39;non_adjacent_spikes&#39;</span><span class="p">:</span> <span class="n">countNonAdj</span><span class="p">,</span>
+         <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+         <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+         <span class="s1">&#39;mask&#39;</span><span class="p">:</span> <span class="n">masks</span><span class="p">,</span>
+         <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;spikesMetric&#39;</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">d</span>
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

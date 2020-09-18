@@ -1,0 +1,10 @@
+include pycheron/docs/*
+include pycheron/psd/fftpack/*
+include pycheron/psd/noise/outliers/*
+include pycheron/rollseis/*.f90
+include pycheron/metrics/repAmps/*
+include pycheron/plotting/*.txt
+include pycheron/metrics/calibration_ml_objects/*.pkl
+include pycheron/UI/*
+
+

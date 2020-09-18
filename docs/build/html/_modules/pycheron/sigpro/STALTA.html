@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.sigpro.STALTA &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.sigpro.STALTA</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;STALTA&#39;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">pycheron.psd.noise.deadChannel</span> <span class="k">import</span> <span class="n">DDT</span>
+<span class="kn">from</span> <span class="nn">pycheron.rollseis.roll_mean</span> <span class="k">import</span> <span class="n">roll_mean</span>
+<span class="kn">from</span> <span class="nn">pycheron.rollseis.roll_stalta</span> <span class="k">import</span> <span class="n">roll_stalta</span>
+<span class="kn">from</span> <span class="nn">pycheron.sigpro.envelope</span> <span class="k">import</span> <span class="n">envelope</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.logger</span> <span class="k">import</span> <span class="n">Logger</span>
+
+
+<div class="viewcode-block" id="STALTA"><a class="viewcode-back" href="../../../pycheron.sigpro.STALTA.html#pycheron.sigpro.STALTA.STALTA">[docs]</a><span class="k">def</span> <span class="nf">STALTA</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">staSecs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ltaSecs</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;classic_LR&quot;</span><span class="p">,</span> <span class="n">increment</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">demean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">taper</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+           <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fortran</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    The STALTA method applies one of several STA/LTA &quot;first break picking&quot; algorithms to obspy trace data in</span>
+<span class="sd">    order to automatically detect seismic events.</span>
+
+<span class="sd">    :param tr: obspy trace object</span>
+<span class="sd">    :type tr: obspy.core.trace.Trace</span>
+<span class="sd">    :param staSecs: length of the short averaging window in secs</span>
+<span class="sd">    :type  staSecs: int</span>
+<span class="sd">    :param ltaSecs: length of long averaging window in secs</span>
+<span class="sd">    :type ltaSecs: int</span>
+<span class="sd">    :param algorithm: algorithm to be used. Options include ``classic_LR``, ``classic_RR``, and</span>
+<span class="sd">                      ``EarleAndShearer_envelope``</span>
+<span class="sd">    :type algorithm: str</span>
+<span class="sd">    :param increment: the increment to use when sliding the averaging windows to the next location. Note for</span>
+<span class="sd">                      higher resolution channels, picking an increment of 2/sampling rate can greatly speed up</span>
+<span class="sd">                      processing times and still generate reasonable results.</span>
+<span class="sd">    :type increment: str</span>
+<span class="sd">    :param demean: boolean flag determining whether to demean the data before applying the algorithm</span>
+<span class="sd">    :type demean: bool</span>
+<span class="sd">    :param detrend: boolean flag determining whether to detrend the data before applying the algorithm</span>
+<span class="sd">    :type detrend: bool</span>
+<span class="sd">    :param taper: proportion of the signal to be tapered at each end before applying the algorithm</span>
+<span class="sd">    :type taper: int</span>
+<span class="sd">    :param logger: logger object</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+<span class="sd">    :param fortran: Use Fortran libs or not. If libs will not compile or on a Windows Machine, set to False</span>
+<span class="sd">    :type fortran: bool</span>
+
+<span class="sd">    :return: Matrix of values of the same length as the data in tr. Note the returned vector will contain</span>
+<span class="sd">             NaNs near the edges of the trace where insufficient data are available to fill windows. Additional NaN</span>
+<span class="sd">             values will appear for every index that is skipped over when the increment parameter is greater than 1.</span>
+<span class="sd">    :rtype: numpy.array</span>
+
+
+<span class="sd">    By default, this method uses the ``&quot;classic_LR&quot;`` algorithm which calculates the average power in the trace data</span>
+<span class="sd">    over a short window (STA) and a long window (LTA). With this algorithm, windows are &quot;left/right aligned&quot; meaning</span>
+<span class="sd">    that the point for which STA/LTA is calculated is at the lefttmost edge of the STA window and the rightmost edge</span>
+<span class="sd">    of the LTA window. The resulting STA/LTA ratio thus has the same number of points as the original data. This is a</span>
+<span class="sd">    standard method of &quot;first break picking&quot; and can be used to identify the onset of a seismic event. [#]_ [#]_ [#]_</span>
+
+<span class="sd">    **Methodology**</span>
+
+<span class="sd">    1. ``algorithm = &quot;classic_RR&quot;``. This is the original STA/LTA algorithm with &quot;right alignment&quot; [#]_</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        STA(x_{i}) = (1/ns)\sum_{j = i-ns}^{i} x_{i}^{2}</span>
+
+<span class="sd">        LTA(x_{i}) = (1/nl)\sum_{j = i-nl}^{i} x_{i}^{2}</span>
+
+<span class="sd">        r_{i} = STA_{i}/LTA_{i}</span>
+
+<span class="sd">    .. code-block:: console</span>
+
+<span class="sd">       [---------- LTA ---------*]</span>
+<span class="sd">                       [-- STA -*]</span>
+
+<span class="sd">    2. ``algorithm = &quot;classic_LR&quot;`` (default). This algorithm has the index at the left edge of the STA window and the</span>
+<span class="sd">       right edge of the LTA window. [#]_</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        STA(x_{i}) = (1/ns)\sum_{j = i+ns}^{i} x_{i}^{2}</span>
+
+<span class="sd">        LTA(x_{i}) = (1/nl)\sum_{j = i-nl}^{i} x_{i}^{2}</span>
+
+<span class="sd">        r_{i} = STA_{i}/LTA_{i}</span>
+
+<span class="sd">    .. code-block:: console</span>
+
+<span class="sd">       [---------- LTA --------*]</span>
+<span class="sd">                              [*- STA --]</span>
+
+<span class="sd">    3. ``algorithm = &quot;EarleAndShearer_envelope&quot;`` [#]_</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       STA(x_{i}) = (1/ns)\sum_{j=i}^{i+ns} mod(H(x))_{i}</span>
+
+<span class="sd">       LTA(x_{i}) = (1/nl)\sum_{j=i-nl}^{i} mod(H(x))_{i}</span>
+
+<span class="sd">       r_{i} = STA_{i}/LTA_{i}</span>
+
+<span class="sd">    where: *H(x)* is the hilbert transform of the data and *mod(H(x))* is the &#39;envelope&#39; of the seismic signal</span>
+
+<span class="sd">    .. code-block:: console</span>
+
+<span class="sd">       [---------- LTA ---------*]</span>
+<span class="sd">                               [*- STA --]</span>
+
+<span class="sd">    .. note:: Because the Hilbert transform involves performing an FFT of the data it can take significantly longer than</span>
+<span class="sd">              the &quot;classic&quot; algorithms for longer seismic signals (&gt;500,000 pts)}</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from obspy.clients.fdsn import Client</span>
+<span class="sd">        from obspy import UTCDateTime</span>
+<span class="sd">        from pycheron.sigpro.STALTA import STALTA</span>
+
+<span class="sd">        #Instantiate client object</span>
+<span class="sd">        client = Client(&quot;IRIS&quot;)</span>
+
+<span class="sd">        #Grab data from 2010-02-27 to 2010-02-28</span>
+<span class="sd">        t = UTCDateTime(&quot;2010-02-27T00:00:00.000&quot;)</span>
+<span class="sd">        st = client.get_waveforms(&quot;IU&quot;,&quot;ANMO&quot;,&quot;00&quot;,&quot;BHZ&quot;,t,t+1440*60)</span>
+<span class="sd">        tr = st[0]</span>
+<span class="sd">        picker = STALTA(tr,3,30)</span>
+
+<span class="sd">    **Plotting**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import matplotlib.pyplot as plt</span>
+
+<span class="sd">        # Plot the trace and overlay the picker (on separate axes for easier viewing)</span>
+<span class="sd">        fig, ax1 = plt.subplots()</span>
+<span class="sd">        # Uses output from above example</span>
+<span class="sd">        ln1 = ax1.plot(tr,color=&#39;blue&#39;, label = &#39;raw data&#39;)</span>
+<span class="sd">        ax1.set_xlabel(&#39;Number of points&#39;)</span>
+<span class="sd">        ax1.set_ylabel(&#39;Amplitude&#39;, color =&#39;blue&#39;)</span>
+
+<span class="sd">        # Create picker axis and plot</span>
+<span class="sd">        ax2=ax1.twinx()</span>
+<span class="sd">        # Uses output from above example</span>
+<span class="sd">        ln2 = ax2.plot(picker, color = &#39;red&#39;, label = &#39;picker&#39;)</span>
+<span class="sd">        ax2.set_ylabel(&#39;Amplitude&#39;, color = &#39;red&#39;)</span>
+
+<span class="sd">        # Create combined legend</span>
+<span class="sd">        lns = ln1+ln2</span>
+<span class="sd">        labs = [l.get_label() for l in lns]</span>
+<span class="sd">        ax1.legend(lns,labs)</span>
+
+<span class="sd">    .. image:: _static/stalta.png</span>
+
+<span class="sd">    .. rubric:: References</span>
+
+<span class="sd">    .. [#] First break picking: multi-purpose STA/LTA trigger algorithm, http://en.wikipedia.org/wiki/First_break_picking</span>
+<span class="sd">    .. [#] &quot;A Comparison of Select Trigger Algorithms for Automated Global Seismic Phase and Event Detection&quot;</span>
+<span class="sd">            http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.116.245&amp;rep=rep1&amp;type=pdf</span>
+<span class="sd">    .. [#] Wong, &quot;Automatic time-picking of first arrivals on noisy microseismic data&quot;</span>
+<span class="sd">           http://www.crewes.org/ForOurSponsors/ConferenceAbstracts/2009/CSEG/Wong_CSEG_2009.pdf</span>
+<span class="sd">    .. [#] Wong, GEOPHYSICS, VOL. 75, NO. 4 (JULY-AUGUST 2010); P. V67-V76 Automatic first-breaks picking: New</span>
+<span class="sd">           strategies and algorithms&quot;. http://www.fcaglp.unlp.edu.ar/~velis/papers/PickingGeop10.pdf</span>
+<span class="sd">    .. [#] Wong, &quot;Adaptive microseismic event detection and automatic time picking&quot;</span>
+<span class="sd">           http://www.cspg.org/documents/Conventions/Archives/Annual/2012/279_GC2012_Adaptive_Microseismic_Event_Detection.pdf</span>
+<span class="sd">    .. [#] Earle and Shearer, &quot;Characterization of Global Seismograms Using an Automatic-Picking Algorithm&quot; Bulletin of the</span>
+<span class="sd">           Seismological Society of America, Vol. 84, No. 2, pp. 366-376, April 1994</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">logger</span> <span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Calculate constants</span>
+    <span class="n">n_sta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">staSecs</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+    <span class="n">n_lta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ltaSecs</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+
+    <span class="c1"># Test for windows that are too short based on sampling rate</span>
+    <span class="k">if</span> <span class="n">n_sta</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;STALTA(): STA window of </span><span class="si">%s</span><span class="s1"> secs is too short for a trace sampling rate of </span><span class="si">%s</span><span class="s1"> Hz&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">staSecs</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">))</span>
+        <span class="k">return</span>
+
+    <span class="c1"># If demean/detrend True, demean, detrend data, make copy of trace before so don&#39;t permanently change original trace</span>
+    <span class="k">if</span> <span class="n">demean</span> <span class="ow">or</span> <span class="n">detrend</span><span class="p">:</span>
+        <span class="n">trC</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">trC</span> <span class="o">=</span> <span class="n">DDT</span><span class="p">(</span><span class="n">trC</span><span class="p">,</span> <span class="n">demean</span><span class="p">,</span> <span class="n">detrend</span><span class="p">,</span> <span class="n">taper</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">trC</span> <span class="o">=</span> <span class="n">tr</span>
+
+    <span class="c1"># Check that there is sufficient data</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">trC</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_lta</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;STALTA(): insufficient data&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># DC signals will have all zeroes after demeaning. Return all zeroes in this case</span>
+    <span class="k">if</span> <span class="n">trC</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">trC</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="c1"># Apply the algorithm over the entire data series</span>
+    <span class="k">if</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;classic_RR&quot;</span><span class="p">:</span>
+        <span class="c1"># Automatic time-picking of first arrivals on noisy microseismic data. In this reference, the LTA/STA windows</span>
+        <span class="c1"># use the same right edge (index is in both windows)</span>
+        <span class="k">if</span> <span class="n">increment</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;STALTA(): algorithm classic_RR requires increment = 1&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">sta</span> <span class="o">=</span> <span class="n">roll_mean</span><span class="p">(</span><span class="n">trC</span><span class="o">.</span><span class="n">data</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_sta</span><span class="p">,</span> <span class="n">increment</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+        <span class="n">lta</span> <span class="o">=</span> <span class="n">roll_mean</span><span class="p">(</span><span class="n">trC</span><span class="o">.</span><span class="n">data</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_lta</span><span class="p">,</span> <span class="n">increment</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+        <span class="n">picker</span> <span class="o">=</span> <span class="n">sta</span> <span class="o">/</span> <span class="n">lta</span>
+    <span class="c1"># This is the same algorithm but with left-right alignment (index is in both windows)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;classic_LR&quot;</span><span class="p">:</span>
+
+        <span class="n">picker</span> <span class="o">=</span> <span class="n">roll_stalta</span><span class="p">(</span><span class="n">trC</span><span class="o">.</span><span class="n">data</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_sta</span><span class="p">,</span> <span class="n">n_lta</span><span class="p">,</span> <span class="n">increment</span><span class="p">,</span> <span class="n">fortran</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;EarleAndShearer_envelope&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">increment</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;STALTA(): algorithm EarleAndShearer_envelope requires increment = 1&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">envelope</span><span class="p">(</span><span class="n">trC</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">sta</span> <span class="o">=</span> <span class="n">roll_mean</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_sta</span><span class="p">,</span> <span class="n">increment</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+        <span class="n">lta</span> <span class="o">=</span> <span class="n">roll_mean</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_lta</span><span class="p">,</span> <span class="n">increment</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+        <span class="n">picker</span> <span class="o">=</span> <span class="n">sta</span> <span class="o">/</span> <span class="n">lta</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;STALTA(): algorithm </span><span class="si">%s</span><span class="s1"> not recognized&#39;</span> <span class="o">%</span> <span class="n">algorithm</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">return</span> <span class="n">picker</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

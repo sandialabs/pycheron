@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.deadChanMeanMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.metrics.deadChanMeanMetric</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">author: kaaur</span>
+<span class="sd">date: 12/01/18</span>
+<span class="sd">version: 0.0</span>
+<span class="sd">modified: N/A</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.masks</span> <span class="k">import</span> <span class="n">consecutive</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;deadChanMean&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="deadChanMean"><a class="viewcode-back" href="../../../pycheron.metrics.deadChanMeanMetric.html#pycheron.metrics.deadChanMeanMetric.deadChanMean">[docs]</a><span class="k">def</span> <span class="nf">deadChanMean</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">win_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">generateMasks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masksByTime</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function uses a simplistic rolling mean, using win_size and increments over the trace object by that win_size.</span>
+<span class="sd">    Unlike a typical rolling mean, no samples are shared between windows, e.g.</span>
+
+<span class="sd">    `[-----------][-----------][-----------][-----------][-----------][-----------][-----------][-----------]`</span>
+
+<span class="sd">    :param st: - obspy stream object</span>
+<span class="sd">    :type st: obspy.core.stream.Stream</span>
+<span class="sd">    :param win_size: number of samples to use for windowing. When None, determines the number of samples to use based on the sample rate</span>
+<span class="sd">    :type win_size: int</span>
+<span class="sd">    :param threshold: threshold to trigger deadChan for within rolling window. Recommended to keep this default value for triggered a dead channel</span>
+<span class="sd">    :type threshold: int</span>
+<span class="sd">    :param generateMasks: Generate boolean qc mask array.</span>
+<span class="sd">    :type generateMasks: bool</span>
+<span class="sd">    :param masksByTime: Generate a time-based qc mask list.</span>
+<span class="sd">    :type masksByTime: bool</span>
+<span class="sd">    :param database: database object</span>
+<span class="sd">    :type database: pycheron.db.sqllite_db.Database</span>
+
+<span class="sd">    :return: Returns list of dictionaries that includes the following keys and type for each trace within the stream:</span>
+
+<span class="sd">            * dead_channel_times (`list`) - Lists of dicts with dead channel start/endtime</span>
+<span class="sd">            * end_time (`str`) - end time of trace</span>
+<span class="sd">            * start_time (`str`) - start time of trace</span>
+<span class="sd">            * masks (`list` or `numpy.ndarray`) - masks for that trace, which is either a boolean array or a list of</span>
+<span class="sd">                                                start/stop times in UTC</span>
+<span class="sd">            * metric_name (`str`) - deadChanADFMetric string</span>
+<span class="sd">            * snlcq (`str`) - station network location channel information for the specific trace</span>
+
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    **Examples**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Loop through stream object and calculate a moving average for each trace based on user defined window size and</span>
+    <span class="c1"># period -- Using pandas built in moving average because very fast</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="p">)):</span>
+        <span class="c1"># Pull out trace one by one and loop through</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">st</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+
+        <span class="c1"># Initialize list to hold dad channel times</span>
+        <span class="n">dead_times</span><span class="o">=</span><span class="p">[]</span>
+        <span class="c1"># Obtain appropriate window size based on the sample rate</span>
+        <span class="k">if</span> <span class="n">win_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span> <span class="o">==</span> <span class="mi">100</span><span class="p">:</span>
+                <span class="n">win_size</span> <span class="o">=</span> <span class="mi">28000</span>
+            <span class="k">elif</span> <span class="nb">int</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span> <span class="o">==</span> <span class="mi">40</span><span class="p">:</span>
+                <span class="n">win_size</span> <span class="o">=</span> <span class="mi">11200</span>
+            <span class="k">elif</span> <span class="nb">int</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span> <span class="o">==</span> <span class="mi">20</span><span class="p">:</span>
+                <span class="n">win_size</span> <span class="o">=</span> <span class="mi">5600</span>
+            <span class="c1"># TODO: May want to think about changing this size for other sample rates -- maybe split into higher than</span>
+            <span class="c1"># TODO: 100sps and lower than 20sps?</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">win_size</span> <span class="o">=</span> <span class="mi">30000</span>
+
+        <span class="c1"># Initialize empty list to append means to</span>
+        <span class="n">rolling_mean</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Loop through data and calculate the mean of each window</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">win_size</span><span class="p">,</span> <span class="n">win_size</span><span class="p">):</span>
+            <span class="c1"># Define n_start, n_end</span>
+            <span class="n">n_start</span> <span class="o">=</span> <span class="n">n</span>
+            <span class="n">n_end</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="n">win_size</span>
+
+            <span class="c1"># Calculate rolling_mean</span>
+            <span class="n">rolling_mean</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">n_start</span><span class="p">:</span><span class="n">n_end</span><span class="p">]))</span>
+
+        <span class="c1"># Convert list to array</span>
+        <span class="n">rolling_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rolling_mean</span><span class="p">)</span>
+
+        <span class="c1"># Get differences in consecutive array elements</span>
+        <span class="n">diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ediff1d</span><span class="p">(</span><span class="n">rolling_mean</span><span class="p">)</span>
+
+        <span class="c1"># Find indices where differences are greater than threshold</span>
+        <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="c1"># if inds returns an empty list, skip everything</span>
+        <span class="k">if</span> <span class="n">inds</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Convert indices to time for masks.</span>
+            <span class="c1"># If consecutive indices, use start/end time. If only one use ind as start</span>
+            <span class="c1"># and end time. E.g., for long periods of time use first index and last index until a break in being below</span>
+            <span class="c1"># the threshold</span>
+
+            <span class="c1"># Group array into consecutive element arrays to identify stop/start times easier</span>
+            <span class="n">cons</span> <span class="o">=</span> <span class="n">consecutive</span><span class="p">(</span><span class="n">inds</span><span class="p">)</span>
+
+            <span class="c1"># Loop through range of consecutive elements to get the start/end time of dead Channel issues</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cons</span><span class="p">)):</span>
+                <span class="c1"># Skip single point elements as these are likely flukes and only process consecutive elements</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cons</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">+</span> <span class="p">(</span><span class="n">cons</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">win_size</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+                    <span class="n">end</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">+</span> <span class="p">(</span><span class="n">cons</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">win_size</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+
+                    <span class="c1"># Fill dictionary for each of these start/time intervals</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dead_starttime&#39;</span><span class="p">:</span> <span class="n">start</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                         <span class="s1">&#39;dead_endtime&#39;</span><span class="p">:</span> <span class="n">end</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()}</span>
+                    <span class="n">dead_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+            <span class="c1"># If generateMasks set to True, boolean masks will be created for QC issues -- skip over single elements of</span>
+            <span class="c1"># array as these are likely flukes</span>
+            <span class="k">if</span> <span class="n">generateMasks</span><span class="p">:</span>
+                <span class="c1"># If masksByTime set to True, masks with start/stop times will be created for QC issues</span>
+                <span class="k">if</span> <span class="n">masksByTime</span><span class="p">:</span>
+                    <span class="c1"># Create empty list to append to</span>
+                    <span class="n">deadMask</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="c1"># Loop through consecutive element blocks, skip single element issues. Append Starttime and Endtime to</span>
+                    <span class="c1"># list, then convert to array</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cons</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cons</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">s</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">+</span> <span class="p">(</span><span class="n">cons</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">win_size</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+                            <span class="n">e</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">+</span> <span class="n">cons</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">win_size</span> <span class="o">*</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+                            <span class="n">deadMask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="p">{</span><span class="s1">&#39;Startime&#39;</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                                 <span class="s1">&#39;Endtime&#39;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()})</span>
+
+                    <span class="c1"># Append the general information below</span>
+                    <span class="n">dt</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">get_id</span><span class="p">(),</span>
+                          <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                          <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                          <span class="s1">&#39;dead_channel_times&#39;</span><span class="p">:</span> <span class="n">dead_times</span> <span class="k">if</span> <span class="n">dead_times</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s1">&#39;masks&#39;</span><span class="p">:</span> <span class="n">deadMask</span><span class="p">,</span>
+                          <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;deadChanMeanMetric&#39;</span><span class="p">}</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># if maskByTime is false create binary array</span>
+                    <span class="n">deadMask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cons</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cons</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">deadMask</span><span class="p">[</span><span class="n">cons</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">win_size</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="n">dt</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">get_id</span><span class="p">(),</span>
+                          <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                          <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                          <span class="s1">&#39;dead_channel_times&#39;</span><span class="p">:</span> <span class="n">dead_times</span> <span class="k">if</span> <span class="n">dead_times</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s1">&#39;masks&#39;</span><span class="p">:</span> <span class="n">deadMask</span><span class="p">,</span>
+                          <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;deadChanMeanMetric&#39;</span><span class="p">}</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="n">dt</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">get_id</span><span class="p">(),</span>
+                      <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                      <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                      <span class="s1">&#39;dead_channel_times&#39;</span><span class="p">:</span> <span class="n">dead_times</span> <span class="k">if</span> <span class="n">dead_times</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="s1">&#39;masks&#39;</span><span class="p">:</span> <span class="s2">&quot;No Masks Created&quot;</span><span class="p">,</span>
+                      <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;deadChanMeanMetric&#39;</span><span class="p">}</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">get_id</span><span class="p">(),</span>
+                  <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                  <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                  <span class="s1">&#39;dead_channel_times&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="s1">&#39;masks&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;deadChanMeanMetric&#39;</span><span class="p">}</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

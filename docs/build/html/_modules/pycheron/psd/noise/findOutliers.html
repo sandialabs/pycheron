@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.psd.noise.findOutliers &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html"><span><img src="../../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../../install.html">Install</a></li>
+                <li><a href="../../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.psd.noise.findOutliers</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hampel&#39;</span><span class="p">,</span> <span class="s1">&#39;hampelFilter&#39;</span><span class="p">,</span> <span class="s1">&#39;findOutliers&#39;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">pathlib2</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+
+<span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pycheron.hampel</span> <span class="k">as</span> <span class="nn">hampelF</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">fpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="n">pwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pwd</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;------------------------------------------------------&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Building Fortran Library&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;------------------------------------------------------&quot;</span><span class="p">)</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;f2py&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;hampel&quot;</span><span class="p">,</span> <span class="s2">&quot;--quiet&quot;</span><span class="p">,</span> <span class="n">fpath</span> <span class="o">+</span> <span class="s2">&quot;/outliers/outliers.f&quot;</span><span class="p">])</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">pwd</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pycheron.hampel</span> <span class="k">as</span> <span class="nn">hampelF</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">hampel</span> <span class="k">as</span> <span class="nn">hampelF</span>
+
+
+<div class="viewcode-block" id="hampel"><a class="viewcode-back" href="../../../../pycheron.psd.noise.findOutliers.html#pycheron.psd.noise.findOutliers.hampel">[docs]</a><span class="k">def</span> <span class="nf">hampel</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nwin</span><span class="p">,</span> <span class="n">ind</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Python Version of the roll_hampel function in seismicRoll R package</span>
+
+<span class="sd">    :param data: input data</span>
+<span class="sd">    :type data: numpy.ndarray</span>
+<span class="sd">    :param nwin: n integer window size</span>
+<span class="sd">    :type nwin: int</span>
+<span class="sd">    :param ind: index looping through</span>
+<span class="sd">    :type ind: int</span>
+
+<span class="sd">    :return: 1D array of values of the same length as data</span>
+<span class="sd">    :rtype: numpy.ndarray</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Constants</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="mf">1.4826</span>  <span class="c1"># Mean Absolute Deviation</span>
+
+    <span class="c1"># Get half-window width</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Calculating x0 = median(data[nwin])</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">ind</span> <span class="o">-</span> <span class="n">k</span><span class="p">:</span> <span class="n">ind</span> <span class="o">-</span> <span class="n">k</span> <span class="o">+</span> <span class="n">nwin</span><span class="p">]</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">nwin</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp</span><span class="p">[(</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="c1"># Calculate the absolute difference between each point and the median</span>
+        <span class="n">absMinusMedian</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">ind</span> <span class="o">-</span> <span class="n">k</span><span class="p">:</span><span class="n">ind</span> <span class="o">-</span> <span class="n">k</span> <span class="o">+</span> <span class="n">nwin</span><span class="p">]</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the median of these two values</span>
+        <span class="n">absMinusMedian</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">absMinusMedian</span><span class="p">)</span>
+
+        <span class="n">medianAbsMinusMedian</span> <span class="o">=</span> <span class="p">(</span><span class="n">absMinusMedian</span><span class="p">[(</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">absMinusMedian</span><span class="p">[</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="c1"># Calculate the absolute difference between each point and the median</span>
+        <span class="n">absMinusMedian</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">ind</span> <span class="o">-</span> <span class="n">k</span><span class="p">:</span><span class="n">ind</span> <span class="o">-</span> <span class="n">k</span> <span class="o">+</span> <span class="n">nwin</span><span class="p">]</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the median of these two values</span>
+        <span class="n">absMinusMedian</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">absMinusMedian</span><span class="p">)</span>
+
+        <span class="n">medianAbsMinusMedian</span> <span class="o">=</span> <span class="n">absMinusMedian</span><span class="p">[</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="c1"># Calculate return value</span>
+    <span class="n">S0</span> <span class="o">=</span> <span class="n">L</span> <span class="o">*</span> <span class="n">medianAbsMinusMedian</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="n">S0</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="hampelFilter"><a class="viewcode-back" href="../../../../pycheron.psd.noise.findOutliers.html#pycheron.psd.noise.findOutliers.hampelFilter">[docs]</a><span class="k">def</span> <span class="nf">hampelFilter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nwin</span><span class="p">,</span> <span class="n">increment</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Python version of roll_hampel_numeric_vector in seismicRoll R package.</span>
+<span class="sd">    The Hampel filter is a robust outlier detector using Median Absolute Deviation (MAD); vector of values returned</span>
+<span class="sd">    that can be tested against different threshold values. Higher values in return are associated with a higher</span>
+<span class="sd">    likelihood that the associated point is an outlier when compared with it&#39;s neighbors.</span>
+
+<span class="sd">    :param data: input data</span>
+<span class="sd">    :type data: numpy.ndarray</span>
+<span class="sd">    :param nwin: n integer window size</span>
+<span class="sd">    :type nwin: int</span>
+<span class="sd">    :param increment: Increment integer shift to use when sliding the nwin to the next location</span>
+<span class="sd">    :type increment: int</span>
+
+<span class="sd">    :return: Returns a vector/array of same length of incoming data with NANs in the half-window at either end</span>
+<span class="sd">    :rtype: numpy.ndarray</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        The default value of **increment** =1 should not be changed. Outliers are defined as individual points that</span>
+<span class="sd">        stand apart from their neighbors. Applying the Hampel filter to every other point by using</span>
+<span class="sd">        increment &gt; 1 will invariably miss some of the outliers.</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize output vector</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+    <span class="c1"># Get half-window width</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># For valid region, calculate result</span>
+    <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">increment</span><span class="p">):</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">hampel</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nwin</span><span class="p">,</span> <span class="n">ind</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<div class="viewcode-block" id="findOutliers"><a class="viewcode-back" href="../../../../pycheron.psd.noise.findOutliers.html#pycheron.psd.noise.findOutliers.findOutliers">[docs]</a><span class="k">def</span> <span class="nf">findOutliers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nwin</span><span class="o">=</span><span class="mi">41</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">selectivity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">increment</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fixedThreshold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fortran</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Outlier detection with rolling hampel filter; A wrapper for the roll_hampel() function that counts outliers using</span>
+<span class="sd">    either a user specified threshold value or a threshold value based on the statistics of the incoming data.</span>
+
+<span class="sd">    :param data: (vector/array) - input data</span>
+<span class="sd">    :type data: numpy.ndarray</span>
+<span class="sd">    :param nwin: (int) - n integer window size</span>
+<span class="sd">    :type nwin: int</span>
+<span class="sd">    :param threshold: (int) minimum value for outlier detection.</span>
+<span class="sd">    :type threshold: int</span>
+<span class="sd">    :param selectivity: (float) - value between [0-1] used in determining outliers, or None if fixedThreshold = True.</span>
+<span class="sd">    :type selectivity: float</span>
+<span class="sd">    :param increment: (int) - increment integer shift to use when sliding the nwin to the next location.</span>
+<span class="sd">    :type increment: int</span>
+<span class="sd">    :param fixedThreshold: (boolean) - True/False specifying whether outlier detection uses selectivity</span>
+<span class="sd">    :type fixedThreshold: bool</span>
+<span class="sd">    :param fortran: (boolean) - Use Fortran libs or not. If libs will not compile or on a Windows Machine, set to False</span>
+<span class="sd">    :type fortran: bool</span>
+
+<span class="sd">    :return: returns a list of indices associated with outliers in the incoming data</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">          The threshold and selectivity parameters work like squelch and volume on a CB radio: threshold sets a noise</span>
+<span class="sd">          threshold below which you don&#39;t want anything while selectivity increases the number of points defined as</span>
+<span class="sd">          outliers. Of course nwin, the window Size, is important as well.</span>
+
+
+<span class="sd">          For B* and V* channels, the default value threshold = 6.0 seems to work well, while for L* channels a value of</span>
+<span class="sd">          threshold = 12 seems more reasonable. More testing is needed.</span>
+
+<span class="sd">    **Parameter Notes**</span>
+
+<span class="sd">    * threshold (`int`)</span>
+
+<span class="sd">      * Threshold level is similar to a sigma value for normally distributed data. Hampel filter values</span>
+<span class="sd">        above 6.0 indicate a data value that is extremely unlikely to be part of a normal distribution</span>
+<span class="sd">        (~1/500 million) and therefore likely to be an outlier. By choosing a relatively large value for</span>
+<span class="sd">        threshold min one can make it less likely that we will generate false positives.</span>
+<span class="sd">        False positives can include high frequency environmental noise.</span>
+
+<span class="sd">    * selectivity (`float`)</span>
+
+<span class="sd">      * The selectivity is a value between 0 and 1 and is used to generate an appropriate threshold for</span>
+<span class="sd">        outlier detection based on the statistics of the incoming data. A lower value for selectivity will</span>
+<span class="sd">        result in more outliers while a value closer to 1.0 will result in fewer.</span>
+
+<span class="sd">    * increment `(int`)</span>
+
+<span class="sd">      * The default value of increment=1 should not be changed. Applying the Hampel filter to every other</span>
+<span class="sd">        point by using increment &gt; 1 will invariably miss some of the outliers.</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        #import function</span>
+<span class="sd">        from pycheron.psd.noise.findOutliers import findOutliers</span>
+
+<span class="sd">        #Create sinusoidal signal with outliers</span>
+<span class="sd">        g =[]</span>
+<span class="sd">        for i in range(1,101):</span>
+<span class="sd">            g.append(np.sin(0.1*i))</span>
+<span class="sd">        #Create indices with outliers to detect</span>
+<span class="sd">        g=np.asarray(g)</span>
+<span class="sd">        ginds = [10,19,46,67,68,73,90]</span>
+<span class="sd">        for i in ginds:</span>
+<span class="sd">            g[i] = g[i]*10</span>
+
+
+<span class="sd">        #Parameters</span>
+<span class="sd">        nwin = 7</span>
+<span class="sd">        threshold = 6</span>
+<span class="sd">        selectivity = None</span>
+<span class="sd">        increment = 1</span>
+<span class="sd">        fixedThreshold = True</span>
+
+<span class="sd">        #finding outliers</span>
+<span class="sd">        outliers = findOutliers(g,nwin,threshold,selectivity,increment,fixedThreshold)</span>
+
+<span class="sd">    **Plotting**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import matplotlib.pyplot as plt</span>
+
+<span class="sd">        plt.plot(g,color=&#39;grey&#39;)</span>
+<span class="sd">        plt.plot(outliers,g[outliers],&#39;ro&#39;)</span>
+<span class="sd">        plt.ylim(-15, 10)</span>
+<span class="sd">        plt.title(&#39;Outliers detected: %s&#39;%(len(outliers)))</span>
+
+<span class="sd">    .. image:: _static/outliersPlot.png</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">fortran</span><span class="p">:</span>
+
+        <span class="n">h</span> <span class="o">=</span> <span class="n">hampelF</span><span class="o">.</span><span class="n">hampelfilter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nwin</span><span class="p">,</span> <span class="n">increment</span><span class="p">)</span>
+        <span class="n">h</span><span class="p">[</span><span class="n">h</span> <span class="o">==</span> <span class="o">-</span><span class="mi">99999</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">h</span><span class="p">[</span><span class="n">h</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">hampelFilter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nwin</span><span class="p">,</span> <span class="n">increment</span><span class="p">)</span>
+
+        <span class="c1"># If 50% of values in window are same, then h blows up to Inf. In this case, set to nan.</span>
+        <span class="n">h</span><span class="p">[</span><span class="n">h</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="c1"># If all nans, exit finding outliers</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">h</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;roll hampel returns a vector with all NaNs; 50</span><span class="si">% o</span><span class="s1">f values in all windows identical&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Find maxH in the array</span>
+    <span class="n">maxH</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+    <span class="c1"># Check if values cross threshold</span>
+    <span class="k">if</span> <span class="n">maxH</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
+        <span class="c1"># If no values cross threshold, return an empty vector</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">h</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Some values cross threshold, set up a new threshold based on maxH and selectivity</span>
+        <span class="c1"># If fixedThreshold set to True, pick outliers based on threshold, otherwise pick outliers based on maxH and</span>
+        <span class="c1"># selectivity</span>
+        <span class="k">if</span> <span class="n">fixedThreshold</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">outinds</span> <span class="o">=</span> <span class="p">[</span><span class="n">inds</span> <span class="k">for</span> <span class="n">inds</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">]</span>
+            <span class="c1"># mask = h &gt; threshold</span>
+            <span class="c1"># outliers = h[mask]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Added in returning indices in case important for use in plotting, other , etc</span>
+            <span class="n">outinds</span> <span class="o">=</span> <span class="p">[</span><span class="n">inds</span> <span class="k">for</span> <span class="n">inds</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">maxH</span> <span class="o">*</span> <span class="n">selectivity</span><span class="p">]</span>
+            <span class="c1"># mask = h &gt; (maxH * selectivity)</span>
+            <span class="c1"># outliers = h[mask]</span>
+
+        <span class="k">return</span> <span class="n">outinds</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.gapMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">pycheron.metrics.gapMetric</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="module-pycheron.metrics.gapMetric">
+<span id="pycheron-metrics-gapmetric"></span><h1>pycheron.metrics.gapMetric<a class="headerlink" href="#module-pycheron.metrics.gapMetric" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pycheron.metrics.gapMetric.gapMetric">
+<code class="descname">gapMetric</code><span class="sig-paren">(</span><em>st</em>, <em>generateMasks=False</em>, <em>separateMasks=True</em>, <em>completeDay=True</em>, <em>masksByTime=True</em>, <em>logger=None</em>, <em>database=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/gapMetric.html#gapMetric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.gapMetric.gapMetric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function calculates metrics associated with gaps and overlaps in a seismic signal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>st</strong> (<em>obspy.core.stream.Stream</em>) – obspy stream object</li>
+<li><strong>generateMasks</strong> (<em>bool</em>) – (boolean) If True, QC masks will be created.</li>
+<li><strong>separateMasks</strong> (<em>bool</em>) – (boolean) If True, 2 masks will be create. 1 for gaps, and 1 for overlaps, if False these masks will be merged and 3 masks will be returned. Gaps, Overlaps, Combined.</li>
+<li><strong>completeDay</strong> (<em>bool</em>) – (boolean) If True, if an individual day is does not start at 00:00:00 or end at 23:59:59, a small trace will be made to complete the day. This should be used if, for example, have only 6 hours of data, but would like to consider that 6 hours out of a whole day, thus gaps
+would be found and masks would be created around that segment of data.</li>
+<li><strong>masksByTime</strong> (<em>bool</em>) – (bool) - Boolean to determine whether masks are generated by time. If True, masks will be generated with a start/end time, if false, they will be generated as boolean array.</li>
+<li><strong>logger</strong> (<a class="reference internal" href="pycheron.util.logger.html#pycheron.util.logger.Logger" title="pycheron.util.logger.Logger"><em>pycheron.util.logger.Logger</em></a>) – logger object</li>
+<li><strong>database</strong> (<a class="reference internal" href="pycheron.db.sqllite_db.html#pycheron.db.sqllite_db.Database" title="pycheron.db.sqllite_db.Database"><em>pycheron.db.sqllite_db.Database</em></a>) – database object</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Tuple of station gap summary information and channel gap information. See below.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example, returns 2 objects. Each object is a list of dictionaries</span>
+<span class="n">summary</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">gapMetric</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Metrics include:</strong></p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>Station Summary data:</dt>
+<dd><ul class="first last">
+<li><cite>station_completeness</cite> - total percentage of total requested time for which signal is available for a station (average of channel percentages)</li>
+<li><cite>network</cite> - network name</li>
+<li><cite>station</cite> - station name</li>
+<li><cite>location</cite> - location</li>
+<li><cite>total_gaps</cite> - total number of gaps in stream</li>
+<li><cite>total_overlaps</cite> - total number of overlaps in stream</li>
+<li><cite>metric_name</cite> - gapMetricStation</li>
+<li><cite>starttime</cite> - end time of trace</li>
+<li><cite>endtime</cite> - start time of trace</li>
+<li><cite>gap_masks</cite> - Mask for gapped data. Boolean array</li>
+<li><cite>overlap_masks</cite> - Mask for overlapped data. Boolean array</li>
+<li><cite>combined_masks</cite> - Mask for gapped and overlaped data. Boolean array</li>
+<li><cite>maximum_gap</cite> - length of maximum gap found in channel within stream</li>
+<li><cite>maximum_overlap</cite> - length of maximum overlap(s) found in channel within stream</li>
+<li><cite>channel_percent_available</cite> - percentage  of total requested time for which a signal is available for channel</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Channel data</dt>
+<dd><ul class="first last">
+<li><cite>channel</cite> - channel that the above metrics apply to</li>
+<li><cite>duration</cite> - duration of gaps/overlaps within channel</li>
+<li><cite>type</cite> - overlap or gap</li>
+<li><cite>gap_overlap_start_time</cite> - gap/overlap start time</li>
+<li><cite>gap_overlap_end_time</cite> - gap/overlap end time</li>
+<li><cite>metric_name</cite> - gapChannelMetric</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Examples</strong></p>
+<ol class="arabic simple">
+<li>Gaps with multiple channels, same station</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#test data with gaps with multiple channels, same station</span>
+<span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;test/test_data/6e_sp06_Eall.397679.tar.mseed&#39;</span>
+<span class="c1">#reading in stream</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">gaps</span><span class="p">,</span> <span class="nb">sum</span> <span class="o">=</span> <span class="n">gapMetric</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+<span class="k">print</span> <span class="s1">&#39;Gap Details:&#39;</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">gaps</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">i</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Gap</span> <span class="n">Details</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">408.0050001144409</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-19T21:01:07.985000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-19T21:07:56&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">86397.97009897232</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-20T00:00:00.990000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-20T23:59:58.970099&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">}]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">408.0050001144409</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-19T21:01:07.985000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-19T21:07:56&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHN&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">86397.97009897232</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-20T00:00:00.990000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-20T23:59:58.970099&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHN&#39;</span><span class="p">}]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">408.0050001144409</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-19T21:01:07.985000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-19T21:07:56&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHZ&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">86397.97009897232</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-20T00:00:00.990000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2014-01-20T23:59:58.970099&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHZ&#39;</span><span class="p">}]</span>
+
+<span class="k">print</span> <span class="s2">&quot;Gap Summary:&quot;</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sum</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">i</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Gap</span> <span class="n">Summary</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;overlap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="mf">49.76476708626203</span><span class="p">,</span> <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;combined_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="s1">&#39;channel_percent_available&#39;</span><span class="p">:</span> <span class="mf">49.76476708626204</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">58</span><span class="p">,</span> <span class="mi">995000</span><span class="p">),</span> <span class="s1">&#39;gap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="mf">86397.97009897232</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">,</span> <span class="s1">&#39;metirc_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetric&#39;</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;overlap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="mf">49.76476708626203</span><span class="p">,</span> <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;combined_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="s1">&#39;channel_percent_available&#39;</span><span class="p">:</span> <span class="mf">49.76476708626204</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">58</span><span class="p">,</span> <span class="mi">995000</span><span class="p">),</span> <span class="s1">&#39;gap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="mf">86397.97009897232</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHN&#39;</span><span class="p">,</span> <span class="s1">&#39;metirc_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetric&#39;</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;overlap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="mf">49.76476708626203</span><span class="p">,</span> <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;combined_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="s1">&#39;channel_percent_available&#39;</span><span class="p">:</span> <span class="mf">49.76476708626204</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2014</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">58</span><span class="p">,</span> <span class="mi">995000</span><span class="p">),</span> <span class="s1">&#39;gap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="mf">86397.97009897232</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHZ&#39;</span><span class="p">,</span> <span class="s1">&#39;metirc_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetric&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Data with overlaps single channel</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#test data with overlaps single channel</span>
+<span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;test/test_data/qualityflags.mseed&#39;</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">gaps</span><span class="p">,</span> <span class="nb">sum</span><span class="o">=</span> <span class="n">gapMetric</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+<span class="k">print</span> <span class="s1">&#39;Gap Details:&#39;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Gap</span> <span class="n">Details</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2007-12-31T23:59:59.915000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">86397.01009917259</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:00:01.970000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T23:59:58.985099&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">}]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">gaps</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">i</span>
+<span class="k">print</span> <span class="s2">&quot;Gap Summary:&quot;</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sum</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">i</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Gap</span> <span class="n">Summary</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;overlap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="mf">0.0023957440604789326</span><span class="p">,</span> <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2007</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">915000</span><span class="p">),</span> <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="mi">17</span><span class="p">,</span> <span class="s1">&#39;combined_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="mf">2.054999828338623</span><span class="p">,</span> <span class="s1">&#39;channel_percent_available&#39;</span><span class="p">:</span> <span class="mf">0.0023957440604789326</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2008</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">58</span><span class="p">,</span> <span class="mi">995000</span><span class="p">),</span> <span class="s1">&#39;gap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="mf">86397.01009917259</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">,</span> <span class="s1">&#39;metirc_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetric&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li>Data with gaps and overlaps single channel</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#test data with gaps and overlaps single channel</span>
+<span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;test/test_data/sglchan_onegap_oneoverlap.mseed&#39;</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">gaps</span><span class="p">,</span> <span class="nb">sum</span><span class="o">=</span> <span class="n">gapMetric</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+<span class="k">print</span> <span class="s1">&#39;Gap Details:&#39;</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">gaps</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">i</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Gap</span> <span class="n">Details</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">16.479999780654907</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:01:34.480000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:01:50.965000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.06000018119812</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:01:53.020000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:01:50.965000&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">86191.2000989914</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_start_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T00:03:27.780000&#39;</span><span class="p">,</span> <span class="s1">&#39;gap/overlap_end_time&#39;</span><span class="p">:</span> <span class="s1">&#39;2008-01-01T23:59:58.985099&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">}]</span>
+
+<span class="k">print</span> <span class="s2">&quot;Gap Summary:&quot;</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sum</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">i</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Gap</span> <span class="n">Summary</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;overlap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;station_completeness&#39;</span><span class="p">:</span> <span class="mf">0.22170325039695626</span><span class="p">,</span> <span class="s1">&#39;total_gaps&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2007</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">765000</span><span class="p">),</span> <span class="s1">&#39;total_overlaps&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;combined_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_overlap&#39;</span><span class="p">:</span> <span class="mf">2.06000018119812</span><span class="p">,</span> <span class="s1">&#39;channel_percent_available&#39;</span><span class="p">:</span> <span class="mf">0.22170325039695626</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2008</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">58</span><span class="p">,</span> <span class="mi">995000</span><span class="p">),</span> <span class="s1">&#39;gap_masks&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;maximum_gap&#39;</span><span class="p">:</span> <span class="mf">86191.2000989914</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;EHE&#39;</span><span class="p">,</span> <span class="s1">&#39;metirc_name&#39;</span><span class="p">:</span> <span class="s1">&#39;gapMetric&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

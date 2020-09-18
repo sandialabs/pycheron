@@ -1,0 +1,50 @@
+Future Imporvements:
+-LSTM Machinie Learning; Caching
+-GUI/Display of Metrics and Images
+-Evalresp from IRIS. Can be slow based on IRIS server. Look for alternatives
+-Automating Station Noise Baseline tests
+-Add different types of responses
+-Add masks to SOH metric. Currently need more test data with SOH flags in order to validate
+-Create less complicated calibration metric, so there are less dependencies
+-Reveiw DQA from ASL
+-Determine if Pycheron algorithms suited for realtime data processing
+-Automating 
+-Being able to distinguish better bewtween dead channels, noise, and response quality issues
+-Work on updating repeated amplitudes to encompass more issues
+-Simple logger to log error messages for wrapper code
+-Updates to 
+-Work on incorporating 
+-Updates to spike metrics/DC Offsets-- want a sweeper of DC offsets with different lengths to try catch different length problems
+-Focus on automation and scaling, along with optimizing identification of QC problems
+    -Work on identifying correct thresholds for the various metrics (solidfy what thresholds to use for various types of issues0
+    -Scaling issues: FFT scaling for PSDs is slow (finished wrapping specPgram part (loops over 13 times), but still need to wrap psdList)
+        -Currently improved by 1/4 (something that takes 10 minutes now takes 7 minutes)
+    -Update the dead channel detectors to look over every hour of the PSD
+-Conference attendance (Machine Learning and/or AGU for both Jessica and I)
+    -Come up with ways to automate interpretation of PSDs and ColorGrids
+-Determine best path forward on caching
+    -How to best use historical results for current predictions
+    -Basic caching (HDF5) vs. ML
+-Optimize how we are processing the data and reusing results - which may bring us back to caching above
+-Reading into anomaly detection
+-Also need more metrics for metadata inconsistencies
+    -Work on SOH metric
+-Complete integration with SAPL and optimization
+-Optimize dataAcq techniques
+- Focus on implementation, optimization, and automation
+-Developing the ability to identify and handle duplicate data within the same data stream. 
+-Change the way our spike algorithm marks spikes by using a start and end time for the spike such that masking will be more seamless
+-Further separating out distinct issues from one another (dead channel vs. other possibilities) and ensuring we have a use case for dead channels 
+ that includes instrumental noise.
+-In a future Pycheron release, we hope to provide more optimization of the default input parameters and/or rules of thumb for the user. 
+-We found that we had to adjust the parameters to accurately determine the given DC offset and are considering having a sweep of DC offset trackers to run 
+ through the same waveform looking for different length DC offsets present in the data; this will require further testing and more data for optimization. 
+-Future work will involve identifying situations wherein a mass became railed partially through operation as well as working to further separate out 
+ distinct issues from one another (railed mass vs. other possibilities) using automated thresholds (mentioned above) 
+-More thorough investigation into noise threhsolds and optimization
+-Substantial room for improvement in implementation, optimization, and automation exists, notably for developing a system that considers 
+ multiple quality control metrics and thresholds to isolate specific QC issues.   
+
+
+
+

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.psd.psdStatistics &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.psd.psdStatistics</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;psdStatistics&#39;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">pycheron.psd.noise.getNoise</span> <span class="k">import</span> <span class="n">getNoise</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.noise.noiseModel</span> <span class="k">import</span> <span class="n">noiseModel</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.getPDF</span> <span class="k">import</span> <span class="n">getPDF</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.logger</span> <span class="k">import</span> <span class="n">Logger</span>
+
+
+
+<div class="viewcode-block" id="psdStatistics"><a class="viewcode-back" href="../../../pycheron.psd.psdStatistics.html#pycheron.psd.psdStatistics.psdStatistics">[docs]</a><span class="k">def</span> <span class="nf">psdStatistics</span><span class="p">(</span><span class="n">psds</span><span class="p">,</span> <span class="n">evalresp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The psdStatistics function calculates a variety of basic statistics associated with an incoming set of PSDs.</span>
+
+<span class="sd">    :param psds: list of psds, use ``psdList()`` function output as input</span>
+<span class="sd">    :type psds: list</span>
+<span class="sd">    :param evalresp: numpy.ndarray of freq, amp, phase information matching output of</span>
+<span class="sd">        client.evalresp, optional as will grab the response information from IRIS if</span>
+<span class="sd">        not supplied by user. If supplied by user, user should adhere to client.evalresp</span>
+<span class="sd">        output format</span>
+<span class="sd">    :type evalresp: numpy.ndarray</span>
+<span class="sd">    :param logger: logger object</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+<span class="sd">    :param database: Database object</span>
+<span class="sd">    :type database: pycheron.db.sqllite_db.Database</span>
+
+<span class="sd">    :return: Dictionary containing the following keys and types:</span>
+
+<span class="sd">             * snclq (`list`) - list of SNCLQ information, i.e. ``[&quot;s.n.c.q.l&quot;]``</span>
+<span class="sd">             * metric_name (`string`) - name of metric</span>
+<span class="sd">             * start_time (`string`) - psd start time</span>
+<span class="sd">             * end_time (`string`) = psd end time</span>
+<span class="sd">             * noise_matrix_Noise (`numpy.ndarray`): Noise – array of corrected power levels</span>
+<span class="sd">             * noise_matrix_frequency (`numpy.ndarray`): Frequency – array of associated frequencies for noise array</span>
+<span class="sd">             * pdf_matrix (`numpy.ndarray`) – array of probability density values; rows=dB level, columns=frequencies</span>
+<span class="sd">             * pdf_bins (`numpy.array`) – vector of power values (dB) associated with pdfMatrix rows</span>
+<span class="sd">             * max (`numpy.array`) – maximum power level at each frequency</span>
+<span class="sd">             * min (`numpy.array`) – minimum power level at each frequency</span>
+<span class="sd">             * mean (`numpy.array`) – mean power level at each frequency</span>
+<span class="sd">             * median (`numpy.array`) – median power level at each frequency</span>
+<span class="sd">             * mode (`numpy.array`) – mode of power level at each frequency (obtained from pdfMatrix)</span>
+<span class="sd">             * nlnm (`numpy.array`) – low noise model power level at each frequency</span>
+<span class="sd">             * nhnm (`numpy.array`) – high noise model power level at each frequency</span>
+<span class="sd">             * percent_above_nhnm (`numpy.array`) – percent of PSDs above the high noise model at each frequency</span>
+<span class="sd">             * percent_below_nlnm (vector) – percent of PSDS below the low noise model at each frequency</span>
+<span class="sd">             * percent_95 (`numpy.array`) - 95 percentile power level at each frequency</span>
+<span class="sd">             * percent_90 (`numpy.array`) - 90 percentile power level at each frequency</span>
+<span class="sd">             * percent_10 (`numpy.array`) - 10 percentile power level at each frequency</span>
+<span class="sd">             * percent_5 (`numpy.array`) - 5 percentile power level at each frequency</span>
+
+<span class="sd">    :rtype: dict</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # import function</span>
+<span class="sd">        import obspy</span>
+<span class="sd">        import matplotlib.pyplot as plt</span>
+<span class="sd">        from pycheron.psd.psdList import psdList</span>
+<span class="sd">        from pycheron.psd.psdStatistics import psdStatistics</span>
+
+<span class="sd">        # test data</span>
+<span class="sd">        data1 = &#39;test/test_data/7a_cabn_bhe.884965.tar.mseed&#39;</span>
+
+<span class="sd">        # reading in stream</span>
+<span class="sd">        st = obspy.read(data1)</span>
+
+<span class="sd">        # creating list of psds, this is a REQUIRMENT as the psdStatistic takes in a psdList</span>
+<span class="sd">        psds = psdList(st)</span>
+
+<span class="sd">        # Calculating stats</span>
+<span class="sd">        stats = psdStatistics(psds)</span>
+
+<span class="sd">        # psdStatistics returns a list of dictionaries. Each dictionary corresponds to a trace in the st, if there is</span>
+<span class="sd">        # only one dict in the list, then there is only one trace in the stream. Data can be accessed using the following</span>
+<span class="sd">        # dict keys</span>
+
+<span class="sd">        # stats[0][&#39;noise_matrix_frequency&#39;]</span>
+<span class="sd">        # stats[0][&#39;noise_matrix_noise&#39;]</span>
+<span class="sd">        # stats[0][&#39;PDFMatrix&#39;]</span>
+<span class="sd">        # stats[0][&#39;PDFBins&#39;]</span>
+<span class="sd">        # stats[0][&#39;Max&#39;]</span>
+<span class="sd">        # stats[0][&#39;Min&#39;]</span>
+<span class="sd">        # stats[0][&#39;Mean&#39;]</span>
+<span class="sd">        # stats[0][&#39;Median&#39;]</span>
+<span class="sd">        # stats[0][&#39;Mode&#39;]</span>
+<span class="sd">        # stats[0][&#39;NHNM&#39;]</span>
+<span class="sd">        # stats[0][&#39;NLNM&#39;]</span>
+<span class="sd">        # stats[0][&#39;Percent_above_NHNM&#39;]</span>
+<span class="sd">        # stats[0][&#39;Percent_below_NLNM&#39;]</span>
+<span class="sd">        # stats[0][&#39;95percent&#39;]</span>
+<span class="sd">        # stats[0][&#39;90percent&#39;]</span>
+<span class="sd">        # stats[0][&#39;10percent&#39;]</span>
+<span class="sd">        # stats[0][&#39;5percent&#39;]</span>
+
+<span class="sd">        # output not show for brevity</span>
+<span class="sd">        print &#39;NoiseMatrix:&#39;, stats[0][&#39;noise_matrix_frequency&#39;][0] #Frequency matrix of first segment of trace</span>
+<span class="sd">        print &#39;NoiseMatrix:&#39;, stats[0][&#39;noise_matrix_noise&#39;][0] #Noise matrix of first segment trace</span>
+<span class="sd">        print &#39;PDFMatrix:&#39;, stats[0][&#39;PDFMatrix&#39;][0] #PDF matrix of first segment of trace</span>
+<span class="sd">        print &#39;PDFBins:&#39;, stats[0][&#39;PDFBins&#39;][0] #PDFBins (power) associated with PDFMatrix of first segment of trace</span>
+<span class="sd">        print &#39;Max:&#39;, stats[0][&#39;Max&#39;]  #Maximum power level at each frequency</span>
+<span class="sd">        print &#39;Min:&#39;, stats[0][&#39;Min&#39;]  #Minimum power level at each frequency</span>
+<span class="sd">        print &#39;Mean:&#39;, stats[0][&#39;Mean&#39;]  #Mean power level at each frequency</span>
+<span class="sd">        print &#39;Median:&#39;, stats[0][&#39;Median&#39;]  #Median power level at each frequency</span>
+<span class="sd">        print &#39;Mode:&#39;, stats[0][&#39;Mode&#39;]  #Mode power level at each frequency</span>
+<span class="sd">        print &#39;Percent_above_NHNM:&#39;, stats[0][&#39;Percent_above_NHNM&#39;]  #Percent of PSDs above NHNM</span>
+<span class="sd">        print &#39;Percent_below_NLNM:&#39;, stats[0][&#39;Percent_below_NLNM&#39;]  #Percent of PSDs below NLNM</span>
+<span class="sd">        print &#39;95percent:&#39;, stats[0][&#39;95percent&#39;]  #95 percentile</span>
+<span class="sd">        print &#39;90percent:&#39;, stats[0][&#39;90percent&#39;]  #90 percentile</span>
+<span class="sd">        print &#39;10percent:&#39;, stats[0][&#39;10percent&#39;]  #10 percentile</span>
+<span class="sd">        print &#39;5percent:&#39;, stats[0][&#39;5percent&#39;]  #5 percentile</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># Hack -- change later (maybe?) If receive empty psds exit out</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">psds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">psds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;psdStatitics(): psd input is empty or zero&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">k</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;psdStatitics(): psd input is empty or zero&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">k</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;psdStatitics(): psd input is empty or zero&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">k</span>
+
+    <span class="c1"># Get list of frequencies for associated PSD as well as noise matrices for each corrected PSD</span>
+    <span class="c1"># (for each trace in stream)</span>
+    <span class="k">if</span> <span class="n">psds</span><span class="p">:</span>
+        <span class="n">f</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">psds</span> <span class="o">=</span> <span class="n">getNoise</span><span class="p">(</span><span class="n">psds</span><span class="p">,</span> <span class="n">evalresp</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;psdStatitics(): psd input is empty or zero&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">k</span>
+
+    <span class="c1"># Doing this again because getNoise can also return and empty psdList</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;psdStatitics(): psd input is empty or zero&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">k</span>
+
+    <span class="c1"># Initialize data container</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># ------------Calculate PSD Max, Min, Mean, Median------------------------------------------------</span>
+
+    <span class="c1"># loop through psds and grab out appropriate frequencies and noise</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">psds</span><span class="p">)):</span>
+
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+
+        <span class="c1"># Define rows and columns based on dimensions of noise array</span>
+        <span class="n">nrow</span> <span class="o">=</span> <span class="n">noise</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ncol</span> <span class="o">=</span> <span class="n">noise</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># initialize containers with NaNs for storage based on ncol value from noise matrix (ncol = # of freqs)</span>
+        <span class="n">colMax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">colMin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">colMean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">colMedian</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">col95</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">col05</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">col90</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">col10</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="c1"># Loop through rows of columns and fill in one frequency at a time for PSD max, min, mean, and median</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">ncol</span><span class="p">):</span>
+            <span class="n">colMax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="n">colMin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="n">colMean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="n">colMedian</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="n">col05</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="n">col95</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="mi">95</span><span class="p">)</span>
+            <span class="n">col90</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="mi">90</span><span class="p">)</span>
+            <span class="n">col10</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="mi">10</span><span class="p">)</span>
+
+        <span class="c1"># ------------Calculate pctAboveNHNM and pctBelowNLNM-----------------------</span>
+        <span class="c1"># Obtain high and low noise model based on specific frequencies requested in freq argument</span>
+        <span class="n">nlnm</span><span class="p">,</span> <span class="n">nhnm</span> <span class="o">=</span> <span class="n">noiseModel</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+
+        <span class="c1"># Calculate percent metrics based on frequencies that have a noise model value and noise value -- this is in R</span>
+        <span class="c1"># code though I&#39;m not sure how often this will actually be different than ncol but added it anyway</span>
+
+        <span class="c1"># High and low noise models have the same upper and lower frequency limits, so only check one model, also only</span>
+        <span class="c1"># check one noise PSD as should be the same length</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">notNan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">noise</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">nlnm</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">notNan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">noise</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">nlnm</span><span class="p">))</span>
+
+        <span class="c1"># Use notNan to construct the aboveCount/belowCount numpy array containers if not equal to ncol</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">notNan</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="n">ncol</span><span class="p">:</span>
+            <span class="n">aboveCount</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span>
+            <span class="n">belowCount</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">aboveCount</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">aboveCount</span><span class="p">[</span><span class="n">notNan</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">belowCount</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">belowCount</span><span class="p">[</span><span class="n">notNan</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Loop through notNan (will be equivalent to rows of columns for majority of cases) and determine which values</span>
+        <span class="c1"># are above or below nhnm and nlnm. The expressions results in a boolean array with the same shape as noise,</span>
+        <span class="c1"># sums over those boolean elements treating True values as 1 and False values as 0. Does this for each array of</span>
+        <span class="c1"># noise to get a full aboveCount and belowCount.</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">notNan</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+            <span class="n">aboveCount</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">nhnm</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+            <span class="n">belowCount</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">noise</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">nlnm</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+
+        <span class="c1"># Calculate percent of total values above/below</span>
+        <span class="n">pctAbove</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">aboveCount</span> <span class="o">/</span> <span class="n">nrow</span><span class="p">)</span>
+        <span class="n">pctBelow</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">belowCount</span> <span class="o">/</span> <span class="n">nrow</span><span class="p">)</span>
+
+        <span class="c1"># ------------Calculate Mode------------------------------------------------</span>
+
+        <span class="c1"># For mode, we need to convert to the discretized pdfMatrix that contains in each bin, the count of PSDs that</span>
+        <span class="c1"># have that value. The mode is just the bin with the highest count.</span>
+        <span class="c1"># Good Default dbBins: lo=-200, hi=-50, binsize=1</span>
+        <span class="c1"># Calculate hi and lo values based on noise matrix, use binsize = 1</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">noise</span><span class="p">))</span>
+            <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">noise</span><span class="p">))</span>
+
+            <span class="c1"># just incase lo and hi == nan or inf</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lo</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">lo</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">lo</span> <span class="o">=</span> <span class="o">-</span><span class="mi">200</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hi</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">lo</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">hi</span> <span class="o">=</span> <span class="o">-</span><span class="mi">50</span>
+
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">lo</span> <span class="o">=</span> <span class="o">-</span><span class="mi">200</span>
+            <span class="n">hi</span> <span class="o">=</span> <span class="o">-</span><span class="mi">50</span>
+
+        <span class="c1"># Add one because np.arange is not endpoint inclusive</span>
+        <span class="n">pdfBins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Take noise matrix and compute a probability density function (PDF) based on McNamara and Boaz method</span>
+        <span class="n">pdfMatrix</span> <span class="o">=</span> <span class="n">getPDF</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span> <span class="n">lo</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">hi</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Initialize containers with zeros for storage based on ncol value from noise matrix (# of frequencies)</span>
+        <span class="n">colMode</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span>
+
+        <span class="c1"># Loop through columns to calculate mode</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">ncol</span><span class="p">):</span>
+            <span class="c1"># looping through rows of column and calculate mode for each bin, e.g., bin with highest count</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pdfMatrix</span><span class="p">[:,</span> <span class="n">k</span><span class="p">])):</span>
+                <span class="k">if</span> <span class="n">pdfMatrix</span><span class="p">[:,</span> <span class="n">k</span><span class="p">][</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">pdfMatrix</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]):</span>
+                    <span class="n">colMode</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">pdfBins</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
+
+        <span class="c1"># ------------Output--------------------------------------------------------</span>
+        <span class="c1"># Stuff output into dictionary and append to data</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;psdStatistics&#39;</span><span class="p">,</span> <span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">psds</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">psds</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span>
+             <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">psds</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">4</span><span class="p">],</span>
+             <span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">:</span> <span class="n">freq</span><span class="p">,</span>
+             <span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">:</span> <span class="n">noise</span><span class="p">,</span> <span class="s1">&#39;pdf_matrix&#39;</span><span class="p">:</span> <span class="n">pdfMatrix</span><span class="p">,</span>
+             <span class="s1">&#39;pdf_bins&#39;</span><span class="p">:</span> <span class="n">pdfBins</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="n">colMax</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="n">colMin</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="n">colMean</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span> <span class="n">colMedian</span><span class="p">,</span> <span class="s1">&#39;mode&#39;</span><span class="p">:</span> <span class="n">colMode</span><span class="p">,</span>
+             <span class="s1">&#39;nlnm&#39;</span><span class="p">:</span> <span class="n">nlnm</span><span class="p">,</span>
+             <span class="s1">&#39;nhnm&#39;</span><span class="p">:</span> <span class="n">nhnm</span><span class="p">,</span> <span class="s1">&#39;percent_above_nhnm&#39;</span><span class="p">:</span> <span class="n">pctAbove</span><span class="p">,</span> <span class="s1">&#39;percent_below_nlnm&#39;</span><span class="p">:</span> <span class="n">pctBelow</span><span class="p">,</span> <span class="s2">&quot;percent_95&quot;</span><span class="p">:</span> <span class="n">col95</span><span class="p">,</span>
+             <span class="s2">&quot;percent_90&quot;</span><span class="p">:</span> <span class="n">col90</span><span class="p">,</span> <span class="s2">&quot;percent_10&quot;</span><span class="p">:</span> <span class="n">col10</span><span class="p">,</span> <span class="s2">&quot;percent_5&quot;</span><span class="p">:</span> <span class="n">col05</span><span class="p">,</span> <span class="p">}</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "pycheron"
+version = "3.0.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+include = ["psd/*", "rollseis/*", "metrics/*"]
+
+[tool.poetry.dependencies]
+python = "3.6.9"
+obspy = "1.2.2"
+numpy = "1.19.1"
+scipy = "1.2.1"
+pandas = "0.24.2"
+matplotlib = "2.2.5"
+pyhht = "0.1.0"
+cx_Oracle = "7.3.0"
+snakeviz = "2.1.0"
+pebble = "4.3.8"
+dash = "0.43.0"
+pathlib2 = "2.3.3"
+scikit-learn = "0.20.3"
+pyyaml = "5.1"
+PyWavelets = "1.0.2"
+statsmodels = "0.9.0"
+certifi = "2019.3.9"
+pisces = "0.3.2"
+pytest = "4.6.2"
+pytest-cov = "2.8.1"
+coverage = "4.5.4"
+testfixtures = "6.14.1"
+sqlalchemy = "1.3.17"
+mock = "3.0.5"
+tables = "3.5.1"
+joblib = "0.16.0"
+llvmlite = "0.33.0"
+numba = "0.51.1"
+python-dotenv = "0.14.0"
+cmdline-ispaq = {git = "https://github.com/iris-edu/ispaq.git", branch = "master"}
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

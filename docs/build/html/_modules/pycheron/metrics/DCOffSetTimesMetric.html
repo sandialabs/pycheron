@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.DCOffSetTimesMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.metrics.DCOffSetTimesMetric</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">author: kaaur</span>
+<span class="sd">date: 2.21.17</span>
+<span class="sd">version: v0.1</span>
+<span class="sd">modified: N/A</span>
+
+<span class="sd">author: jbobeck</span>
+<span class="sd">date: 3.14.18</span>
+<span class="sd">version: v0.2</span>
+<span class="sd">modified:</span>
+<span class="sd">            - Added generateMasks param</span>
+<span class="sd">            - Added qc mask creation</span>
+<span class="sd">            - Updated docs</span>
+<span class="sd">            </span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DCOffSetTimesMetric&#39;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pycheron.util.logger</span> <span class="k">as</span> <span class="nn">Logger</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.masks</span> <span class="k">import</span> <span class="n">samples2time</span>
+
+
+<div class="viewcode-block" id="DCOffSetTimesMetric"><a class="viewcode-back" href="../../../pycheron.metrics.DCOffSetTimesMetric.html#pycheron.metrics.DCOffSetTimesMetric.DCOffSetTimesMetric">[docs]</a><span class="k">def</span> <span class="nf">DCOffSetTimesMetric</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">windowSecs</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span> <span class="n">incrementSecs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">generateMasks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">masksByTime</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metric to determine times of DC offsets (or where a shift in the signal mean is detected)</span>
+
+<span class="sd">:param st: obspy stream object</span>
+<span class="sd">:type st: obspy.core.stream.Stream</span>
+<span class="sd">:param windowSecs: Chunk size (secs) used in DCOffset calculations</span>
+<span class="sd">:type windowSecs: int</span>
+<span class="sd">:param incrementSecs: Increment (secs) for starttime of sequential chunks (DEFAULT = windowSecs/2)</span>
+<span class="sd">:type incrementSecs: int</span>
+<span class="sd">:param threshold: Threshold used in the detection metric.</span>
+<span class="sd">:type threshold: float</span>
+<span class="sd">:param generateMasks: If True, a boolean mask will be created for dc offset.</span>
+<span class="sd">:type generateMasks: bool</span>
+<span class="sd">:param masksByTime: Boolean to determine whether masks are generated by time. If True, masks will be generated with a start/end time, if false, they will be generated as boolean array.</span>
+<span class="sd">:type masksByTime: bool</span>
+<span class="sd">:param logger: (logger object) - If using a logger, (you must create one using the util.logger class)</span>
+<span class="sd">:type logger: pycheron.util.logger.Logger</span>
+<span class="sd">:param database: database object</span>
+<span class="sd">:type database: pycheron.db.sqllite_db.Database</span>
+
+<span class="sd">:return: list of dictionaries containing the following keys and types:</span>
+
+<span class="sd">            * snclq (`str`)</span>
+<span class="sd">            * start_time (`str`)</span>
+<span class="sd">            * end_time (`str`)</span>
+<span class="sd">            * dc_offset_times (`list`)</span>
+<span class="sd">            * masks (`list` or `numpy.ndarray`)</span>
+<span class="sd">            * metric_name (`str`)</span>
+
+<span class="sd">:rtype: dict</span>
+
+<span class="sd">**Metric asserts:** If difference in means between sequential chunks of seismic signal is greater than the typical</span>
+<span class="sd">std deviation of a chunk then this marks a DC offset shift</span>
+
+<span class="sd">**Algorithm steps:**</span>
+
+<span class="sd">#. Break up signal into windowSecs chunks spaced incrementSecs apart</span>
+<span class="sd">#. For each chunk calculate: signal mean, signal std deviation</span>
+<span class="sd">#. Resulting mean and std dev arrays are of length 47 for 24 hours of signal</span>
+<span class="sd">#. Metric = abs(lagged difference of chunk means)/mean(chunk std devs)</span>
+<span class="sd">#. DC offset = times when metric &gt; threshold</span>
+
+<span class="sd">**Examples**</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    # Read in data</span>
+<span class="sd">    data = &#39;test/test_data/7A_CABN_ALL.988887.tar.mseed&#39;</span>
+<span class="sd">    st = obspy.read(data)</span>
+<span class="sd">    # Calculate DCOffSetTimesmetric</span>
+<span class="sd">    d = DCOffSetTimesMetric(st,1800,None,0.9, True)</span>
+<span class="sd">    # Convert BHE stream to trace object</span>
+<span class="sd">    tr = st[1]</span>
+<span class="sd">    print &#39;dcOffsetTimes for BHE channel:&#39;, d[1]</span>
+<span class="sd">    &gt;&gt;&gt; &#39;dcOffsetTimes for BHE channel:&#39; {&#39;metric_name&#39;: &#39;DCOffsetTimesMetric&#39;, &#39;dc_offset_times&#39;: [UTCDateTime(2013, 11, 1, 0, 45, 0, 25000), UTCDateTime(2013, 11, 1, 1, 15, 0, 25000), UTCDateTime(2013, 11, 1, 9, 30, 0, 25000), UTCDateTime(2013, 11, 1, 9, 45, 0, 25000), UTCDateTime(2013, 11, 1, 10, 0, 0, 25000), UTCDateTime(2013, 11, 1, 10, 15, 0, 25000), UTCDateTime(2013, 11, 1, 10, 30, 0, 25000), UTCDateTime(2013, 11, 1, 10, 45, 0, 25000), UTCDateTime(2013, 11, 1, 15, 45, 0, 25000), UTCDateTime(2013, 11, 1, 16, 15, 0, 25000)], &#39;snclq&#39;: u&#39;7A.CABN..BHE.M&#39;, &#39;start_time&#39;: UTCDateTime(2013, 11, 1, 0, 0), &#39;masks&#39;: array([0, 0, 1, ..., 0, 0, 0]), &#39;end_time&#39;: UTCDateTime(2013, 11, 1, 23, 59, 59, 975000)}</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    # Plotting</span>
+<span class="sd">    de = []</span>
+<span class="sd">    for i in d[1][&#39;dc_offset_times&#39;]:</span>
+<span class="sd">        de.append(timedelta.total_seconds(i.datetime-tr.stats.starttime.datetime))</span>
+<span class="sd">    plt.plot(tr.times(),tr.data)</span>
+<span class="sd">    for i in de:</span>
+<span class="sd">        plt.axvline(x=i,color=&#39;black&#39;)</span>
+<span class="sd">    plt.xlabel(&#39;Seconds from %s&#39; %str(tr.stats.starttime))</span>
+<span class="sd">    plt.xlim([min(tr.times()),max(tr.times())])</span>
+<span class="sd">    plt.ylabel(&#39;Amplitude&#39;)</span>
+<span class="sd">    plt.title(&#39;%s WindowSecs 1800, incrementSecs 900, threshold 0.9&#39;%str(tr.id))</span>
+<span class="sd">    plt.show()</span>
+
+<span class="sd">.. image:: _static/DCOffSetTimesMetric.png</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Initialize incrementSecs variable</span>
+    <span class="k">if</span> <span class="n">incrementSecs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">incrementSecs</span> <span class="o">=</span> <span class="n">windowSecs</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Initialize d, a list of dictionaries to fill with metric values</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Merge stream objects with same IDs, if gaps present, fill with &#39;999999&#39;, then remove &#39;999999&#39; values from trace</span>
+    <span class="c1"># Make copy of stream object to retain original stream, otherwise will be permanently changed</span>
+    <span class="n">stC</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">stM</span> <span class="o">=</span> <span class="n">stC</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mi">999999</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">stM</span><span class="p">:</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">trace</span>
+        <span class="n">tr</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">999999</span><span class="p">]</span>
+
+    <span class="c1"># Loop through traces and get trace information, chunk information, then calculate mean and std dev for chunks</span>
+    <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">stM</span><span class="p">:</span>
+        <span class="c1"># Get trace information: snclq, starttime, endtime for each segment</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">trace</span>
+        <span class="n">fs</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+
+        <span class="n">snclq</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span>
+
+        <span class="n">starttime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+        <span class="n">endtime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+
+        <span class="c1"># Calculate chunk information</span>
+        <span class="n">windowSamples</span> <span class="o">=</span> <span class="n">windowSecs</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="n">incrementSamples</span> <span class="o">=</span> <span class="n">incrementSecs</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="n">outLength</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">/</span> <span class="n">incrementSamples</span><span class="p">)</span>
+
+        <span class="c1"># Initialize mean, stddev, and indice lists</span>
+        <span class="n">means</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Loop through all of the chunks and calculate mean and std dev</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">outLength</span><span class="p">):</span>
+            <span class="n">lo</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">incrementSamples</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">hi</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">windowSamples</span><span class="p">)</span>
+            <span class="n">means</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">lo</span><span class="p">:</span><span class="n">hi</span><span class="p">]))</span>
+            <span class="n">sds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">lo</span><span class="p">:</span><span class="n">hi</span><span class="p">]))</span>
+            <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">lo</span><span class="p">))</span>
+
+        <span class="c1"># Calculate the difference between sequential means</span>
+        <span class="c1"># Determine indices where the value is greater than the provided threshold</span>
+        <span class="c1"># Use those indices to determine dcOffset times and append to dcOffsetTimes list</span>
+
+        <span class="c1"># if metric_store is None:</span>
+        <span class="c1">#     mean_sds = np.mean(sds)</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     pass</span>
+        <span class="c1">#     # update metric store with np.mean(sds)</span>
+        <span class="c1">#     # get mean_sds from metric_store</span>
+
+        <span class="n">metric</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sds</span><span class="p">)</span>
+        <span class="n">jumps</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">]</span>
+        <span class="n">dcOffsetTimes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">jumps</span><span class="p">:</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">starttime</span> <span class="o">+</span> <span class="n">indices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+            <span class="n">dcOffsetTimes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
+
+        <span class="c1"># creating masks</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">generateMasks</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">jumps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">masksByTime</span><span class="p">:</span>
+                <span class="n">masks</span> <span class="o">=</span> <span class="n">samples2time</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">jumps</span><span class="p">),</span> <span class="n">fs</span><span class="p">,</span> <span class="n">starttime</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">masks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                <span class="n">masks</span><span class="p">[</span><span class="n">jumps</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Create metrics list to append to from each stream object</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="n">snclq</span><span class="p">,</span>
+                   <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">starttime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                   <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">endtime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                   <span class="s1">&#39;dc_offset_times&#39;</span><span class="p">:</span> <span class="n">dcOffsetTimes</span><span class="p">,</span>
+                   <span class="s1">&#39;masks&#39;</span><span class="p">:</span> <span class="n">masks</span><span class="p">,</span>
+                   <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s2">&quot;DCOffsetTimesMetric&quot;</span><span class="p">}</span>
+
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">insert_metric</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

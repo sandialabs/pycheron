@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.basicStatsMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">pycheron.metrics.basicStatsMetric</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="module-pycheron.metrics.basicStatsMetric">
+<span id="pycheron-metrics-basicstatsmetric"></span><h1>pycheron.metrics.basicStatsMetric<a class="headerlink" href="#module-pycheron.metrics.basicStatsMetric" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pycheron.metrics.basicStatsMetric.basicStatsMetric">
+<code class="descname">basicStatsMetric</code><span class="sig-paren">(</span><em>st</em>, <em>rmsThreshold=50000</em>, <em>maxThreshold=None</em>, <em>minThreshold=None</em>, <em>medianThreshold=None</em>, <em>meanThreshold=None</em>, <em>varianceThreshold=None</em>, <em>stdThreshold=None</em>, <em>generateMasks=False</em>, <em>masksByTime=True</em>, <em>logger=None</em>, <em>database=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/basicStatsMetric.html#basicStatsMetric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.basicStatsMetric.basicStatsMetric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads in stream object and creates Trace data, and outputs basic statistic (Trace ID, Number of Samples, Start Time, End Time, Minimum, Maximum, Median, Mean, Variance, Standard Deviation, Masks)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>st</strong> (<em>obspy.core.stream.Stream</em>) – obspy stream object</li>
+<li><strong>rmsTheshold</strong> – RMS threshold, if value above theshold then values are masked.</li>
+<li><strong>maxThreshold</strong> (<em>int</em>) – Max value threshold, if value above theshold then values are masked.</li>
+<li><strong>minThreshold</strong> (<em>int</em>) – Min value threshold, if value above theshold then values are masked.</li>
+<li><strong>medianThreshold</strong> (<em>int</em>) – Median value threshold, if value above theshold then values are masked.</li>
+<li><strong>meanThreshold</strong> (<em>int</em>) – Mean value threshold, if value above theshold then values are masked.</li>
+<li><strong>varianceThreshold</strong> (<em>int</em>) – Variance threshold, if value above theshold then values are masked.</li>
+<li><strong>stdThreshold</strong> (<em>int</em>) – Standard deviation threshold, if value above theshold then values are masked.</li>
+<li><strong>generateMasks</strong> (<em>bool</em>) – Return generated masks.</li>
+<li><strong>masksByTime</strong> (<em>bool</em>) – Boolean to determine whether masks are generated by time. If True, masks will be generated with a start/end time, if false, they will be generated as boolean array.</li>
+<li><strong>logger</strong> (<a class="reference internal" href="pycheron.util.logger.html#pycheron.util.logger.Logger" title="pycheron.util.logger.Logger"><em>pycheron.util.logger.Logger</em></a>) – If using a logger, (you must create one using the util.logger class)</li>
+<li><strong>database</strong> (<a class="reference internal" href="pycheron.db.sqllite_db.html#pycheron.db.sqllite_db.Database" title="pycheron.db.sqllite_db.Database"><em>pycheron.db.sqllite_db.Database</em></a>) – database object</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>a dictionary with the following keys and types:</p>
+<ul class="simple">
+<li>snclq (<cite>str</cite>)</li>
+<li>number_of_samples (<cite>int</cite>)</li>
+<li>start_time (<cite>str</cite>)</li>
+<li>end_time (<cite>str</cite>)</li>
+<li>minimum (<cite>float</cite>)</li>
+<li>maximum (<cite>float</cite>)</li>
+<li>median (<cite>float</cite>)</li>
+<li>mean (<cite>float</cite>)</li>
+<li>variance (<cite>float</cite>)</li>
+<li>standard_deviation (<cite>float</cite>)</li>
+<li>rms (<cite>float</cite>)</li>
+<li>metric_name (<cite>str</cite>)</li>
+<li>min_mask (<cite>list</cite> or <cite>numpy.ndarray</cite>)</li>
+<li>max_mask (<cite>list</cite> or <cite>numpy.ndarray</cite>)</li>
+<li>median_mask (<cite>list</cite> or <cite>numpy.ndarray</cite>)</li>
+<li>mean_mask (<cite>list</cite> or <cite>numpy.ndarray</cite>)</li>
+<li>variance_mask (<cite>list</cite> or <cite>numpy.ndarray</cite>)</li>
+<li>std_mask (<cite>list</cite> or <cite>numpy.ndarray</cite>)</li>
+<li>rms_mask (<cite>list</cite> or <cite>numpy.ndarray</cite>)</li>
+</ul>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#test data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;test/test_data/7a_cabn_bhe.884965.tar.mseed&#39;</span>
+<span class="c1">#reading in stream</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="c1">#Calculate stats</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">basicStatsMetric</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">stats</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[{</span><span class="s1">&#39;rms&#39;</span><span class="p">:</span> <span class="mf">1426.1056439005754</span><span class="p">,</span> <span class="s1">&#39;number_of_samples&#39;</span><span class="p">:</span> <span class="mi">3456410</span><span class="p">,</span> <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;basicStatsMetric&#39;</span><span class="p">,</span> <span class="s1">&#39;max_mask&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;std_mask&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;standard_deviation&#39;</span><span class="p">:</span> <span class="mf">1412.9280231274283</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span> <span class="mf">27.0</span><span class="p">,</span> <span class="s1">&#39;maximum&#39;</span><span class="p">:</span> <span class="mi">10336</span><span class="p">,</span> <span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;7A.CABN..BHE&#39;</span><span class="p">,</span> <span class="s1">&#39;min_mask&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;variance_mask&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;minimum&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">6870</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">225000</span><span class="p">),</span> <span class="s1">&#39;median_mask&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;variance&#39;</span><span class="p">:</span> <span class="mf">1996365.598538783</span><span class="p">,</span> <span class="s1">&#39;mean_mask&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;rms_mask&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="mf">193.42106665586547</span><span class="p">}]</span>
+</pre></div>
+</div>
+<p>If <cite>generateMasks=True</cite>, masks will be generated for those values that have thresholds.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Calculate stats with masks</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">basicStatsMetric</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">generateMasks</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">stats</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[{</span><span class="s1">&#39;rms&#39;</span><span class="p">:</span> <span class="mf">1426.1056439005754</span><span class="p">,</span> <span class="s1">&#39;number_of_samples&#39;</span><span class="p">:</span> <span class="mi">3456410</span><span class="p">,</span> <span class="s1">&#39;metric_name&#39;</span><span class="p">:</span> <span class="s1">&#39;basicStatsMetric&#39;</span><span class="p">,</span> <span class="s1">&#39;max_mask&#39;</span><span class="p">:</span> <span class="s1">&#39;No masks were created: Either threshold was set to None or value was below threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;std_mask&#39;</span><span class="p">:</span> <span class="s1">&#39;No masks were created: Either threshold was set to None or value was below threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;standard_deviation&#39;</span><span class="p">:</span> <span class="mf">1412.9280231274283</span><span class="p">,</span> <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span> <span class="mf">27.0</span><span class="p">,</span> <span class="s1">&#39;maximum&#39;</span><span class="p">:</span> <span class="mi">10336</span><span class="p">,</span> <span class="s1">&#39;snclq&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;7A.CABN..BHE&#39;</span><span class="p">,</span> <span class="s1">&#39;min_mask&#39;</span><span class="p">:</span> <span class="s1">&#39;No masks were created: Either threshold was set to None or value was below threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;variance_mask&#39;</span><span class="p">:</span> <span class="s1">&#39;No masks were created: Either threshold was set to None or value was below threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;minimum&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">6870</span><span class="p">,</span> <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">225000</span><span class="p">),</span> <span class="s1">&#39;median_mask&#39;</span><span class="p">:</span> <span class="s1">&#39;No masks were created: Either threshold was set to None or value was below threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;variance&#39;</span><span class="p">:</span> <span class="mf">1996365.598538783</span><span class="p">,</span> <span class="s1">&#39;mean_mask&#39;</span><span class="p">:</span> <span class="s1">&#39;No masks were created: Either threshold was set to None or value was below threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;rms_mask&#39;</span><span class="p">:</span> <span class="s1">&#39;No masks were created: Either threshold was set to None or value was below threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="mf">193.42106665586547</span><span class="p">}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.rollseis.roll_stalta &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.rollseis.roll_stalta</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;roll_stalta&#39;</span><span class="p">]</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">pycheron.util.logger</span> <span class="k">import</span> <span class="n">Logger</span>
+
+<span class="kn">from</span> <span class="nn">pathlib2</span> <span class="k">import</span> <span class="n">Path</span>
+
+<span class="c1"># Example on how to recomplie seismicRoll lib</span>
+<span class="c1"># ----------------------</span>
+<span class="c1"># from numpy import f2py</span>
+<span class="c1"># with open(&quot;/Users/jbobeck/pycheron/rollseis/seismicRoll.f&quot;, &quot;r&quot;) as myfile:</span>
+<span class="c1">#     source = myfile.read()</span>
+<span class="c1"># f2py.compile(source, &quot;seismicRoll&quot;)</span>
+
+
+<span class="kn">import</span> <span class="nn">platform</span>
+
+<span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pycheron.seismicRoll</span> <span class="k">as</span> <span class="nn">seismicRoll</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">fpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="n">pwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pwd</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;------------------------------------------------------&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Building Fortran Library&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;------------------------------------------------------&quot;</span><span class="p">)</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;f2py&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;seismicRoll&quot;</span><span class="p">,</span> <span class="s2">&quot;--quiet&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/seismicRoll.f90&quot;</span><span class="p">])</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">pwd</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pycheron.seismicRoll</span> <span class="k">as</span> <span class="nn">seismicRoll</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">seismicRoll</span>
+
+<div class="viewcode-block" id="roll_stalta"><a class="viewcode-back" href="../../../pycheron.rollseis.roll_stalta.html#pycheron.rollseis.roll_stalta.roll_stalta">[docs]</a><span class="k">def</span> <span class="nf">roll_stalta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_sta</span><span class="p">,</span> <span class="n">n_lta</span><span class="p">,</span> <span class="n">increment</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fortran</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Simple rolling STA/LTA ratio calculation utilized for automatic detection of seismic signal arrival times.</span>
+
+<span class="sd">    ``roll_stalta`` doesn&#39;t do any preprocessing of incoming data and merely calculates the ratio of the average value</span>
+<span class="sd">    in the STA window to the average value in the LTA window. Windows are aligned so that the index is at the left edge</span>
+<span class="sd">    of the STA window and at the right edge of the LTA window, e.g., [#]_</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        STA(x_{i}) = (1/ns)* \sum_{j = i}^{i+ns} x_{i}</span>
+
+<span class="sd">        LTA(x_{i}) = (1/nl) * \sum_{j=i-nl}^{i} x_{i}</span>
+
+<span class="sd">        r_{i} = STA_{i}/LTA_{i}</span>
+
+<span class="sd">    .. code-block:: console</span>
+
+<span class="sd">        [---------- LTA --------*]........</span>
+<span class="sd">        .......................[*- STA --]</span>
+
+<span class="sd">    For proper use of this algorithm seismic data should be preprocessed in following manner:</span>
+
+<span class="sd">    demean, detrend and taper the raw signal</span>
+<span class="sd">    square the processed signal to get power</span>
+
+<span class="sd">    :param x: input data vector</span>
+<span class="sd">    :type x: numpy.array</span>
+<span class="sd">    :param n_sta: integer STA window size</span>
+<span class="sd">    :type n_sta: int</span>
+<span class="sd">    :param n_lta: integer LTA window size</span>
+<span class="sd">    :type n_lta: int</span>
+<span class="sd">    :param increment: increment shift to use when sliding the window to the next location. For increments greater</span>
+<span class="sd">                      than one, the rolling means will not align properly, hence the need for a dedicated</span>
+<span class="sd">                      ``roll_stalta`` function. Setting increment to a value greater than 1 will result in NaNs for</span>
+<span class="sd">                      all skipped over indices.</span>
+<span class="sd">    :type increment: int</span>
+<span class="sd">    :param fortran: Whether to use Fortran or not. **Note:** Linux/iOS only</span>
+<span class="sd">    :type fortran: bool</span>
+<span class="sd">    :param logger: logger object</span>
+<span class="sd">    :type logger: pycheron.util.logger.Logger</span>
+
+<span class="sd">    :return: Returns vector of values of the same length as x with each point containing the STA/LTA</span>
+<span class="sd">                             ratio at that point</span>
+<span class="sd">    :rtype: numpy.array</span>
+
+<span class="sd">    .. note:: Values within n_lta - 1 of the beginning and n_sta - 1 of the end are set to NaNs</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import numpy as np</span>
+<span class="sd">        from pycheron.rollseis.roll_stalta import roll_stalta</span>
+<span class="sd">        import obspy</span>
+<span class="sd">        from pycheron.psd.noise.deadChannel import DDT</span>
+
+<span class="sd">        #Contrived example:</span>
+<span class="sd">        x = [1,5,3,2,1]</span>
+<span class="sd">        x = np.repeat(x,20)</span>
+
+<span class="sd">        #calculate rolling_stalta with n_sta = 3, n_lta = 6, increment = 1 for above vector x</span>
+<span class="sd">        p = roll_stalta(x,3,6)</span>
+
+<span class="sd">    **Plotting**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import matplotlib.pyplot as plt</span>
+<span class="sd">        # Plot original data as black triangles</span>
+<span class="sd">        plt.plot(x,marker=&#39;^&#39;,color = &#39;black&#39;, linestyle = &#39;None&#39;, label = &#39;data&#39;)</span>
+
+<span class="sd">        #Plot rolling_stalta in red circles</span>
+<span class="sd">        plt.plot(p, marker = &#39;o&#39;, color = &#39;red&#39;, markerfacecolor = &#39;None&#39;, label = &#39;STA/LTA&#39;)</span>
+
+<span class="sd">        #Adjust plot limits to show upper/lower data points more clearly</span>
+<span class="sd">        plt.xlim([-1,101])</span>
+<span class="sd">        plt.ylim([0,6])</span>
+<span class="sd">        #Add title and legend</span>
+<span class="sd">        plt.title(&#39;Test of roll_stalta on contrived example&#39;)</span>
+<span class="sd">        plt.legend(loc = &#39;upper right&#39;)</span>
+
+<span class="sd">    .. image:: _static/roll_stalta.png</span>
+
+<span class="sd">    .. rubric:: References</span>
+
+<span class="sd">    .. [#]  http://en.wikipedia.org/wiki/First_break_picking</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fortran</span><span class="p">:</span>
+
+        <span class="c1"># Ensure integer window sizes not greater than len x</span>
+        <span class="k">if</span> <span class="n">n_sta</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;roll_stalta(): n_sta cannot be greater than len x&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="n">n_lta</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;roll_stalta(): n_lta cannot be greater than len x&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Avoid infinite loops</span>
+        <span class="k">if</span> <span class="n">increment</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;roll_stalta(): Increment must be &gt;= 1&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Initialize output vector</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">seismicRoll</span><span class="o">.</span><span class="n">roll_stalta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_sta</span><span class="p">,</span> <span class="n">n_lta</span><span class="p">,</span> <span class="n">increment</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">out</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Ensure integer window sizes not greater than len x</span>
+        <span class="k">if</span> <span class="n">n_sta</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;roll_stalta(): n_sta cannot be greater than len x&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="n">n_lta</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;roll_stalta(): n_lta cannot be greater than len x&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Avoid infinite loops</span>
+        <span class="k">if</span> <span class="n">increment</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;roll_stalta(): Increment must be &gt;= 1&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Initialize output vector</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">n_lta</span>
+
+        <span class="c1"># For valid region, calculate the result</span>
+        <span class="k">while</span> <span class="n">ind</span> <span class="o">&lt;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">n_sta</span><span class="p">):</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">stalta_python</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_sta</span><span class="p">,</span> <span class="n">n_lta</span><span class="p">,</span> <span class="n">ind</span><span class="p">)</span>
+            <span class="n">ind</span> <span class="o">+=</span> <span class="n">increment</span>
+
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+<span class="k">def</span> <span class="nf">stalta_python</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_sta</span><span class="p">,</span> <span class="n">n_lta</span><span class="p">,</span> <span class="n">ind</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    This is a simple ratio of two rolling means that is used to detect first breaks.</span>
+
+<span class="sd">    IN:</span>
+
+<span class="sd">    :param x: (vector) - input data</span>
+
+<span class="sd">    :param n_sta: (int) - integer STA window size (sec)</span>
+
+<span class="sd">    :param n_lta: (int) - integer LTA window size (sec)</span>
+
+<span class="sd">    :param ind: (int) - index looping over</span>
+
+<span class="sd">    OUT:</span>
+
+<span class="sd">    :return: (vector) - out - Returns a vector of the same length as the incoming data with NaNs in the LTA window</span>
+<span class="sd">                              length at the left end and in the STA window length at the right end</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Calculate the STA, aligned so that the window is right of ind (including ind)</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">n_sta</span><span class="p">):</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">x</span><span class="p">[</span><span class="n">ind</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span>
+    <span class="n">sta</span> <span class="o">=</span> <span class="n">total</span> <span class="o">/</span> <span class="n">n_sta</span>
+
+    <span class="c1"># Calculate the LTA, aligned so that the window is left of ind (including ind)</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">n_lta</span><span class="p">):</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">x</span><span class="p">[</span><span class="n">ind</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span>
+    <span class="n">lta</span> <span class="o">=</span> <span class="n">total</span> <span class="o">/</span> <span class="n">n_lta</span>
+
+    <span class="c1"># Calculate return value</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">sta</span> <span class="o">/</span> <span class="n">lta</span>
+    <span class="k">return</span> <span class="n">out</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

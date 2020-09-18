@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.psdMetric &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">pycheron.metrics.psdMetric</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="pycheron-metrics-psdmetric">
+<h1>pycheron.metrics.psdMetric<a class="headerlink" href="#pycheron-metrics-psdmetric" title="Permalink to this headline">¶</a></h1>
+<p>Performs a spectral analysis on seismic traces within stream object and returns PSD metrics. This metric returns a
+list of average power spectra associated with a stream’s data by breaking the stream into
+chunks and calculating the spectrum for each. Methodology based on the 2004 McNamara and Buland paper. <a class="footnote-reference" href="#f1" id="id1">[1]</a></p>
+<span class="target" id="module-pycheron.metrics.psdMetric"></span><dl class="function">
+<dt id="pycheron.metrics.psdMetric.psdMetric">
+<code class="descname">psdMetric</code><span class="sig-paren">(</span><em>st</em>, <em>expLoPeriod=None</em>, <em>expHiPeriod=100</em>, <em>linLoPeriod=None</em>, <em>linHiPeriod=100</em>, <em>evalresp=None</em>, <em>generateMasks=False</em>, <em>dcExpThreshold=0.3</em>, <em>dcExpThresholdHour=0.25</em>, <em>pctBelowNoiseThreshold=20</em>, <em>pctAboveNoiseThreshold=20</em>, <em>rmsThreshold=50000</em>, <em>dcLinThreshold=2</em>, <em>dcLinThresholdHour=2</em>, <em>num_gaps=10</em>, <em>pctBelowNoiseThresholdRESP=90</em>, <em>pctAboveNoiseThresholdRESP=90</em>, <em>processes=6</em>, <em>logger=None</em>, <em>fortran=True</em>, <em>masksByTime=True</em>, <em>byHourOn=False</em>, <em>database=None</em>, <em>session=None</em>, <em>overwrite=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/psdMetric.html#psdMetric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.psdMetric.psdMetric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a spectral analysis on seismic traces within stream object and returns PSD metrics.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>st</strong> (<em>obspy.core.stream.Stream</em>) – obspy stream object</li>
+<li><strong>expLoPeriod</strong> (<em>int</em>) – Low end of the period band used for calculating the exponential dead channel detector (default = 4/trace sampling rate)</li>
+<li><strong>expHiPeriod</strong> (<em>int</em>) – High end of the period band used for calculating the exponential dead channel detector</li>
+<li><strong>linLoPeriod</strong> (<em>int</em>) – Low end of the period band used for calculating the linear dead channel detector (default = 4/trace sampling rate)</li>
+<li><strong>linHiPeriod</strong> (<em>int</em>) – High end of the period band used for calculating the linear dead channel detector</li>
+<li><strong>evalresp</strong> (<em>numpy.ndarray</em>) – Response information obtained from numpy.ndarray of freq, amp, phase information
+matching output of client.evalresp, optional for psdStatistics. If None, will pull from
+<cite>client.evalresp</cite></li>
+<li><strong>generateMasks</strong> (<em>bool</em>) – If True, boolean masks will be generated</li>
+<li><strong>dcExpThreshold</strong> (<em>int</em>) – Dead channel exponent threshold</li>
+<li><strong>dcExpThresholdHour</strong> (<em>int</em>) – Dead channel exponent hourly threshold. Only used if byHourOn is True</li>
+<li><strong>pctBelowNoiseThreshold</strong> (<em>int</em>) – Percent below NLNM threshold</li>
+<li><strong>pctAboveNoiseThreshold</strong> (<em>int</em>) – Percent above NLNM threshold</li>
+<li><strong>pctBelowNoiseThresholdRESP</strong> (<em>int</em>) – Percent below NLNM for bad response threshold</li>
+<li><strong>pctAboveNoiseThresholdRESP</strong> (<em>int</em>) – Percent above NLNM for bad response threshold.</li>
+<li><strong>rmsThreshold</strong> (<em>int</em>) – RMS threshold</li>
+<li><strong>dcLinThreshold</strong> (<em>int</em>) – Dead channel linear threshold</li>
+<li><strong>dcLinThresholdHour</strong> (<em>int</em>) – Dead channel linear hourly threshold. Only used if byHouron set to True</li>
+<li><strong>num_gaps</strong> (<em>int</em>) – Number of gaps threshold.</li>
+<li><strong>processes</strong> (<em>int</em>) – Number of processes to use for calculation. 6 is the recommendation for personal desktop computer.</li>
+<li><strong>logger</strong> (<a class="reference internal" href="pycheron.util.logger.html#pycheron.util.logger.Logger" title="pycheron.util.logger.Logger"><em>pycheron.util.logger.Logger</em></a>) – logger object</li>
+<li><strong>fortran</strong> (<em>bool</em>) – Use Fortran libs or not. If libs will not compile or on a Windows Machine, set to False</li>
+<li><strong>masksByTime</strong> (<em>bool</em>) – Boolean to determine whether masks are generated by time. If True, masks will be
+generated with a start/end time, if false, they will be generated as boolean array.</li>
+<li><strong>byHourOn</strong> (<em>bool</em>) – Turn on hourly thresholding checks for dead_channel_exponential, dead_channel_linear,
+and dead_channel_gsn checks</li>
+<li><strong>database</strong> (<a class="reference internal" href="pycheron.db.sqllite_db.html#pycheron.db.sqllite_db.Database" title="pycheron.db.sqllite_db.Database"><em>pycheron.db.sqllite_db.Database</em></a>) – database object</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>List of dictionaries containing the following keys and types:</p>
+<ul class="simple">
+<li>start_time (<cite>str</cite>)</li>
+<li>end_time (<cite>str</cite>)</li>
+<li>snclq (<cite>str</cite>)</li>
+<li>percent_above_nhnm (<cite>float</cite>)</li>
+<li>percent_below_nlnm (<cite>float</cite>)</li>
+<li>dead_channel_exponent (<cite>float</cite>)</li>
+<li>dead_channel_linear (<cite>float</cite>)</li>
+<li>dead_channel_gsn (<cite>bool</cite>)</li>
+<li>uncorrected_psds (<cite>list</cite>)</li>
+<li>corrected_psds (<cite>pandas.DataFrame</cite>)</li>
+<li>pdfs (<cite>pandas.DataFrame</cite>)</li>
+<li>metric_name (<cite>str</cite>)</li>
+<li>dc_mask (<cite>numpy.ndarray</cite>)</li>
+<li>low_amp_mask (<cite>numpy.ndarray</cite>)</li>
+<li>noise1_mask (<cite>numpy.ndarray</cite>)</li>
+<li>noise2_mask (<cite>numpy.ndarray</cite>)</li>
+<li>hi_amp_mask (<cite>numpy.ndarray</cite>)</li>
+<li>bad_resp_mask (<cite>numpy.ndarray</cite>)</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>The following additional entries are included when byDayHourOn is <cite>True</cite>:</dt>
+<dd><ul class="first last simple">
+<li>dead_channel_exponent_hourly (<cite>list</cite>)</li>
+<li>dead_channel_linear_hourly (<cite>list</cite>)</li>
+<li>dead_channel_gsn_hourly (<cite>list</cite>)</li>
+<li>dead_chan_exp_hourly_masks (<cite>numpy.ndarray</cite>)</li>
+<li>dead_chan_lin_hourly_masks (<cite>numpy.ndarray</cite>)</li>
+<li>dead_chan_gsn_hourly_masks (<cite>numpy.ndarray</cite>)</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Detailed Return Values:</strong></p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="21%" />
+<col width="21%" />
+<col width="21%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Key</th>
+<th class="head">Value</th>
+<th class="head">Type</th>
+<th class="head">Details</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>starttime</td>
+<td>trace start time</td>
+<td><cite>str</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>endtime</td>
+<td>trace end time</td>
+<td><cite>str</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>snclq</td>
+<td>Station.Network.Channel.Location.Quality</td>
+<td><cite>str</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>pct_above_nhnm</td>
+<td>percent above new high noise model</td>
+<td><cite>float</cite></td>
+<td>Percentage of PSD values that are above the new High Noise model for their frequency. Only frequencies less than
+<cite>sample_rate</cite>/2 are considered to avoid instrument response effects as you approach the nyquist frequency. This
+value is calculated over the entire time period</td>
+</tr>
+<tr class="row-even"><td>pct_below_nlnm</td>
+<td>percent below new low noise model</td>
+<td><cite>float</cite></td>
+<td>Percentage of PSD values that are below the new low noise model for their frequency. Only frequencies less than
+<cite>sample_rate</cite>/2 are considered to avoid instrument response effects as you approach the nyquist frequency. This
+value is calculated over the entire time period</td>
+</tr>
+<tr class="row-odd"><td>dead_channel_exponent</td>
+<td>dead channel metric exponential fit</td>
+<td><cite>float</cite></td>
+<td>A “dead channel” metric is calculated from the mean of all the PSDs generated (typically 47 for a 24 hour period).
+Values of the PSD mean line over the band (expLoPeriod:expHiPeriod) are fit to an exponential.
+The <cite>dead_channel_exp metric</cite> is the standard deviation of the fit residuals. Lower numbers indicate a better fit
+and a higher likelihood that the mean PSD is exponential – an indication of a “dead channel”</td>
+</tr>
+<tr class="row-even"><td>dead_channel_exponent_hourly</td>
+<td>dead channel metric exponential fit for each hour PSD</td>
+<td><cite>list</cite></td>
+<td>A “dead channel” metric is calculated from each hourly PSD generated (typically 47 for a 24 hour
+period). Values of the PSD line over the band (expLoPeriod:expHiPeriod (defaults to 1 at high period band) are
+fit to an exponential. The <cite>dead_channel_exp metric</cite> is the standard deviation of the fit residuals (RMS error).
+Lower numbers indicate a better fit and a higher likelihood that the mean PSD is exponential – an indication
+of a “dead channel”</td>
+</tr>
+<tr class="row-odd"><td>dead_channel_linear</td>
+<td>dead channel metric linear fit</td>
+<td><cite>float</cite></td>
+<td>A “dead channel” metric is calculated from the mean of all the PSDs generated (typically 47 for a 24 hour
+period). Values of the PSD mean line over the band (linLoPeriod:linHiPeriod) are fit to a line. The
+dead_channel_lin metric is the standard deviation of the fit residuals. Lower numbers indicate a better fit and
+a higher likelihood that the mean PSD is linear – an indication of a “dead channel”</td>
+</tr>
+<tr class="row-even"><td>dead_channel_linear_hourly</td>
+<td>dead channel metric linear fit for each hour PSD</td>
+<td><cite>list</cite></td>
+<td>A “dead channel” metric is calculated from each of all the PSDs generated (typically 47 for a 24 hour
+period). Values of the PSD line over the band (linLoPeriod:linHiPeriod) are fit to a line. The
+dead_channel_lin metric is the standard deviation of the fit residuals (RMS error). Lower numbers indicate a
+better fit and a higher likelihood that the mean PSD is linear – an indication of a “dead channel”</td>
+</tr>
+<tr class="row-odd"><td>dead_channel_gsn</td>
+<td>dead channel metric gsn fit</td>
+<td><cite>bool</cite></td>
+<td>Boolean metric using ‘0’ or ‘1’ to indicate if the average median deviation below the NLNM is sufficient to
+label channel as dead or not. If average &gt; 5.0, mark dead_channel_gsn value = 1 (TRUE) (dead), else
+mark value = 0 (FALSE) (not dead).</td>
+</tr>
+<tr class="row-even"><td>dead_channel_gsn_hourly</td>
+<td>dead channel metric gsn fit for each hour PSD</td>
+<td><cite>list</cite></td>
+<td>Boolean metric using ‘0’ or ‘1’ to indicate if the average median deviation below the NLNM is sufficient to
+label channel as dead or not for each hourly PSD. If average &gt; 5.0, mark dead_channel_gsn value = 1 (TRUE)
+(dead), else mark value = 0 (FALSE) (not dead).</td>
+</tr>
+<tr class="row-odd"><td>uncorrected_psds</td>
+<td>list of uncorrected PSDs for each trace in stream as output from the psdList function</td>
+<td><cite>list</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>corrected_psds</td>
+<td>dataframe of starttime, endtime, frequency (Hz), power (dB) values of corrected PSDs</td>
+<td><cite>pandas.DataFrame</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>pdfs</td>
+<td>dataframe of frequency (Hz), hits (count), power (dB), and power_mode (dB) values for PDFs. Power mode is used
+for the creation of colorgrids</td>
+<td><cite>pandas.DataFrame</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>metric_name</td>
+<td>name of metric</td>
+<td><cite>str</cite></td>
+<td>psdMetric</td>
+</tr>
+<tr class="row-odd"><td>dc_mask</td>
+<td>dead channel mask (corresponds to <cite>dead_channel_exp</cite> &lt; <cite>dcExpThreshold</cite> and <cite>avg_pctBelow</cite> &gt; <cite>pctBelowNoiseThreshold</cite>)</td>
+<td><cite>numpy.ndarray</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>low_amp_mask</td>
+<td>low amplitude mask (corresponds to <cite>dead_channel_exp</cite> &gt;= <cite>dcExpThreshold</cite> and <cite>avg_pctBelow</cite> &gt; <cite>pctBelowNoiseThreshold</cite>)</td>
+<td><cite>numpy.ndarray</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>noise1_mask</td>
+<td>noise mask 1 (corresponds to <cite>dead_channel_exp</cite> &lt; <cite>dcExpThreshold</cite> and <cite>avg_pctAbove</cite> &gt; <cite>pctAboveNoiseThreshold</cite>)</td>
+<td><cite>numpy.ndarray</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>noise2_mask</td>
+<td>noise mask 2 (corresponds to <cite>dead_channel_lin</cite> &lt; <cite>dcLinThreshold</cite> and <cite>avg_pctBelow</cite> &lt;=
+<cite>pctBelowNoiseThreshold</cite> and <cite>gaps</cite> &lt; <cite>num_gaps</cite>)</td>
+<td><cite>numpy.ndarray</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>hi_amp_mask</td>
+<td>high amplitude mask (corresponds to <cite>rms</cite> &gt; <cite>rmsThreshold</cite> and <cite>avg_pctAbove</cite> &gt; <cite>pctAboveNoiseThreshold</cite>)</td>
+<td><cite>numpy.ndarray</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>bad_resp_mask</td>
+<td>bad response mask (corresponds to <cite>avg_pctAbove</cite> &gt; <cite>pctAboveNoiseThresholdRESP</cite> or
+<cite>avg_pctBelow</cite> &gt; <cite>pctBelowNoiseThresholdRESP</cite></td>
+<td><cite>numpy.ndarray</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>dead_chan_exp_hourly_masks</td>
+<td>dead channel exponential hourly masks, masks generated when <cite>dead_channel_exp_hou</cite> &lt;= <cite>dcExpThresholdHour</cite></td>
+<td><cite>numpy.ndarray</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>dead_chan_lin_hourly_masks</td>
+<td>dead channel linear hourly masks, masks generated when <cite>dead_channel_lin_hour</cite> &lt;= <cite>dcLinThresholdHour</cite></td>
+<td><cite>numpy.ndarray</cite></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>dead_chan_gsn_hourly_masks</td>
+<td>dead channel gsn hourly masks, masks generated when <cite>dead_channel_gsn_hour</cite> == 1</td>
+<td><cite>numpy.ndarray</cite></td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Methodology:</strong></p>
+<ol class="arabic simple">
+<li>Divide trace into Z-hour segments with 50% overlap</li>
+<li>For each Z-hour segment<ul>
+<li>Truncate segment to nearest power of 2 samples</li>
+<li>Generate an averages/smoothed PSD as follows<ul>
+<li>Divide each truncated Z-hour segment into 13 segments with 75% overlap (Z/4 seconds length each)</li>
+<li>For each of the 13 segments<ul>
+<li>Demean</li>
+<li>Detrend</li>
+<li>Apply 10% cosine taper</li>
+<li>FFT</li>
+<li>PSD</li>
+<li>Normalize the power at each PSD frequency, multiplying it by (2*dt/Nseg), where Nseg is the # of
+samples in the segment</li>
+</ul>
+</li>
+<li>Average the 13 resulting PSDs to get averaged PSD</li>
+<li>Multiply averaged PSD by 10% cosine taper scale factor (= 1.142857)</li>
+<li>Frequency smooth the averaged PSD over 1-octave intervals at 1/8 octave increments (reducing # freq samples
+by a factor of 169; include 0.1 Hz as one of the geometric mean f values to sync f sampling)</li>
+<li>Store the smoothed, averaged Z-hour PSD</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p><strong>Data Structure</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">[</span>
+<span class="go">  trace 1 in stream {</span>
+<span class="go">      start_time: starttime,</span>
+<span class="go">      end_time: endtime,</span>
+<span class="go">      snclq: snclq,</span>
+<span class="go">      percent_above_nhnm: avg_pctAbove,</span>
+<span class="go">      percent_below_nlnm: avg_pctBelow,</span>
+<span class="go">      dead_channel_exponent: dead_channel_exp,</span>
+<span class="go">      dead_channel_linear: dead_channel_lin,</span>
+<span class="go">      dead_channel_gsn: dead_channel_gsn,</span>
+<span class="go">      uncorrected_psds: [</span>
+<span class="go">          psd 1 [</span>
+<span class="go">              [frequency array],</span>
+<span class="go">              [psd array],</span>
+<span class="go">              [snclq],</span>
+<span class="go">              starttime,</span>
+<span class="go">              endtime</span>
+<span class="go">          ],</span>
+<span class="go">          psd 2 [</span>
+<span class="go">              [frequency array],</span>
+<span class="go">              [psd array],</span>
+<span class="go">              [snclq],</span>
+<span class="go">              starttime,</span>
+<span class="go">              endtime</span>
+<span class="go">          ],</span>
+<span class="go">          .</span>
+<span class="go">          .</span>
+<span class="go">          .</span>
+<span class="go">          psd 47 [</span>
+<span class="go">              ...</span>
+<span class="go">          ]</span>
+<span class="go">      ],</span>
+<span class="go">      corrected_psds: DataFrame,</span>
+<span class="go">      pdfs: DataFrame,</span>
+<span class="go">      metric_name: &quot;psdMetric&quot;,</span>
+<span class="go">      dc_mask: dcMask,</span>
+<span class="go">      low_amp_mask: lowAmpMask,</span>
+<span class="go">      noise1_mask: noise1Mask,</span>
+<span class="go">      noise2_mask: noise2Mask,</span>
+<span class="go">      hi_amp_mask: hiAmpMask,</span>
+<span class="go">      bad_resp_mask: badRESPMask</span>
+<span class="go">  },</span>
+<span class="go">  trace 2 in stream{</span>
+<span class="go">      ...</span>
+<span class="go">  }</span>
+<span class="go">]</span>
+</pre></div>
+</div>
+<p><strong>Examples</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#test data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;test/test_data/7a_cabn_bhe.884965.tar.mseed&#39;</span>
+<span class="c1">#reading in stream</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="c1">#setting parameters</span>
+<span class="n">expLoPeriod</span><span class="o">=</span><span class="bp">None</span> <span class="c1">#Default</span>
+<span class="n">expHiPeriod</span><span class="o">=</span><span class="mi">100</span> <span class="c1">#Default</span>
+<span class="n">linLoPeriod</span><span class="o">=</span><span class="bp">None</span> <span class="c1">#Default</span>
+<span class="n">linHiPeriod</span><span class="o">=</span><span class="mi">50</span> <span class="c1">#Default</span>
+<span class="n">evalresp</span><span class="o">=</span><span class="bp">None</span>
+<span class="c1">#calculating metrics</span>
+<span class="n">psd</span> <span class="o">=</span> <span class="n">psdMetric</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">expLoPeriod</span><span class="p">,</span> <span class="n">expHiPeriod</span><span class="p">,</span> <span class="n">linLoPeriod</span><span class="p">,</span> <span class="n">linHiPeriod</span><span class="p">,</span><span class="n">evalresp</span><span class="p">)</span>
+
+<span class="c1">#print out example entries for the metrics,</span>
+<span class="k">print</span> <span class="s1">&#39;Startime:&#39;</span><span class="p">,</span> <span class="n">psd</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Startime</span><span class="p">:</span> <span class="mi">2013</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mo">01</span><span class="n">T00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mf">00.000000</span><span class="n">Z</span>
+<span class="k">print</span> <span class="s1">&#39;Endtime:&#39;</span><span class="p">,</span> <span class="n">psd</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;end_time&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Endtime</span><span class="p">:</span> <span class="mi">2013</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mo">02</span><span class="n">T00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mf">10.225000</span><span class="n">Z</span>
+<span class="k">print</span> <span class="s1">&#39;SNCLQ:&#39;</span><span class="p">,</span> <span class="n">psd</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;snclq&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">SNCLQ</span><span class="p">:</span> <span class="mi">7</span><span class="n">A</span><span class="o">.</span><span class="n">CABN</span><span class="o">..</span><span class="n">BHE</span>
+<span class="k">print</span> <span class="s1">&#39;Percent_above_nhnm:&#39;</span><span class="p">,</span> <span class="n">psd</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;percent_above_nhnm&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Percent_above_nhnm</span><span class="p">:</span> <span class="mf">14.940378770166003</span>
+<span class="k">print</span> <span class="s1">&#39;Percent_below_nlnm:&#39;</span><span class="p">,</span> <span class="n">psd</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;percent_below_nlnm&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Percent_above_nhnm</span><span class="p">:</span> <span class="mf">14.940378770166003</span>
+<span class="k">print</span> <span class="s1">&#39;Dead_Channel_Exponent:&#39;</span><span class="p">,</span> <span class="n">psd</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;dead_channel_exponent&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Dead_Channel_Exponent</span><span class="p">:</span> <span class="mf">0.43778437537150205</span>
+<span class="k">print</span> <span class="s1">&#39;Dead_Channel_Linear:&#39;</span><span class="p">,</span> <span class="n">psd</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;dead_channel_linear&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Dead_Channel_Linear</span><span class="p">:</span> <span class="mf">5.880220527414604</span>
+<span class="k">print</span> <span class="s1">&#39;Dead_Channel_GSN:&#39;</span><span class="p">,</span> <span class="n">psd</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;dead_channel_gsn&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Dead_Channel_GSN</span><span class="p">:</span> <span class="mi">0</span>
+<span class="k">print</span> <span class="n">psd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># output not shown for brevity</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>McNamara and Buland. 2004. “Ambient Noise Levels in the Continental United States”. <a class="reference external" href="https://profile.usgs.gov/myscience/upload_folder/ci2012Feb2217152844121McNamaraBuland_BSSA.pdf">https://profile.usgs.gov/myscience/upload_folder/ci2012Feb2217152844121McNamaraBuland_BSSA.pdf</a></td></tr>
+</tbody>
+</table>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

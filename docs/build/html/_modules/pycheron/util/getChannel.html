@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.util.getChannel &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.util.getChannel</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;getChannel&#39;</span><span class="p">,</span> <span class="s1">&#39;filterChannel&#39;</span><span class="p">,</span> <span class="s1">&#39;getChannelName&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="getChannel"><a class="viewcode-back" href="../../../pycheron.util.getChannel.html#pycheron.util.getChannel.getChannel">[docs]</a><span class="k">def</span> <span class="nf">getChannel</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Gets channels from stream with multiple channels</span>
+
+<span class="sd">    :param st: Obspy stream object</span>
+<span class="sd">    :type st: obspy.core.stream.Stream</span>
+<span class="sd">    :param channel: Name of channel component - E, N, Z, or component channel name - EHE, EHN, EHZ, LHE, LHN,</span>
+<span class="sd">                    LHZ, LOG, VM1, VM2, VM3, etc. if you want a specific component. Alternatively can specify</span>
+<span class="sd">                    EH\* if want to select all components with a common band/instrument code.</span>
+<span class="sd">    :type channel: str</span>
+
+<span class="sd">    :return: Returns a new stream object containing the specific trace(s) with the specified channel.</span>
+<span class="sd">    :rtype: obspy.core.stream.Stream</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from pycheron.util.getChannel import getChannel</span>
+
+<span class="sd">        # Grab test data</span>
+<span class="sd">        data = &#39;test/test_data/6e_sp06_Eall.397679.tar.mseed&#39;</span>
+<span class="sd">        data1 = &#39;test/test_data/7A_CABN_ALL.988887.tar.mseed&#39;</span>
+
+<span class="sd">        # Reading in stream then merge together (only merging for better example stream (e.g., stream with multiple</span>
+<span class="sd">        # sncls))</span>
+<span class="sd">        st = obspy.read(data)</span>
+<span class="sd">        st1 = obspy.read(data1)</span>
+<span class="sd">        ST = st+st1</span>
+
+<span class="sd">        # getting EHE channel trace</span>
+<span class="sd">        tr = getChannel(ST, &#39;EHE&#39;)</span>
+<span class="sd">        # Output</span>
+<span class="sd">        # 2 Trace(s) in Stream:</span>
+<span class="sd">        # 6E.SP06..EHE | 2014-01-19T00:00:00.005000Z - 2014-01-19T21:01:07.985000Z | 100.0 Hz, 7566799 samples</span>
+<span class="sd">        # 6E.SP06..EHE | 2014-01-19T21:07:56.000000Z - 2014-01-20T00:00:00.990000Z | 100.0 Hz, 1032500 samples</span>
+
+<span class="sd">        # getting all E component</span>
+<span class="sd">        tr = getChannel(ST,&#39;E&#39;)</span>
+<span class="sd">        # Output</span>
+<span class="sd">        # 3 Trace(s) in Stream:</span>
+<span class="sd">        # 6E.SP06..EHE | 2014-01-19T00:00:00.005000Z - 2014-01-19T21:01:07.985000Z | 100.0 Hz, 7566799 samples</span>
+<span class="sd">        # 6E.SP06..EHE | 2014-01-19T21:07:56.000000Z - 2014-01-20T00:00:00.990000Z | 100.0 Hz, 1032500 samples</span>
+<span class="sd">        # 7A.CABN..BHE | 2013-11-01T00:00:00.000000Z - 2013-11-01T23:59:59.975000Z | 40.0 Hz, 3456000 samples</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Grab out specified component within stream object</span>
+
+    <span class="c1"># First option is for specifying want all E component data, this could simply be EHE, or if multiple E component</span>
+    <span class="c1"># channels could mean grab all E component data (e.g., EHE, LHE, etc)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">traces</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">component</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">traces</span>
+    <span class="c1"># If option specified is a specific channel code,e.g., EHE or LHE, then only grab out that one. Alternatively, grab</span>
+    <span class="c1"># out all components with a common band/instrument code (e.g., EH*, etc.)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">traces</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">channel</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">traces</span></div>
+
+
+<div class="viewcode-block" id="getChannelName"><a class="viewcode-back" href="../../../pycheron.util.getChannel.html#pycheron.util.getChannel.getChannelName">[docs]</a><span class="k">def</span> <span class="nf">getChannelName</span><span class="p">(</span><span class="n">snclq</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extracts the channel name from a SNCLQ id</span>
+
+<span class="sd">    :param snclq: snclq id</span>
+<span class="sd">    :type snclq: str</span>
+
+<span class="sd">    :return: The name of the channel</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">chanName</span> <span class="o">=</span> <span class="n">snclq</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">chanName</span></div>
+
+
+<div class="viewcode-block" id="filterChannel"><a class="viewcode-back" href="../../../pycheron.util.getChannel.html#pycheron.util.getChannel.filterChannel">[docs]</a><span class="k">def</span> <span class="nf">filterChannel</span><span class="p">(</span><span class="n">st</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Filters SOH channel traces from stream (ACE, LCE, LCQ, LOG, OCF, VCO, VEA, VEC, VEP, VKI, VMU, VM1, VMZ, VMV, VM2,</span>
+<span class="sd">    VMN, VMW, VM3, VME, VPB)</span>
+
+<span class="sd">    :param st: Obspy stream object</span>
+<span class="sd">    :type st: obspy.core.stream.Stream</span>
+
+<span class="sd">    :return: New stream with SOH channels removed.</span>
+<span class="sd">    :rtype: obspy.core.stream.Stream</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">soh_chan</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ACE&quot;</span><span class="p">,</span> <span class="s2">&quot;LCE&quot;</span><span class="p">,</span> <span class="s2">&quot;LCQ&quot;</span><span class="p">,</span> <span class="s2">&quot;LOG&quot;</span><span class="p">,</span> <span class="s2">&quot;OCF&quot;</span><span class="p">,</span> <span class="s2">&quot;VCO&quot;</span><span class="p">,</span> <span class="s2">&quot;VEA&quot;</span><span class="p">,</span> <span class="s2">&quot;VEC&quot;</span><span class="p">,</span> <span class="s2">&quot;VEP&quot;</span><span class="p">,</span> <span class="s2">&quot;VKI&quot;</span><span class="p">,</span> <span class="s2">&quot;VMU&quot;</span><span class="p">,</span> <span class="s2">&quot;VM1&quot;</span><span class="p">,</span> <span class="s2">&quot;VMZ&quot;</span><span class="p">,</span> <span class="s2">&quot;VMV&quot;</span><span class="p">,</span> <span class="s2">&quot;VM2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;VMN&quot;</span><span class="p">,</span> <span class="s2">&quot;VMW&quot;</span><span class="p">,</span> <span class="s2">&quot;VM3&quot;</span><span class="p">,</span> <span class="s2">&quot;VME&quot;</span><span class="p">,</span> <span class="s2">&quot;VPB&quot;</span><span class="p">]</span>
+    <span class="n">stN</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="p">)):</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">snclq</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span>
+        <span class="n">chan</span> <span class="o">=</span> <span class="n">getChannelName</span><span class="p">(</span><span class="n">snclq</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">chan</span> <span class="ow">in</span> <span class="n">soh_chan</span><span class="p">:</span>
+            <span class="n">stN</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stN</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

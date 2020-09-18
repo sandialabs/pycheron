@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.metrics.calibration &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">pycheron.metrics.calibration</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="module-pycheron.metrics.calibration">
+<span id="pycheron-metrics-calibration"></span><h1>pycheron.metrics.calibration<a class="headerlink" href="#module-pycheron.metrics.calibration" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pycheron.metrics.calibration.LogComressor">
+<em class="property">class </em><code class="descname">LogComressor</code><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#LogComressor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.LogComressor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to log compress data, then replace all instances of -INF with minimum of
+that row, and replace INF with maximum of that row. Class used to create compressor.pkl</p>
+<dl class="method">
+<dt id="pycheron.metrics.calibration.LogComressor.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>features</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#LogComressor.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.LogComressor.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pycheron.metrics.calibration.LogComressor.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>features</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#LogComressor.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.LogComressor.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pycheron.metrics.calibration.leaky_integrator">
+<code class="descname">leaky_integrator</code><span class="sig-paren">(</span><em>fs</em>, <em>dur</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#leaky_integrator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.leaky_integrator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Single pole filter (leaky integrator I think)
+The impulse response is a decaying exponential.  The longer the &lt;dur&gt;
+is, the longer this exponential will take to decay.
+:param fs: sampling frequency (Hz)
+:param dur: time at which impulse response has decayed to below 90%</p>
+<blockquote>
+<div>longer &lt;dur&gt; implies longer startup and more aggressive LPF</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">filter coefficients</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="pycheron.metrics.calibration.LTIFilter">
+<em class="property">class </em><code class="descname">LTIFilter</code><span class="sig-paren">(</span><em>A</em>, <em>B</em>, <em>zi=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#LTIFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.LTIFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Helper class that manages storing and updating initial/final conditions.</p>
+<dl class="method">
+<dt id="pycheron.metrics.calibration.LTIFilter.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#LTIFilter.filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.LTIFilter.filter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pycheron.metrics.calibration.LTIFilter.has_initial_condition">
+<code class="descname">has_initial_condition</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#LTIFilter.has_initial_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.LTIFilter.has_initial_condition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pycheron.metrics.calibration.FrameContainer">
+<em class="property">class </em><code class="descname">FrameContainer</code><span class="sig-paren">(</span><em>max_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#FrameContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.FrameContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="pycheron.metrics.calibration.FrameContainer.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#FrameContainer.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.FrameContainer.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pycheron.metrics.calibration.FrameContainer.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#FrameContainer.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.FrameContainer.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pycheron.metrics.calibration.FrameContainer.empty">
+<code class="descname">empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#FrameContainer.empty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.FrameContainer.empty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pycheron.metrics.calibration.FrameContainer.full">
+<code class="descname">full</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#FrameContainer.full"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.FrameContainer.full" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pycheron.metrics.calibration.FrameContainer.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#FrameContainer.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.FrameContainer.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pycheron.metrics.calibration.FrameContainer.max_size">
+<code class="descname">max_size</code><a class="headerlink" href="#pycheron.metrics.calibration.FrameContainer.max_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pycheron.metrics.calibration.FrameContainer.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#FrameContainer.size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.FrameContainer.size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pycheron.metrics.calibration.MLApplier">
+<em class="property">class </em><code class="descname">MLApplier</code><span class="sig-paren">(</span><em>loadpath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#MLApplier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.MLApplier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class screens detections using a trained machine learning
+classifier and some preprocessing steps that are all loaded from pickle
+files.</p>
+<dl class="method">
+<dt id="pycheron.metrics.calibration.MLApplier.iscal">
+<code class="descname">iscal</code><span class="sig-paren">(</span><em>detection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#MLApplier.iscal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.MLApplier.iscal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if it is a calibration</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pycheron.metrics.calibration.MLApplier.load_ml_objects">
+<code class="descname">load_ml_objects</code><span class="sig-paren">(</span><em>dirpath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#MLApplier.load_ml_objects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.MLApplier.load_ml_objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pycheron.metrics.calibration.CalibrationHelper">
+<em class="property">class </em><code class="descname">CalibrationHelper</code><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#CalibrationHelper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.CalibrationHelper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is a helper to the calibration function.  A single
+private object is instantiated and used by the function for
+configuration of parameters and storing data from previously viewed
+traces, in the case that data is being streamed to the function.</p>
+<p>The function can be dramatically changed by adjusting parameter values
+in _config().</p>
+<p>update_state() handles all stored data and filters based on whether the
+new trace is a contiguous block after the previously viewed trace.</p>
+<dl class="method">
+<dt id="pycheron.metrics.calibration.CalibrationHelper.iscal">
+<code class="descname">iscal</code><span class="sig-paren">(</span><em>detection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#CalibrationHelper.iscal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.CalibrationHelper.iscal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pycheron.metrics.calibration.CalibrationHelper.update_state">
+<code class="descname">update_state</code><span class="sig-paren">(</span><em>trace</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#CalibrationHelper.update_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.CalibrationHelper.update_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update anything that changed, such as sampling rate
+and check whether caches need to be cleared, which occurs when
+non-continuous traces are provided, i.e. different SNCLQ or
+discontiguous start/end times.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pycheron.metrics.calibration.unscreened_calibration">
+<code class="descname">unscreened_calibration</code><span class="sig-paren">(</span><em>trace</em>, <em>metric_store=None</em>, <em>debug=False</em>, <em>**params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#unscreened_calibration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.unscreened_calibration" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function automatically detects calibrations in seismic data.  It was
+originally tuned to identify “stationary rect calibrations” which means
+high amplitude calibrations that have roughly a rect (square) envelope and
+appear stationary within the envelope. Upon running the code on data it
+was found that many other types of calibrations were also being identified.
+Thus, this algorithm is primarily tuned to a specific type of calibration
+but still has use in other cases.</p>
+<dl class="docutils">
+<dt>The general algorithm is as follows:</dt>
+<dd><p class="first">1) an LTA/STA is run looking for triggers above threshold.  This is
+due to the fact that seismic arrivals can have abrupt transient
+ONSETs however the…OFFSET? is not as abrupt, whereas these
+calibrations to have an abrupt drop in energy.</p>
+<ol class="arabic" start="2">
+<li><dl class="first docutils">
+<dt>For these candidate triggers, start time is found by:</dt>
+<dd><ol class="first loweralpha simple">
+<li>computing an envelope for the data</li>
+</ol>
+<p class="last">b) normalizing the envelope by the typical channel energy,
+such that anything above 1 is high
+c) searching BACKWARDS in time until something below 1 is
+identified, i.e. the channel has returned to normal energy levels</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p>3) The start and end times are refined.  The start time is refined
+by using an STA/LTA trigger, the end time is shifted to the time
+where LTA becomes &gt; STA.  Both of these refined times will shorten
+the overall duration of the calibration</p>
+<p>4) These calibrations (could be 0 or more) can very often be false
+alarms. A second step is then implemented to screen the candidate
+calibrations.  The current implementation is somewhat complex,
+using a machine learning classifier and a collection of statistics,
+however, in the future it is possible to implement a rather simple
+set of conditions to keep a calibration.  For example:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>if duration &lt; 5 seconds or energy &lt; 3 X typical_energy_level:</dt>
+<dd>discard calibration</dd>
+</dl>
+</div></blockquote>
+<p class="last">5) The previous step is the final step to return a result, however
+some values are cached in order to process streams of data more
+accurately.  Details on this will be described shortly.</p>
+</dd>
+</dl>
+<p>Despite being a function, a private calibration helper object exists in
+volatile memory in order to assist calibration() as if it were an object.
+This object contains many parameter settings as well as caching data.
+One of the common reasons for caching data is that this algorithm
+identifies the END of a calibration, however, some calibrations can last
+very long.  If the calibration started before the provided trace’s start
+time, more data is required to identify an accurate start time.</p>
+<p>About caching as using this function on sequential blocks of data.</p>
+<p>This function works best when applied to continuous streams of data.
+For example:</p>
+<blockquote>
+<div><p>snclq = &lt;a unique and consistent snclq&gt;
+for start_hour in range(0, 48, 1):</p>
+<blockquote>
+<div>end_hour = start_hour + 1
+trace = &lt;a trace that starts at start_hour and ends at end_hour&gt;
+results = calibration(trace)</div></blockquote>
+<p>It is not so much important that the durations are constant, but that
+the end time of the previous frame is the same as the start tiem of the
+current frame.  If this is true, all cached data will be stored,
+not cleared, and can be used to assist in the calibration detection. This
+function was initially written to be processed on weeks to years at a
+time, however I would say at a maximum (so long as the current parameter
+settings are preserved) it takes a day to get all of the caches and data
+to steady-state.  Thus, if you want accurate results for Monday,
+run Sunday and Monday sequentially.</p>
+<p>The caches are FrameContainer objects, that much like a Queue that
+stores a fixed number of previous frames.  The important frame
+containers are:</p>
+<blockquote>
+<div><p>FCzi - this is the initial/final state of a filter used to estimate
+the typical (average) value of the signal envelope. This way the
+envelope can be normalized by this value and we can look for any
+times that the normalized envelope is significantly above one.</p>
+<p>FCx - stored time-series data (with DC removed). This is important
+for stepping back in time to find the start of a calibration,
+(in the event that the calibration spans multiple traces)</p>
+<p>FCy and FCySmooth are used similar to FCx, but could be recomputed
+from FCx if storage is more important than compute time.</p>
+<p>FCsta and FClta are not used in any way for processing, however they
+are useful for plotitng and visualizations.  Similar to FCy and
+FCySmooth, they could be computed from FCx if need be.</p>
+</div></blockquote>
+</div></blockquote>
+<p>So if the caches are cleared, which occurs when discontiguous traces are
+passed to calibration(), different snclq’s are passed in or separate
+processes are instantiated, the caches will be cleared.  This means
+envelope normalization may not be accurate and if the calibration spans
+to earlier than the current trace it may not be identified. Also,
+filter initializations won’t be accurate.  The filters to look out for
+are ones with long durations, such as the DC removal filter.  Short
+duration filters will adapt to the different initial conditions very
+quickly.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>trace</strong> – an obspy trace object</li>
+<li><strong>metric_store</strong> – optional MetricStore
+(this is currently not used)</li>
+<li><strong>debug</strong> – flag, things are plotted and printed if set to True</li>
+<li><strong>params</strong> – currently not used</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Some form of list of identified calibrations where each</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>calibration is guaranteed to have:</dt>
+<dd>SNCLQ, start_time, end_time</dd>
+</dl>
+<p>and may have additional statistics.  These details are specified in near
+the return statement.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pycheron.metrics.calibration.calibration">
+<code class="descname">calibration</code><span class="sig-paren">(</span><em>trace</em>, <em>metric_store=None</em>, <em>debug=False</em>, <em>**params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#calibration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.calibration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Refer to unscreened_calibration() for most details on this function.
+This function wraps unscreened_calibration and discards false alarms.
+At the moment it uses pre-trained machine learning objects however this
+can be implemented in different ways in the future.  The keys in a
+detection that are likely of interest to a user include:</p>
+<blockquote>
+<div>‘snclq’, ‘start_time’ and ‘end_time’</div></blockquote>
+<p>Beyond that, these entries are strictly for screening false alarms.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pycheron.metrics.calibration.calibrationMetric">
+<code class="descname">calibrationMetric</code><span class="sig-paren">(</span><em>st</em>, <em>metric_store=None</em>, <em>debug=False</em>, <em>database=None</em>, <em>**params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/metrics/calibration.html#calibrationMetric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.metrics.calibration.calibrationMetric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper function for calibration. Enable stream processing
+:param st: Stream object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of calibration detections</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

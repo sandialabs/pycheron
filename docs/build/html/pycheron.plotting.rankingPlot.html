@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.plotting.rankingPlot &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">pycheron.plotting.rankingPlot</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="module-pycheron.plotting.rankingPlot">
+<span id="pycheron-plotting-rankingplot"></span><h1>pycheron.plotting.rankingPlot<a class="headerlink" href="#module-pycheron.plotting.rankingPlot" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pycheron.plotting.rankingPlot.rankPlot">
+<code class="descname">rankPlot</code><span class="sig-paren">(</span><em>st</em>, <em>f_name=None</em>, <em>model='nlnm'</em>, <em>rank_by=None</em>, <em>nnm_fname=None</em>, <em>database=None</em>, <em>station=None</em>, <em>network=None</em>, <em>channel=None</em>, <em>location=None</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/plotting/rankingPlot.html#rankPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.plotting.rankingPlot.rankPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This takes in network level streams and ranks the plots</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>st</strong> (<em>obspy.core.stream.Stream</em><em> or </em><a class="reference internal" href="pycheron.db.sqllite_db.html#pycheron.db.sqllite_db.Database" title="pycheron.db.sqllite_db.Database"><em>pycheron.db.sqllite_db.Database</em></a>) – obspy stream OR Database object</li>
+<li><strong>f_name</strong> (<em>str</em>) – name of output file to save ranking plot</li>
+<li><strong>model</strong> (<em>str</em>) – Model. “nlnm” (new low noise model) or “nnm” (network noise model).</li>
+<li><strong>rank_by</strong> (<em>numpy.ndarray</em>) – Array of period values to rank the stations at. If none, default will be [1, 6.5, 30, 100]</li>
+<li><strong>nnm_fname</strong> (<em>str</em>) – If supplied, plot of network noise model will be saved</li>
+<li><strong>database</strong> (<a class="reference internal" href="pycheron.db.sqllite_db.html#pycheron.db.sqllite_db.Database" title="pycheron.db.sqllite_db.Database"><em>pycheron.db.sqllite_db.Database</em></a>) – database object</li>
+<li><strong>station</strong> (<em>str</em>) – Use only if <strong>st</strong> is database object. Station name</li>
+<li><strong>network</strong> (<em>str</em>) – Use only if <strong>st</strong> is database object. Network name</li>
+<li><strong>channel</strong> (<em>str</em>) – Use only if <strong>st</strong> is database object. Channel name</li>
+<li><strong>location</strong> (<em>str</em>) – Use only if <strong>st</strong> is database object. Location name</li>
+<li><strong>session</strong> (<em>str</em>) – Use only if <strong>st</strong> is database object. Session name</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import libs</span>
+<span class="kn">from</span> <span class="nn">obspy.clients.fdsn</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">plotting.rankingPlot</span> <span class="kn">import</span> <span class="n">rankPlot</span>
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">UTCDateTime</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;IRIS&quot;</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2019-09-10T00:00:00&quot;</span><span class="p">)</span>
+<span class="n">te</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2019-09-10T05:00:00&quot;</span><span class="p">)</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_waveforms</span><span class="p">(</span><span class="s2">&quot;CI&quot;</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;H*&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">te</span><span class="p">)</span>
+
+<span class="n">rankPlot</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gsn&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_static/rankPlot.png" src="_static/rankPlot.png" />
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

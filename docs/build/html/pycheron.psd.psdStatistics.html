@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.psd.psdStatistics &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><span><img src="_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="install.html">Install</a></li>
+                <li><a href="pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">pycheron.psd.psdStatistics</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="module-pycheron.psd.psdStatistics">
+<span id="pycheron-psd-psdstatistics"></span><h1>pycheron.psd.psdStatistics<a class="headerlink" href="#module-pycheron.psd.psdStatistics" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pycheron.psd.psdStatistics.psdStatistics">
+<code class="descname">psdStatistics</code><span class="sig-paren">(</span><em>psds</em>, <em>evalresp=None</em>, <em>logger=None</em>, <em>database=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pycheron/psd/psdStatistics.html#psdStatistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pycheron.psd.psdStatistics.psdStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>The psdStatistics function calculates a variety of basic statistics associated with an incoming set of PSDs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>psds</strong> (<em>list</em>) – list of psds, use <code class="docutils literal notranslate"><span class="pre">psdList()</span></code> function output as input</li>
+<li><strong>evalresp</strong> (<em>numpy.ndarray</em>) – numpy.ndarray of freq, amp, phase information matching output of
+client.evalresp, optional as will grab the response information from IRIS if
+not supplied by user. If supplied by user, user should adhere to client.evalresp
+output format</li>
+<li><strong>logger</strong> (<a class="reference internal" href="pycheron.util.logger.html#pycheron.util.logger.Logger" title="pycheron.util.logger.Logger"><em>pycheron.util.logger.Logger</em></a>) – logger object</li>
+<li><strong>database</strong> (<a class="reference internal" href="pycheron.db.sqllite_db.html#pycheron.db.sqllite_db.Database" title="pycheron.db.sqllite_db.Database"><em>pycheron.db.sqllite_db.Database</em></a>) – Database object</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>Dictionary containing the following keys and types:</p>
+<ul class="simple">
+<li>snclq (<cite>list</cite>) - list of SNCLQ information, i.e. <code class="docutils literal notranslate"><span class="pre">[&quot;s.n.c.q.l&quot;]</span></code></li>
+<li>metric_name (<cite>string</cite>) - name of metric</li>
+<li>start_time (<cite>string</cite>) - psd start time</li>
+<li>end_time (<cite>string</cite>) = psd end time</li>
+<li>noise_matrix_Noise (<cite>numpy.ndarray</cite>): Noise – array of corrected power levels</li>
+<li>noise_matrix_frequency (<cite>numpy.ndarray</cite>): Frequency – array of associated frequencies for noise array</li>
+<li>pdf_matrix (<cite>numpy.ndarray</cite>) – array of probability density values; rows=dB level, columns=frequencies</li>
+<li>pdf_bins (<cite>numpy.array</cite>) – vector of power values (dB) associated with pdfMatrix rows</li>
+<li>max (<cite>numpy.array</cite>) – maximum power level at each frequency</li>
+<li>min (<cite>numpy.array</cite>) – minimum power level at each frequency</li>
+<li>mean (<cite>numpy.array</cite>) – mean power level at each frequency</li>
+<li>median (<cite>numpy.array</cite>) – median power level at each frequency</li>
+<li>mode (<cite>numpy.array</cite>) – mode of power level at each frequency (obtained from pdfMatrix)</li>
+<li>nlnm (<cite>numpy.array</cite>) – low noise model power level at each frequency</li>
+<li>nhnm (<cite>numpy.array</cite>) – high noise model power level at each frequency</li>
+<li>percent_above_nhnm (<cite>numpy.array</cite>) – percent of PSDs above the high noise model at each frequency</li>
+<li>percent_below_nlnm (vector) – percent of PSDS below the low noise model at each frequency</li>
+<li>percent_95 (<cite>numpy.array</cite>) - 95 percentile power level at each frequency</li>
+<li>percent_90 (<cite>numpy.array</cite>) - 90 percentile power level at each frequency</li>
+<li>percent_10 (<cite>numpy.array</cite>) - 10 percentile power level at each frequency</li>
+<li>percent_5 (<cite>numpy.array</cite>) - 5 percentile power level at each frequency</li>
+</ul>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># import function</span>
+<span class="kn">import</span> <span class="nn">obspy</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.psdList</span> <span class="kn">import</span> <span class="n">psdList</span>
+<span class="kn">from</span> <span class="nn">pycheron.psd.psdStatistics</span> <span class="kn">import</span> <span class="n">psdStatistics</span>
+
+<span class="c1"># test data</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="s1">&#39;test/test_data/7a_cabn_bhe.884965.tar.mseed&#39;</span>
+
+<span class="c1"># reading in stream</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">data1</span><span class="p">)</span>
+
+<span class="c1"># creating list of psds, this is a REQUIRMENT as the psdStatistic takes in a psdList</span>
+<span class="n">psds</span> <span class="o">=</span> <span class="n">psdList</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+
+<span class="c1"># Calculating stats</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">psdStatistics</span><span class="p">(</span><span class="n">psds</span><span class="p">)</span>
+
+<span class="c1"># psdStatistics returns a list of dictionaries. Each dictionary corresponds to a trace in the st, if there is</span>
+<span class="c1"># only one dict in the list, then there is only one trace in the stream. Data can be accessed using the following</span>
+<span class="c1"># dict keys</span>
+
+<span class="c1"># stats[0][&#39;noise_matrix_frequency&#39;]</span>
+<span class="c1"># stats[0][&#39;noise_matrix_noise&#39;]</span>
+<span class="c1"># stats[0][&#39;PDFMatrix&#39;]</span>
+<span class="c1"># stats[0][&#39;PDFBins&#39;]</span>
+<span class="c1"># stats[0][&#39;Max&#39;]</span>
+<span class="c1"># stats[0][&#39;Min&#39;]</span>
+<span class="c1"># stats[0][&#39;Mean&#39;]</span>
+<span class="c1"># stats[0][&#39;Median&#39;]</span>
+<span class="c1"># stats[0][&#39;Mode&#39;]</span>
+<span class="c1"># stats[0][&#39;NHNM&#39;]</span>
+<span class="c1"># stats[0][&#39;NLNM&#39;]</span>
+<span class="c1"># stats[0][&#39;Percent_above_NHNM&#39;]</span>
+<span class="c1"># stats[0][&#39;Percent_below_NLNM&#39;]</span>
+<span class="c1"># stats[0][&#39;95percent&#39;]</span>
+<span class="c1"># stats[0][&#39;90percent&#39;]</span>
+<span class="c1"># stats[0][&#39;10percent&#39;]</span>
+<span class="c1"># stats[0][&#39;5percent&#39;]</span>
+
+<span class="c1"># output not show for brevity</span>
+<span class="k">print</span> <span class="s1">&#39;NoiseMatrix:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;noise_matrix_frequency&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#Frequency matrix of first segment of trace</span>
+<span class="k">print</span> <span class="s1">&#39;NoiseMatrix:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;noise_matrix_noise&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#Noise matrix of first segment trace</span>
+<span class="k">print</span> <span class="s1">&#39;PDFMatrix:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;PDFMatrix&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#PDF matrix of first segment of trace</span>
+<span class="k">print</span> <span class="s1">&#39;PDFBins:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;PDFBins&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#PDFBins (power) associated with PDFMatrix of first segment of trace</span>
+<span class="k">print</span> <span class="s1">&#39;Max:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Max&#39;</span><span class="p">]</span>  <span class="c1">#Maximum power level at each frequency</span>
+<span class="k">print</span> <span class="s1">&#39;Min:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Min&#39;</span><span class="p">]</span>  <span class="c1">#Minimum power level at each frequency</span>
+<span class="k">print</span> <span class="s1">&#39;Mean:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Mean&#39;</span><span class="p">]</span>  <span class="c1">#Mean power level at each frequency</span>
+<span class="k">print</span> <span class="s1">&#39;Median:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Median&#39;</span><span class="p">]</span>  <span class="c1">#Median power level at each frequency</span>
+<span class="k">print</span> <span class="s1">&#39;Mode:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Mode&#39;</span><span class="p">]</span>  <span class="c1">#Mode power level at each frequency</span>
+<span class="k">print</span> <span class="s1">&#39;Percent_above_NHNM:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Percent_above_NHNM&#39;</span><span class="p">]</span>  <span class="c1">#Percent of PSDs above NHNM</span>
+<span class="k">print</span> <span class="s1">&#39;Percent_below_NLNM:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Percent_below_NLNM&#39;</span><span class="p">]</span>  <span class="c1">#Percent of PSDs below NLNM</span>
+<span class="k">print</span> <span class="s1">&#39;95percent:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;95percent&#39;</span><span class="p">]</span>  <span class="c1">#95 percentile</span>
+<span class="k">print</span> <span class="s1">&#39;90percent:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;90percent&#39;</span><span class="p">]</span>  <span class="c1">#90 percentile</span>
+<span class="k">print</span> <span class="s1">&#39;10percent:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;10percent&#39;</span><span class="p">]</span>  <span class="c1">#10 percentile</span>
+<span class="k">print</span> <span class="s1">&#39;5percent:&#39;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;5percent&#39;</span><span class="p">]</span>  <span class="c1">#5 percentile</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

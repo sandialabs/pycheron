@@ -1,0 +1,436 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+! Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+! certain rights in this software.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! NOTICE:
+! For five (5) years from 10/21/2019 the United States Government is granted for
+! itself and others acting on its behalf a paid-up, nonexclusive, irrevocable worldwide
+! license in this data to reproduce, prepare derivative works, and perform publicly and
+! display publicly, by or on behalf of the Government. There is provision for the
+! possible extension of the term of this license. Subsequent to that period or any
+! extension granted, the United States Government is granted for itself and others
+! acting on its behalf a paid-up, nonexclusive, irrevocable worldwide license in this
+! data to reproduce, prepare derivative works, distribute copies to the public,
+! perform publicly and display publicly, and to permit others to do so. The specific
+! term of the license can be identified by inquiry made to National Technology and
+! Engineering Solutions of Sandia, LLC or DOE. NEITHER THE UNITED STATES GOVERNMENT,
+! NOR THE UNITED STATES DEPARTMENT OF ENERGY, NOR NATIONAL TECHNOLOGY AND ENGINEERING
+! SOLUTIONS OF SANDIA, LLC, NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR
+! IMPLIED, OR ASSUMES ANY LEGAL RESPONSIBILITY FOR THE ACCURACY, COMPLETENESS, OR
+! USEFULNESS OF ANY INFORMATION, APPARATUS, PRODUCT, OR PROCESS DISCLOSED, OR REPRESENTS
+! THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED RIGHTS. Any licensee of this software
+! has the obligation and responsibility to abide by the applicable export control laws,
+! regulations, and general prohibitions relating to the export of technical data.
+! Failure to obtain an export control license or other authority from the Government
+! may result in criminal liability under U.S. laws.
+! (End of Notice)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module psdListF ! in 
+    interface  ! in :psdListF
+        subroutine psdlist(x,n,fs,z,secs,lof,hif,af,psdslist,psdtruncx,psdtruncy) ! in :psdListF:specTaper.f
+            integer*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real :: fs
+            integer :: z
+            real :: secs
+            real :: lof
+            real :: hif
+            real :: af
+            real*8 dimension(n,n),intent(out),depend(n,n) :: psdslist
+            integer intent(out) :: psdtruncx
+            integer intent(out) :: psdtruncy
+        end subroutine psdlist
+        subroutine mcnamarapsds(x,n,fs,bin,lof,hif,af,freq,psd,trunc,trunca) ! in :psdListF:specTaper.f
+            integer*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real :: fs
+            integer :: bin
+            real :: lof
+            real :: hif
+            real :: af
+            real*8 dimension(n),intent(out),depend(n) :: freq
+            real*8 dimension(n),intent(out),depend(n) :: psd
+            integer intent(out) :: trunc
+            integer intent(out) :: trunca
+        end subroutine mcnamarapsds
+        subroutine mcnamarabins(f,pxx,n,trunc,lof,hif,af,dlen,dff,dfp,dfpmask,dfpcount) ! in :psdListF:specTaper.f
+            real*8 dimension(n) :: f
+            real*8 dimension(n),depend(n) :: pxx
+            integer, optional,check(len(f)>=n),depend(f) :: n=len(f)
+            integer :: trunc
+            real :: lof
+            real :: hif
+            real :: af
+            integer :: dlen
+            real*8 dimension(dlen),intent(out),depend(dlen) :: dff
+            real*8 dimension(dlen),intent(out),depend(dlen) :: dfp
+            integer*8 dimension(dlen),intent(out),depend(dlen) :: dfpmask
+            integer intent(out) :: dfpcount
+        end subroutine mcnamarabins
+        subroutine digitize(f,n,binfreq,binn,bins) ! in :psdListF:specTaper.f
+            real*8 dimension(n) :: f
+            integer, optional,check(len(f)>=n),depend(f) :: n=len(f)
+            real*8 dimension(binn) :: binfreq
+            integer, optional,check(len(binfreq)>=binn),depend(binfreq) :: binn=len(binfreq)
+            integer dimension(n),intent(out),depend(n) :: bins
+        end subroutine digitize
+        subroutine spec_pgram(x,n,fs,tap,fa,dmean,dtrend,f,pxx,trunc) ! in :psdListF:specTaper.f
+            integer*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real :: fs
+            real :: tap
+            integer :: fa
+            integer :: dmean
+            integer :: dtrend
+            real*8 dimension(n),intent(out),depend(n) :: f
+            real*8 dimension(n),intent(out),depend(n) :: pxx
+            integer intent(out) :: trunc
+        end subroutine spec_pgram
+        subroutine spec_taper(x,n,p,arr) ! in :psdListF:specTaper.f
+            real*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real :: p
+            real*8 dimension(n),intent(out),depend(n) :: arr
+        end subroutine spec_taper
+        subroutine spec_detrend(x,n,arr) ! in :psdListF:specTaper.f
+            integer*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real*8 dimension(n),intent(out),depend(n) :: arr
+        end subroutine spec_detrend
+        subroutine spec_demean(x,n,arr) ! in :psdListF:specTaper.f
+            real*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real*8 dimension(n),intent(out),depend(n) :: arr
+        end subroutine spec_demean
+        subroutine nextn(n,out) ! in :psdListF:specTaper.f
+            integer :: n
+            integer intent(out) :: out
+        end subroutine nextn
+        subroutine cfftb(n,c,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: c
+            real dimension(*) :: wsave
+        end subroutine cfftb
+        subroutine cfftb1(n,c,ch,wa,ifac) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: c
+            real dimension(*) :: ch
+            real dimension(*) :: wa
+            integer dimension(*) :: ifac
+        end subroutine cfftb1
+        subroutine passb2(ido,l1,cc,ch,wa1) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,2,l1) :: cc
+            real dimension(ido,l1,2),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+        end subroutine passb2
+        subroutine passb3(ido,l1,cc,ch,wa1,wa2) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,3,l1) :: cc
+            real dimension(ido,l1,3),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+        end subroutine passb3
+        subroutine passb4(ido,l1,cc,ch,wa1,wa2,wa3) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,4,l1) :: cc
+            real dimension(ido,l1,4),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+            real dimension(*) :: wa3
+        end subroutine passb4
+        subroutine passb5(ido,l1,cc,ch,wa1,wa2,wa3,wa4) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,5,l1) :: cc
+            real dimension(ido,l1,5),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+            real dimension(*) :: wa3
+            real dimension(*) :: wa4
+        end subroutine passb5
+        subroutine passb(nac,ido,ip,l1,idl1,cc,c1,c2,ch,ch2,wa) ! in :psdListF:fftpack.f
+            integer :: nac
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,1)==ip),depend(cc) :: ip=shape(cc,1)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            integer, optional,check(shape(c2,0)==idl1),depend(c2) :: idl1=shape(c2,0)
+            real dimension(ido,ip,l1) :: cc
+            real dimension(ido,l1,ip),depend(ido,l1,ip) :: c1
+            real dimension(idl1,ip),depend(ip) :: c2
+            real dimension(ido,l1,ip),depend(ido,l1,ip) :: ch
+            real dimension(idl1,ip),depend(idl1,ip) :: ch2
+            real dimension(*) :: wa
+        end subroutine passb
+        subroutine cfftf(n,c,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: c
+            real dimension(*) :: wsave
+        end subroutine cfftf
+        subroutine cfftf1(n,c,ch,wa,ifac) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: c
+            real dimension(*) :: ch
+            real dimension(*) :: wa
+            integer dimension(*) :: ifac
+        end subroutine cfftf1
+        subroutine passf2(ido,l1,cc,ch,wa1) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,2,l1) :: cc
+            real dimension(ido,l1,2),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+        end subroutine passf2
+        subroutine passf3(ido,l1,cc,ch,wa1,wa2) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,3,l1) :: cc
+            real dimension(ido,l1,3),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+        end subroutine passf3
+        subroutine passf4(ido,l1,cc,ch,wa1,wa2,wa3) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,4,l1) :: cc
+            real dimension(ido,l1,4),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+            real dimension(*) :: wa3
+        end subroutine passf4
+        subroutine passf5(ido,l1,cc,ch,wa1,wa2,wa3,wa4) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,5,l1) :: cc
+            real dimension(ido,l1,5),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+            real dimension(*) :: wa3
+            real dimension(*) :: wa4
+        end subroutine passf5
+        subroutine passf(nac,ido,ip,l1,idl1,cc,c1,c2,ch,ch2,wa) ! in :psdListF:fftpack.f
+            integer :: nac
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,1)==ip),depend(cc) :: ip=shape(cc,1)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            integer, optional,check(shape(c2,0)==idl1),depend(c2) :: idl1=shape(c2,0)
+            real dimension(ido,ip,l1) :: cc
+            real dimension(ido,l1,ip),depend(ido,l1,ip) :: c1
+            real dimension(idl1,ip),depend(ip) :: c2
+            real dimension(ido,l1,ip),depend(ido,l1,ip) :: ch
+            real dimension(idl1,ip),depend(idl1,ip) :: ch2
+            real dimension(*) :: wa
+        end subroutine passf
+        subroutine cffti(n,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: wsave
+        end subroutine cffti
+        subroutine cffti1(n,wa,ifac) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: wa
+            integer dimension(*) :: ifac
+        end subroutine cffti1
+        subroutine cosqb(n,x,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: x
+            real dimension(*) :: wsave
+        end subroutine cosqb
+        subroutine cosqb1(n,x,w,xh) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(1) :: x
+            real dimension(1) :: w
+            real dimension(1) :: xh
+        end subroutine cosqb1
+        subroutine cosqf(n,x,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: x
+            real dimension(*) :: wsave
+        end subroutine cosqf
+        subroutine cosqf1(n,x,w,xh) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(1) :: x
+            real dimension(1) :: w
+            real dimension(1) :: xh
+        end subroutine cosqf1
+        subroutine cosqi(n,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: wsave
+        end subroutine cosqi
+        subroutine cost(n,x,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: x
+            real dimension(*) :: wsave
+        end subroutine cost
+        subroutine costi(n,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: wsave
+        end subroutine costi
+        subroutine sinqb(n,x,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: x
+            real dimension(*) :: wsave
+        end subroutine sinqb
+        subroutine sinqf(n,x,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: x
+            real dimension(*) :: wsave
+        end subroutine sinqf
+        subroutine sinqi(n,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: wsave
+        end subroutine sinqi
+        subroutine sint(n,x,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: x
+            real dimension(*) :: wsave
+        end subroutine sint
+        subroutine sint1(n,war,was,xh,x,ifac) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: war
+            real dimension(*) :: was
+            real dimension(*) :: xh
+            real dimension(*) :: x
+            integer dimension(*) :: ifac
+        end subroutine sint1
+        subroutine sinti(n,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: wsave
+        end subroutine sinti
+        subroutine rfftb(n,r,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: r
+            real dimension(*) :: wsave
+        end subroutine rfftb
+        subroutine rfftb1(n,c,ch,wa,ifac) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: c
+            real dimension(*) :: ch
+            real dimension(*) :: wa
+            integer dimension(*) :: ifac
+        end subroutine rfftb1
+        subroutine radb2(ido,l1,cc,ch,wa1) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,2,l1) :: cc
+            real dimension(ido,l1,2),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+        end subroutine radb2
+        subroutine radb3(ido,l1,cc,ch,wa1,wa2) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,3,l1) :: cc
+            real dimension(ido,l1,3),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+        end subroutine radb3
+        subroutine radb4(ido,l1,cc,ch,wa1,wa2,wa3) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,4,l1) :: cc
+            real dimension(ido,l1,4),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+            real dimension(*) :: wa3
+        end subroutine radb4
+        subroutine radb5(ido,l1,cc,ch,wa1,wa2,wa3,wa4) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            real dimension(ido,5,l1) :: cc
+            real dimension(ido,l1,5),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+            real dimension(*) :: wa3
+            real dimension(*) :: wa4
+        end subroutine radb5
+        subroutine radbg(ido,ip,l1,idl1,cc,c1,c2,ch,ch2,wa) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,1)==ip),depend(cc) :: ip=shape(cc,1)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            integer, optional,check(shape(c2,0)==idl1),depend(c2) :: idl1=shape(c2,0)
+            real dimension(ido,ip,l1) :: cc
+            real dimension(ido,l1,ip),depend(ido,l1,ip) :: c1
+            real dimension(idl1,ip),depend(ip) :: c2
+            real dimension(ido,l1,ip),depend(ido,l1,ip) :: ch
+            real dimension(idl1,ip),depend(idl1,ip) :: ch2
+            real dimension(*) :: wa
+        end subroutine radbg
+        subroutine rfftf(n,r,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: r
+            real dimension(*) :: wsave
+        end subroutine rfftf
+        subroutine rfftf1(n,c,ch,wa,ifac) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: c
+            real dimension(*) :: ch
+            real dimension(*) :: wa
+            integer dimension(*) :: ifac
+        end subroutine rfftf1
+        subroutine radf2(ido,l1,cc,ch,wa1) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,1)==l1),depend(cc) :: l1=shape(cc,1)
+            real dimension(ido,l1,2) :: cc
+            real dimension(ido,2,l1),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+        end subroutine radf2
+        subroutine radf3(ido,l1,cc,ch,wa1,wa2) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,1)==l1),depend(cc) :: l1=shape(cc,1)
+            real dimension(ido,l1,3) :: cc
+            real dimension(ido,3,l1),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+        end subroutine radf3
+        subroutine radf4(ido,l1,cc,ch,wa1,wa2,wa3) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,1)==l1),depend(cc) :: l1=shape(cc,1)
+            real dimension(ido,l1,4) :: cc
+            real dimension(ido,4,l1),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+            real dimension(*) :: wa3
+        end subroutine radf4
+        subroutine radf5(ido,l1,cc,ch,wa1,wa2,wa3,wa4) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,1)==l1),depend(cc) :: l1=shape(cc,1)
+            real dimension(ido,l1,5) :: cc
+            real dimension(ido,5,l1),depend(ido,l1) :: ch
+            real dimension(*) :: wa1
+            real dimension(*) :: wa2
+            real dimension(*) :: wa3
+            real dimension(*) :: wa4
+        end subroutine radf5
+        subroutine radfg(ido,ip,l1,idl1,cc,c1,c2,ch,ch2,wa) ! in :psdListF:fftpack.f
+            integer, optional,check(shape(cc,0)==ido),depend(cc) :: ido=shape(cc,0)
+            integer, optional,check(shape(cc,1)==ip),depend(cc) :: ip=shape(cc,1)
+            integer, optional,check(shape(cc,2)==l1),depend(cc) :: l1=shape(cc,2)
+            integer, optional,check(shape(c2,0)==idl1),depend(c2) :: idl1=shape(c2,0)
+            real dimension(ido,ip,l1) :: cc
+            real dimension(ido,l1,ip),depend(ido,l1,ip) :: c1
+            real dimension(idl1,ip),depend(ip) :: c2
+            real dimension(ido,l1,ip),depend(ido,l1,ip) :: ch
+            real dimension(idl1,ip),depend(idl1,ip) :: ch2
+            real dimension(*) :: wa
+        end subroutine radfg
+        subroutine rffti(n,wsave) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: wsave
+        end subroutine rffti
+        subroutine rffti1(n,wa,ifac) ! in :psdListF:fftpack.f
+            integer :: n
+            real dimension(*) :: wa
+            integer dimension(*) :: ifac
+        end subroutine rffti1
+    end interface 
+end python module psdListF
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

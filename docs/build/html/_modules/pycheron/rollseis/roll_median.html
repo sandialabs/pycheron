@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pycheron.rollseis.roll_median &#8212; Pycheron 2.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/horse-128.png"></span>
+          Pycheron</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../install.html">Install</a></li>
+                <li><a href="../../../pycheron.html">Documentation</a></li>
+                <li><a href="https://gitlab.sandia.gov/lynm/pycheron">Gitlab</a></li>
+                <li><a href="tutorials">Tutorials</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Documentation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for pycheron.rollseis.roll_median</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;roll_median&#39;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="roll_median"><a class="viewcode-back" href="../../../pycheron.rollseis.roll_median.html#pycheron.rollseis.roll_median.roll_median">[docs]</a><span class="k">def</span> <span class="nf">roll_median</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nwin</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">increment</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Python version of roll_median function in seismicRoll R package</span>
+
+<span class="sd">    Can be utilized to replace outliers detected by the hampel function. Window size is interpeted as the</span>
+<span class="sd">    full window length. Values within ``n/2`` of the beginning or end of x are set to NA.</span>
+
+<span class="sd">    Setting increment to a value greater than one will result in NAs for all skipped over values</span>
+
+
+<span class="sd">    Fast, center-aligned rolling medians algorithm</span>
+
+<span class="sd">    :param x: input data</span>
+<span class="sd">    :type x: numpy.array</span>
+<span class="sd">    :param nwin: n integer window size</span>
+<span class="sd">    :type nwin: int</span>
+<span class="sd">    :param increment: increment integer shift to use when sliding the window to the next location</span>
+<span class="sd">    :type increment: int</span>
+
+<span class="sd">    :return: Returns vector of rolling median values of the same length as x</span>
+<span class="sd">    :rtype: numpy.array</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from pycheron.rollseis.roll_median import roll_median</span>
+<span class="sd">        from pycheron.rollseis.roll_sd import roll_sd</span>
+<span class="sd">        from psd.noise.findOutliers import findOutliers</span>
+<span class="sd">        import numpy as np</span>
+<span class="sd">        # Create sinusoidal signal with outliers</span>
+<span class="sd">        g =[]</span>
+<span class="sd">        for i in range(1,101):</span>
+<span class="sd">            g.append(np.sin(0.1*i))</span>
+<span class="sd">        # Create indices with outliers to detect</span>
+<span class="sd">        g=np.asarray(g)</span>
+<span class="sd">        ginds = [10,19,49,67,68,73,90]</span>
+<span class="sd">        for i in ginds:</span>
+<span class="sd">            g[i] = g[i]*10</span>
+<span class="sd">        g_fixed = np.array(g)</span>
+<span class="sd">        gm_fixed = np.array(g)</span>
+
+<span class="sd">        # Find outliers with rolling_hampel filter</span>
+<span class="sd">        # Parameters</span>
+<span class="sd">        nwin = 7</span>
+<span class="sd">        threshold = 6</span>
+<span class="sd">        selectivity = None</span>
+<span class="sd">        increment = 1</span>
+<span class="sd">        fixedThreshold = True</span>
+<span class="sd">        outliers = findOutliers(g,nwin,threshold,selectivity,increment,fixedThreshold)</span>
+
+<span class="sd">        #Apply rolling median</span>
+<span class="sd">        for i in outliers:</span>
+<span class="sd">        g_fixed[i] = roll_median(g,10,1)[i]</span>
+
+
+<span class="sd">    **Plotting**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Using outputs from above example</span>
+<span class="sd">        import matplotlib.pyplot as plt</span>
+
+<span class="sd">        plt.plot(outliers,g[outliers],&#39;ro&#39;, label= &#39;Outliers detected&#39;)</span>
+<span class="sd">        plt.plot(g,color=&#39;grey&#39;,label=&#39;original&#39;)</span>
+<span class="sd">        plt.plot(g_fixed,color = &#39;red&#39;,linestyle = &#39;--&#39;,label = &#39;corrected&#39;)</span>
+<span class="sd">        plt.plot(outliers,g[outliers],&#39;ro&#39;)</span>
+<span class="sd">        plt.ylim(-15, 10)</span>
+<span class="sd">        plt.title(&#39;Outliers detected: %s&#39;%(len(outliers)))</span>
+<span class="sd">        plt.legend(loc=&#39;lower left&#39;)</span>
+
+<span class="sd">    .. image:: _static/roll_median.png</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check if x is not a pd.Series (e.g., Mean from dailyDCOffsetMetric), if not break</span>
+
+    <span class="c1"># if not isinstance(x,pd.Series):</span>
+    <span class="c1">#    print &#39;the x supplied is not a pd.Series&#39;</span>
+    <span class="c1">#    exit(1)</span>
+
+    <span class="c1"># Check if nwin &gt; length(x) if so break</span>
+
+    <span class="k">if</span> <span class="n">nwin</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;roll_median/medianFilter Error: Nwin cannot be greater than len x &#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Avoid infinite loops</span>
+    <span class="k">if</span> <span class="n">increment</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;roll_median/medianFilter Error: Increment must be &gt;= 1&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Get the half-window width</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># For the valid region, calculate the result</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">k</span>
+
+    <span class="c1"># Initialize output vector</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+    <span class="c1"># For the valid region, calculate the result; e.g., if nwin = 10, k =5, and say x = 100, valid region is between</span>
+    <span class="c1"># 5 and 95</span>
+    <span class="k">while</span> <span class="n">ind</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">k</span><span class="p">:</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">_medianFilter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nwin</span><span class="p">,</span> <span class="n">ind</span><span class="p">)</span>
+        <span class="n">ind</span> <span class="o">+=</span> <span class="n">increment</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<span class="k">def</span> <span class="nf">_medianFilter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nwin</span><span class="p">,</span> <span class="n">ind</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Simple rolling median used to replace outliers detected with the hampel filter</span>
+
+<span class="sd">    :param x: input data</span>
+<span class="sd">    :type x: numpy.array</span>
+<span class="sd">    :param nwin: n integer window size</span>
+<span class="sd">    :type nwin: int</span>
+<span class="sd">    :param ind: index looping over</span>
+<span class="sd">    :type ind: int</span>
+
+<span class="sd">    :return: Returns a vector of the same length as incoming data with NaNs where this is not a full window&#39;s</span>
+<span class="sd">             worth of data</span>
+<span class="sd">    :rtype: numpy.array</span>
+
+<span class="sd">    **Example**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get half-window width</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Calculate median value</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">nwin</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">nwin</span><span class="p">):</span>
+        <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">ind</span> <span class="o">-</span> <span class="n">k</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span>
+    <span class="c1"># Sort tmp in correct order </span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+    <span class="c1"># If nwin even do the following, else, take tmp[nwin/2] to determine outlier replacement</span>
+    <span class="k">if</span> <span class="n">nwin</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp</span><span class="p">[(</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="n">nwin</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">out</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2019, Jessica Bobeck, Katherine Anderson Aur.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
