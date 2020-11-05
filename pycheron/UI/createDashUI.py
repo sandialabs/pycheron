@@ -1334,7 +1334,15 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                 )
                 fig.update_yaxes(showticklabels=False)
                 fig.update_layout(
-                    xaxis_title="Period (seconds)", yaxis_title=sta, title=rank_title
+                    scene=dict(
+                        xaxis=dict(
+                            nticks=8,
+                            range=[0, 140]
+                        )
+                    )
+                    xaxis_title="Period (seconds)",
+                    yaxis_title=sta,
+                    title=rank_title
                 )
 
             if plot == "Network Noise Model":

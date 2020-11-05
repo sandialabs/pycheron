@@ -27,9 +27,17 @@ You will need to use a **Python 3.6.9** environment, and **activate it before in
 ### Installing
 Before installing, you will need to download [git-lfs](https://git-lfs.github.com/)
 
+After git-lfs is installed, run the following in the root directory:
+```bash
+git lfs install
+git lfs fetch
+git lfs pull
+```
+
+
 The easiest way to install pycheron is to run:
 
-`sh build.sh <pycheron-version>`
+`./build.sh <pycheron-version>`
 
 (current version is `3.0.0`)
 

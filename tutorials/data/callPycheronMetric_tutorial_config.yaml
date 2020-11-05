@@ -1,6 +1,8 @@
 # general parameters
-output_dir: "/Users/jbobeck/Desktop/pycheron_tutorial"
-data: '/Users/jbobeck/Desktop/pycheron_test'
+#output_dir: "/Users/jbobeck/Desktop/pycheron_tutorial"
+#data: '/Users/jbobeck/Desktop/pycheron_test'
+output_dir: "/home/aalber/Documents/projs/pycheron/tutorials/data/pycheron_tutorial"
+data: '/home/aalber/Documents/projs/pycheron/tutorials/data/pycheron_test'
 datatype: "dir"
 calcAll: True
 network: None
