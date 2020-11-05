@@ -1309,7 +1309,8 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                             title="D",
                             titleside="top",
                             tickmode="array",
-                            tickvals=[5, 15, 25, 35, 45, 55, 65, 75],
+                            #tickvals=[5, 15, 25, 35, 45, 55, 65, 75],
+                            tickvals=period_seconds,
                             ticktext=[
                                 "10>D>=0",
                                 "20>d>=10",
@@ -1336,10 +1337,9 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                 fig.update_layout(
                     scene=dict(
                         xaxis=dict(
-                            nticks=8,
-                            range=[0, 140]
+                            nticks=48,
                         )
-                    )
+                    ),
                     xaxis_title="Period (seconds)",
                     yaxis_title=sta,
                     title=rank_title
@@ -1874,6 +1874,7 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                 style_img = {"display": "block"}
                 style_img2 = {"display": "block"}
                 style_cont = {"display": "block"}
+                import pdb; pdb.set_trace()
 
                 df, df_line, snql = get_pdf_plot_data(
                     db, network=net, station=sta, channel=chan
@@ -1894,8 +1895,8 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     [0.75, "rgb(255, 0, 0)"],
                     [0.75, "rgb(153, 51, 102)"],
                     [0.875, "rgb(153, 51, 102)"],
-                    [0.875, "rgb(0, 255, 0)"],
-                    [1.0, "rgb(0, 255, 0)"],
+                    [0.875, "rgb(102, 9, 32)"],
+                    [1.0, "rgb(102, 9, 32)"],
                 ]
                 dates = df.axes[0].tolist()
                 seconds = df.axes[1].tolist()
@@ -1953,6 +1954,7 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     + " "
                     + chan,
                 )
+                fig.update_xaxes(type="log")
 
             elif metric_name == "psdPlot":
                 style_img = {"display": "block"}
@@ -2282,6 +2284,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                 df, df_line, snql = get_pdf_plot_data(
                     db, network=net, station=sta, channel=chan
                 )
+                import pdb; pdb.set_trace()
                 df = plot_grid_data_fill_in(df)
                 colormap = [
                     [0.0, "rgb(51, 102, 255)"],
@@ -2298,8 +2301,8 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     [0.75, "rgb(255, 0, 0)"],
                     [0.75, "rgb(153, 51, 102)"],
                     [0.875, "rgb(153, 51, 102)"],
-                    [0.875, "rgb(0, 255, 0)"],
-                    [1.0, "rgb(0, 255, 0)"],
+                    [0.875, "rgb(102, 9, 32)"],
+                    [1.0, "rgb(102, 9, 32)"],
                 ]
                 dates = df.axes[0].tolist()
                 seconds = df.axes[1].tolist()
@@ -2357,6 +2360,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     + " "
                     + chan,
                 )
+                fig.update_xaxes(type="log")
 
             elif metric_name == "psdPlot":
                 style_img = {"display": "block"}
