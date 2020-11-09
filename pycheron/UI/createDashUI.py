@@ -1874,13 +1874,14 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                 style_img = {"display": "block"}
                 style_img2 = {"display": "block"}
                 style_cont = {"display": "block"}
-                import pdb; pdb.set_trace()
 
                 df, df_line, snql = get_pdf_plot_data(
                     db, network=net, station=sta, channel=chan
                 )
                 df = plot_grid_data_fill_in(df)
                 colormap = [
+                    #[-999.0, "rgb(0, 0, 255)"],
+                    [0.0, "rgb(0, 0, 255)"],
                     [0.0, "rgb(51, 102, 255)"],
                     [0.125, "rgb(51, 102, 255)"],
                     [0.125, "rgb(102, 204, 255)"],
@@ -1920,8 +1921,10 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                             title="D",
                             titleside="top",
                             tickmode="array",
-                            tickvals=[5, 15, 25, 35, 45, 55, 65, 75],
+                            #tickvals=[5, 15, 25, 35, 45, 55, 65, 75, 85],
+                            tickvals=[ 4.  , 12.75, 21.5 , 30.25, 39.  , 47.75, 56.5 , 65.25, 74.  ],
                             ticktext=[
+                                "D<0",
                                 "10>D>=0",
                                 "20>d>=10",
                                 "30>D=20",
@@ -2284,9 +2287,10 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                 df, df_line, snql = get_pdf_plot_data(
                     db, network=net, station=sta, channel=chan
                 )
-                import pdb; pdb.set_trace()
                 df = plot_grid_data_fill_in(df)
                 colormap = [
+                    #[-999.0, "rgb(0, 0, 255)"],
+                    [0.0, "rgb(0, 0, 255)"],
                     [0.0, "rgb(51, 102, 255)"],
                     [0.125, "rgb(51, 102, 255)"],
                     [0.125, "rgb(102, 204, 255)"],
@@ -2326,8 +2330,10 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                             title="D",
                             titleside="top",
                             tickmode="array",
-                            tickvals=[5, 15, 25, 35, 45, 55, 65, 75],
+                            #tickvals=[5, 15, 25, 35, 45, 55, 65, 75, 85],
+                            tickvals=[ 4.  , 12.75, 21.5 , 30.25, 39.  , 47.75, 56.5 , 65.25, 74.  ],
                             ticktext=[
+                                "D<0",
                                 "10>D>=0",
                                 "20>d>=10",
                                 "30>D=20",
