@@ -1880,7 +1880,6 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                 )
                 df = plot_grid_data_fill_in(df)
                 colormap = [
-                    #[-999.0, "rgb(0, 0, 255)"],
                     [0.0, "rgb(0, 0, 255)"],
                     [0.0, "rgb(51, 102, 255)"],
                     [0.125, "rgb(51, 102, 255)"],
@@ -1921,7 +1920,6 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                             title="D",
                             titleside="top",
                             tickmode="array",
-                            #tickvals=[5, 15, 25, 35, 45, 55, 65, 75, 85],
                             tickvals=[ 4.  , 12.75, 21.5 , 30.25, 39.  , 47.75, 56.5 , 65.25, 74.  ],
                             ticktext=[
                                 "D<0",
@@ -2289,7 +2287,6 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                 )
                 df = plot_grid_data_fill_in(df)
                 colormap = [
-                    #[-999.0, "rgb(0, 0, 255)"],
                     [0.0, "rgb(0, 0, 255)"],
                     [0.0, "rgb(51, 102, 255)"],
                     [0.125, "rgb(51, 102, 255)"],
@@ -2330,7 +2327,6 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                             title="D",
                             titleside="top",
                             tickmode="array",
-                            #tickvals=[5, 15, 25, 35, 45, 55, 65, 75, 85],
                             tickvals=[ 4.  , 12.75, 21.5 , 30.25, 39.  , 47.75, 56.5 , 65.25, 74.  ],
                             ticktext=[
                                 "D<0",
