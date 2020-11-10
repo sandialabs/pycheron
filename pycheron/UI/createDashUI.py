@@ -1902,18 +1902,6 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     [0.9, "rgb(0, 0, 0)"],
                     [1.0, "rgb(0, 0, 0)"],
                 ]
-                # colormap = [
-                #     (-10, "rgb(0, 0, 255)"),
-                #     (0, "rgb(51, 102, 255)"),
-                #     (10, "rgb(102, 204, 255)"),
-                #     (20, "rgb(102, 255, 204)"),
-                #     (30, "rgb(204, 255, 102)"),
-                #     (40, "rgb(255,165,0)"),
-                #     (50, "rgb(255, 0, 0)"),
-                #     (60, "rgb(153, 51, 102)"),
-                #     (70, "rgb(102, 9, 32)"),
-                #     (80, "rgb(0, 0, 0)"),
-                # ]
                 dates = df.axes[0].tolist()
                 seconds = df.axes[1].tolist()
                 x = [float(sec) for sec in seconds]
@@ -1925,8 +1913,6 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     for col_val in col_vals:
                         z.append(col_val)
                     z_vals.append(z)
-
-                import pdb; pdb.set_trace()
 
                 fig = go.Figure(
                     data=go.Heatmap(
@@ -1941,7 +1927,6 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                             title="D",
                             titleside="top",
                             tickmode="array",
-                            #tickvals=[ 4.  , 12.75, 21.5 , 30.25, 39.  , 47.75, 56.5 , 65.25, 74.  ],
                             tickvals=np.linspace(-5, 75, 10),
                             ticktext=[
                                 "D<0",
@@ -2019,8 +2004,13 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                 elif "pdf" in plot_style:
                     pdf_matrix = np.fliplr(stats[0]["pdf_matrix"])
                     pdf_bins = stats[0]["pdf_bins"]
+                    for indv, val in enumerate(pdf_matrix):
+                        for inde, el in enumerate(val):
+                            if el == 0.0:
+                                pdf_matrix[indv][inde] = None
+                    import pdb; pdb.set_trace()
                     fig = go.Figure(
-                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix)
+                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix, hoverongaps=False)
                     )
                     fig.update_xaxes(type="log", showgrid=True)
                     fig.update_layout(
@@ -2309,36 +2299,27 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     db, network=net, station=sta, channel=chan
                 )
                 df = plot_grid_data_fill_in(df)
-                # colormap = [
-                #     [0.0, "rgb(0, 0, 255)"],
-                #     [0.0, "rgb(51, 102, 255)"],
-                #     [0.125, "rgb(51, 102, 255)"],
-                #     [0.125, "rgb(102, 204, 255)"],
-                #     [0.25, "rgb(102, 204, 255)"],
-                #     [0.25, "rgb(102, 255, 204)"],
-                #     [0.375, "rgb(102, 255, 204)"],
-                #     [0.375, "rgb(204, 255, 102)"],
-                #     [0.5, "rgb(204, 255, 102)"],
-                #     [0.5, "rgb(255,165,0)"],
-                #     [0.625, "rgb(255,165,0)"],
-                #     [0.625, "rgb(255, 0, 0)"],
-                #     [0.75, "rgb(255, 0, 0)"],
-                #     [0.75, "rgb(153, 51, 102)"],
-                #     [0.875, "rgb(153, 51, 102)"],
-                #     [0.875, "rgb(102, 9, 32)"],
-                #     [1.0, "rgb(102, 9, 32)"],
-                # ]
                 colormap = [
-                    [-10, "rgb(0, 0, 255)"],
-                    [0, "rgb(51, 102, 255)"],
-                    [10, "rgb(102, 204, 255)"],
-                    [20, "rgb(102, 255, 204)"],
-                    [30, "rgb(204, 255, 102)"],
-                    [40, "rgb(255,165,0)"],
-                    [50, "rgb(255, 0, 0)"],
-                    [60, "rgb(153, 51, 102)"],
-                    [70, "rgb(102, 9, 32)"],
-                    [80, "rgb(0, 0, 0)"],
+                    [0.0, "rgb(0, 0, 255)"],
+                    [0.1, "rgb(0, 0, 255)"],
+                    [0.1, "rgb(51, 102, 255)"],
+                    [0.2, "rgb(51, 102, 255)"],
+                    [0.2, "rgb(102, 204, 255)"],
+                    [0.3, "rgb(102, 204, 255)"],
+                    [0.3, "rgb(102, 255, 204)"],
+                    [0.4, "rgb(102, 255, 204)"],
+                    [0.4, "rgb(204, 255, 102)"],
+                    [0.5, "rgb(204, 255, 102)"],
+                    [0.5, "rgb(255,165,0)"],
+                    [0.6, "rgb(255,165,0)"],
+                    [0.6, "rgb(255, 0, 0)"],
+                    [0.7, "rgb(255, 0, 0)"],
+                    [0.7, "rgb(153, 51, 102)"],
+                    [0.8, "rgb(153, 51, 102)"],
+                    [0.8, "rgb(102, 9, 32)"],
+                    [0.9, "rgb(102, 9, 32)"],
+                    [0.9, "rgb(0, 0, 0)"],
+                    [1.0, "rgb(0, 0, 0)"],
                 ]
                 dates = df.axes[0].tolist()
                 seconds = df.axes[1].tolist()
@@ -2362,8 +2343,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                             title="D",
                             titleside="top",
                             tickmode="array",
-                            #tickvals=[ 4.  , 12.75, 21.5 , 30.25, 39.  , 47.75, 56.5 , 65.25, 74.  ],
-                            tickvals=np.linspace(4, 74, 10),
+                            tickvals=np.linspace(-5, 75, 10),
                             ticktext=[
                                 "D<0",
                                 "10>D>=0",
