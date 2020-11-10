@@ -2008,9 +2008,8 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         for inde, el in enumerate(val):
                             if el == 0.0:
                                 pdf_matrix[indv][inde] = None
-                    import pdb; pdb.set_trace()
                     fig = go.Figure(
-                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix, hoverongaps=False)
+                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix, hoverongaps=False, colorscale='Rainbow')
                     )
                     fig.update_xaxes(type="log", showgrid=True)
                     fig.update_layout(
