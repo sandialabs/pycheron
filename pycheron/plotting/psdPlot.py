@@ -354,8 +354,8 @@ def psdPlot(
                 freq_sub = freq[freq <= 10]
                 period_sub = 1 / freq[freq <= 10]
                 nlnm, nhnm = noiseModel(freq_sub)
-                plt.semilogx(period_sub, nlnm, linewidth=3, label="NLNM", color="grey")
-                plt.semilogx(period_sub, nhnm, linewidth=3, label="NHNM", color="grey")
+                plt.semilogx(period_sub, nlnm, linewidth=3, label="NLNM", color="grey", ls="-")
+                plt.semilogx(period_sub, nhnm, linewidth=3, label="NHNM", color="grey", ls="--")
                 plt.legend()
                 update = {"type": "nlnm"}
                 out.update(update)
@@ -412,6 +412,7 @@ def psdPlot(
                         linewidth=3,
                         label="10th Percentile",
                         color="black",
+                        ls="-"
                     )
                     plt.semilogx(
                         period,
@@ -419,6 +420,7 @@ def psdPlot(
                         linewidth=3,
                         label="90th Percentile",
                         color="black",
+                        ls="--"
                     )
                     plt.legend()
                     update = {"type": "envelope_10_90"}
@@ -460,7 +462,7 @@ def psdPlot(
                 f_name = "f_name"
 
             name = f_name + "_" + channel + ".png"
-            plt.savefig(name)
+            plt.savefig(name, bbox_inches='tight')
 
             update = {"image_path": name}
             out.update(update)
@@ -588,10 +590,10 @@ def psdPlot(
                     period_sub = 1 / freq[freq <= 10]
                     nlnm, nhnm = noiseModel(freq_sub)
                     ax[i].semilogx(
-                        period_sub, nlnm, linewidth=3, label="NLNM", color="grey"
+                        period_sub, nlnm, linewidth=3, label="NLNM", color="grey", ls="-"
                     )
                     ax[i].semilogx(
-                        period_sub, nhnm, linewidth=3, label="NHNM", color="grey"
+                        period_sub, nhnm, linewidth=3, label="NHNM", color="grey", ls="--"
                     )
                     ax[i].legend()
                     if i == 0:
@@ -662,6 +664,7 @@ def psdPlot(
                             linewidth=3,
                             label="10th Percentile",
                             color="black",
+                            ls = "-"
                         )
                         ax[i].semilogx(
                             period,
@@ -669,6 +672,7 @@ def psdPlot(
                             linewidth=3,
                             label="90th Percentile",
                             color="black",
+                            ls = "--"
                         )
                         ax[i].legend()
                         if i == 0:
@@ -721,7 +725,7 @@ def psdPlot(
                 f_name = "f_name"
 
             name = f_name + "_" + station + ".png"
-            plt.savefig(name)
+            plt.savefig(name, bbox_inches='tight')
 
             update = {"image_path": name}
             out.update(update)
@@ -1057,6 +1061,7 @@ def _psdPlot_from_database(
                     linewidth=3,
                     label="10th Percentile",
                     color="black",
+                    ls="-"
                 )
                 plt.semilogx(
                     period,
@@ -1064,6 +1069,7 @@ def _psdPlot_from_database(
                     linewidth=3,
                     label="90th Percentile",
                     color="black",
+                    ls="--"
                 )
                 plt.legend()
                 update = {"type": "envelope_10_90"}
@@ -1293,6 +1299,7 @@ def _psdPlot_from_database(
                         linewidth=3,
                         label="10th Percentile",
                         color="black",
+                        ls="-"
                     )
                     ax[i].semilogx(
                         period,
@@ -1300,6 +1307,7 @@ def _psdPlot_from_database(
                         linewidth=3,
                         label="90th Percentile",
                         color="black",
+                        ls="--"
                     )
                     ax[i].legend()
                     if i == 0:
@@ -1352,7 +1360,7 @@ def _psdPlot_from_database(
             f_name = "f_name"
 
         name = f_name + "_" + station + ".png"
-        plt.savefig(name)
+        plt.savefig(name, bbox_inches='tight')
 
         update = {"image_path": name}
         out.update(update)
