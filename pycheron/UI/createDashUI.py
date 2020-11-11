@@ -1281,22 +1281,26 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                     }
                 )
                 colormap = [
-                    [0.0, "rgb(51, 102, 255)"],
-                    [0.125, "rgb(51, 102, 255)"],
-                    [0.125, "rgb(102, 204, 255)"],
-                    [0.25, "rgb(102, 204, 255)"],
-                    [0.25, "rgb(102, 255, 204)"],
-                    [0.375, "rgb(102, 255, 204)"],
-                    [0.375, "rgb(204, 255, 102)"],
+                    [0.0, "rgb(0, 0, 255)"],
+                    [0.1, "rgb(0, 0, 255)"],
+                    [0.1, "rgb(51, 102, 255)"],
+                    [0.2, "rgb(51, 102, 255)"],
+                    [0.2, "rgb(102, 204, 255)"],
+                    [0.3, "rgb(102, 204, 255)"],
+                    [0.3, "rgb(102, 255, 204)"],
+                    [0.4, "rgb(102, 255, 204)"],
+                    [0.4, "rgb(204, 255, 102)"],
                     [0.5, "rgb(204, 255, 102)"],
                     [0.5, "rgb(255,165,0)"],
-                    [0.625, "rgb(255,165,0)"],
-                    [0.625, "rgb(255, 0, 0)"],
-                    [0.75, "rgb(255, 0, 0)"],
-                    [0.75, "rgb(153, 51, 102)"],
-                    [0.875, "rgb(153, 51, 102)"],
-                    [0.875, "rgb(0, 255, 0)"],
-                    [1.0, "rgb(0, 255, 0)"],
+                    [0.6, "rgb(255,165,0)"],
+                    [0.6, "rgb(255, 0, 0)"],
+                    [0.7, "rgb(255, 0, 0)"],
+                    [0.7, "rgb(153, 51, 102)"],
+                    [0.8, "rgb(153, 51, 102)"],
+                    [0.8, "rgb(102, 9, 32)"],
+                    [0.9, "rgb(102, 9, 32)"],
+                    [0.9, "rgb(0, 0, 0)"],
+                    [1.0, "rgb(0, 0, 0)"],
                 ]
 
                 fig = go.Figure(
@@ -1309,9 +1313,9 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                             title="D",
                             titleside="top",
                             tickmode="array",
-                            #tickvals=[5, 15, 25, 35, 45, 55, 65, 75],
-                            tickvals=period_seconds,
+                            tickvals=np.linspace(-5, 75, 10),
                             ticktext=[
+                                "D<0",
                                 "10>D>=0",
                                 "20>d>=10",
                                 "30>D=20",
@@ -1320,6 +1324,7 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                                 "60>D>=50",
                                 "70>D>=60",
                                 "D>=70",
+                                "No Data",
                             ],
                             ticks="outside",
                         ),
@@ -1333,6 +1338,7 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                     hovertext=["Ranked Cell"],
                     hoverinfo="text",
                 )
+                fig.update_xaxes(type="log")
                 fig.update_yaxes(showticklabels=False)
                 fig.update_layout(
                     scene=dict(
@@ -2008,8 +2014,18 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         for inde, el in enumerate(val):
                             if el == 0.0:
                                 pdf_matrix[indv][inde] = None
+                    colormap = [[0.0, "rgb(255,64,226)"],
+                        [0.125, "rgb(0,0,200)"],
+                        [0.25, "rgb(0,25,255)"],
+                        [0.375, "rgb(0,152,255)"],
+                        [0.5, "rgb(44,255,150)"],
+                        [0.625, "rgb(151,255,0)"],
+                        [0.75, "rgb(255,234,0)"],
+                        [0.875, "rgb(255,111,0)"],
+                        [1, "rgb(255,0,0)"],
+                    ]
                     fig = go.Figure(
-                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix, hoverongaps=False, colorscale='Rainbow')
+                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix, hoverongaps=False, colorscale=colormap)
                     )
                     fig.update_xaxes(type="log", showgrid=True)
                     fig.update_layout(
@@ -2029,16 +2045,16 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                 period_sub = 1 / freq[freq <= 10]
                 nlnm, nhnm = noiseModel(freq_sub)
                 fig.add_trace(
-                    go.Scatter(x=period_sub, y=nlnm, mode="lines", name="NLNM")
+                    go.Scatter(x=period_sub, y=nlnm, name="NLNM", line=dict(color="grey", width=4))
                 )
                 fig.add_trace(
-                    go.Scatter(x=period_sub, y=nhnm, mode="lines", name="NHNM")
+                    go.Scatter(x=period_sub, y=nhnm, name="NHNM", line=dict(color="grey", dash="dash", width=4))
                 )
 
                 # This is logic for the default of showMedian being True
                 fig.add_trace(
                     go.Scatter(
-                        x=period, y=stats[0]["median"], name="Median", mode="lines"
+                        x=period, y=stats[0]["median"], name="Median", line=dict(color="green", width=4)
                     )
                 )
 
@@ -2048,7 +2064,8 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period,
                         y=stats[0]["percent_10"],
                         name="10th Percentile",
-                        mode="lines",
+                        line=dict(color="black", width=4)
+                        #mode="lines",
                     )
                 )
                 fig.add_trace(
@@ -2056,9 +2073,17 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period,
                         y=stats[0]["percent_90"],
                         name="90th Percentile",
-                        mode="lines",
+                        line=dict(color="black", dash="dash", width=4)
+                        #mode="lines",
                     )
                 )
+                fig.update_layout(legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1
+                ))
 
             else:
                 style = {"display": "block"}
