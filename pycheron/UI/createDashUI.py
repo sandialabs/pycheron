@@ -2031,12 +2031,12 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     fig.update_layout(
                         height=600,
                         width=800,
-                        showlegend=False,
+                        showlegend=True,
                         title="PDF plot of {} hourly PSDs from {}-{} for {}.{}.{}".format(
                             psd_count, start_time, end_time, net, sta, chan
                         ),
                         xaxis_title="Period (s)",
-                        yaxis_title="Amplitude [$m^2/s^4/Hz$] [dB]",
+                        yaxis_title="Amplitude [m^2/s^4/Hz] [dB]",
                     )
 
                 if chan.startswith("B"):
@@ -2065,7 +2065,6 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         y=stats[0]["percent_10"],
                         name="10th Percentile",
                         line=dict(color="black", width=4)
-                        #mode="lines",
                     )
                 )
                 fig.add_trace(
@@ -2074,7 +2073,6 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         y=stats[0]["percent_90"],
                         name="90th Percentile",
                         line=dict(color="black", dash="dash", width=4)
-                        #mode="lines",
                     )
                 )
                 fig.update_layout(legend=dict(
