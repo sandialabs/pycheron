@@ -1228,9 +1228,10 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
             if plot == "Station Ranking" and None not in (sta_chan, rank):
                 sta, chan = eval(sta_chan)[0], eval(sta_chan)[1]
                 style_graph = {"display": "block", "margin-top": "5em"}
-                psd_channels, stats, period = calc_stats_from_psds_rankplot(
-                    db, network_["network"], sta, chan
-                )
+                # psd_channels, stats, period = calc_stats_from_psds_rankplot(
+                #     db, network_["network"], sta, chan
+                # )
+                psd_channels, stats, period = calc_stats_from_psds_rankplot(database=db, network=network_["network"], channel=chan)
                 df_dict = calc_power_period_rankplot(stats, period)
                 chan_z, chan_e, chan_n = (
                     df_dict["chan_z"],
@@ -1259,27 +1260,32 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                     df_n_rank = df_n.sort_values(by=[df_n.columns[index_dn]])
                     plot_dat = plot_grid_data_fill_in(df_n_rank)
                     ranker = float(df_n.columns[index_dn])
-                plot_dat = plot_dat.reindex(columns=plot_dat.columns[::-1])
-                period_seconds_strings = plot_dat.columns.tolist()
-                period_seconds = [float(x) for x in period_seconds_strings]
-                shade = plot_dat.iloc[0].values.tolist()
-                station_val = [sta] * len(shade)
+                # plot_dat = plot_dat.reindex(columns=plot_dat.columns[::-1])
+                # period_seconds_strings = plot_dat.columns.tolist()
+                # period_seconds = [float(x) for x in period_seconds_strings]
+                # shade = plot_dat.iloc[0].values.tolist()
+                # station_val = [sta] * len(shade)
+                plot_dat = plot_dat.sort_index()
+                stations = plot_dat.axes[0].tolist()
+                seconds = plot_dat.axes[1].tolist()
+                x = [float(sec) for sec in seconds]
+                y = stations
+                z_vals = []
+                for i in range(plot_dat.shape[0]):
+                    col_vals = plot_dat.iloc[i]
+                    z = []
+                    for col_val in col_vals:
+                        z.append(col_val)
+                    z_vals.append(z)
 
                 rank_title = (
-                    "Station Ranking Plot for Network: "
-                    + network_["network"]
+                    "Station Ranking Plot for Channel: "
+                    + chan
                     + ", Ranked by: "
                     + str(ranker)
                     + "s"
                 )
 
-                df = pd.DataFrame(
-                    {
-                        "Period (seconds)": period_seconds,
-                        "station": station_val,
-                        "shade": shade,
-                    }
-                )
                 colormap = [
                     [0.0, "rgb(0, 0, 255)"],
                     [0.1, "rgb(0, 0, 255)"],
@@ -1305,9 +1311,12 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
 
                 fig = go.Figure(
                     data=go.Heatmap(
-                        x=period_seconds,
-                        y=station_val,
-                        z=shade,
+                        x=x, 
+                        y=y, 
+                        z=z_vals, 
+                        zmin=-10,
+                        zmax=80,
+                        zauto=False,
                         colorscale=colormap,
                         colorbar=dict(
                             title="D",
@@ -1330,25 +1339,42 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                         ),
                     )
                 )
-                fig.add_bar(
-                    x=[ranker],
-                    y=[0],
-                    marker=dict(color="Black"),
-                    opacity=0.5,
-                    hovertext=["Ranked Cell"],
-                    hoverinfo="text",
+
+                fig.add_shape(type="rect",
+                    xref="x domain", yref="y domain",
+                    x0 = ranker - ranker/24,
+                    x1 = ranker + ranker/24,
+                    y0 = -0.5,
+                    y1 = len(y) - 0.5,
+                    line=dict(color="Black"),
                 )
                 fig.update_xaxes(type="log")
-                fig.update_yaxes(showticklabels=False)
+
+                axis_template_y = dict(
+                    showgrid=True,
+                    zeroline=True,
+                    linecolor="black",
+                    showticklabels=True,
+                    ticks="outside",
+                    dtick=1,
+                )
+                axis_template_x = dict(
+                    showgrid=True,
+                    zeroline=True,
+                    linecolor="black",
+                    showticklabels=True,
+                    ticks="outside",
+                    tickvals=x
+                )
+
                 fig.update_layout(
-                    scene=dict(
-                        xaxis=dict(
-                            nticks=48,
-                        )
-                    ),
+                    xaxis=axis_template_x,
+                    yaxis=axis_template_y,
                     xaxis_title="Period (seconds)",
-                    yaxis_title=sta,
-                    title=rank_title
+                    yaxis_title="Station",
+                    title=rank_title,
+                    height=600,
+                    width=1600,
                 )
 
             if plot == "Network Noise Model":
@@ -1950,16 +1976,26 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         ),
                     )
                 )
-                axis_template = dict(
+                axis_template_y = dict(
                     showgrid=True,
                     zeroline=True,
                     linecolor="black",
                     showticklabels=True,
                     ticks="outside",
                 )
+
+                axis_template_x = dict(
+                    showgrid=True,
+                    zeroline=True,
+                    linecolor="black",
+                    showticklabels=True,
+                    ticks="outside",
+                    tickvals=x
+                )
+
                 fig.update_layout(
-                    xaxis=axis_template,
-                    yaxis=axis_template,
+                    xaxis=axis_template_x,
+                    yaxis=axis_template_y,
                     showlegend=True,
                     xaxis_title="Period (seconds)",
                     yaxis_title="Daily PDF Mode Power Grid: "
@@ -1968,6 +2004,8 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     + sta
                     + " "
                     + chan,
+                    height=600,
+                    width=1600,
                 )
                 fig.update_xaxes(type="log")
 

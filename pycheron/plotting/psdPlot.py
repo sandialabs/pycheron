@@ -1401,7 +1401,11 @@ def _read_psds(
         return
 
     else:
-        tb_psds = tb.uncorrected_psds[tb.station == station]
+        #tb_psds = tb.uncorrected_psds[tb.station == station]
+        if station is not None:
+            tb_psds = tb.uncorrected_psds[tb.station == station]
+        else:
+            tb_psds = tb.uncorrected_psds
         for j in range(len(tb_psds)):
             psd = database.extract_masks(tb_psds.iloc[j])
             try:

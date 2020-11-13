@@ -670,7 +670,7 @@ def _rankPlot_from_database(
 
 
 def calc_stats_from_psds_rankplot(
-    database, network, station, channel, location=None, session=None
+    database, network, channel, station=None, location=None, session=None
 ):
     psd_channels = _read_psds(
         database,
