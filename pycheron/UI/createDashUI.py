@@ -693,6 +693,8 @@ channel_tab = html.Div(
                         "padding-right": "10px",
                         "margin-bottom": "2%",
                         "margin-top": "0%",
+                        "zIndex": "1111",
+                        "position": "relative",
                     },
                     options=[{"label": "", "value": ""}],
                     placeholder="Select Plot Type",
@@ -706,7 +708,6 @@ channel_tab = html.Div(
                 dcc.Loading(
                     id="loading-channel-top-graph",
                     type="default",
-                    style={'zIndex': '1003'},
                     children=html.Div(
                         [dcc.Graph(id="channel-top-graph"),],
                     )
@@ -806,6 +807,8 @@ channel_tab = html.Div(
                         "padding-right": "10px",
                         "margin-bottom": "2%",
                         "margin-top": "1%",
+                        "zIndex": "1111",
+                        "position": "relative",
                     },
                     options=[{"label": "", "value": ""}],
                     placeholder="Select Plot Type",
@@ -819,7 +822,6 @@ channel_tab = html.Div(
                 dcc.Loading(
                     id="loading-channel-bottom-graph",
                     type="default",
-                    style={'zIndex': '1003'},
                     children=html.Div(
                         [dcc.Graph(id="channel-bottom-graph"),],
                     )
