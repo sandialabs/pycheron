@@ -884,10 +884,9 @@ class Database:
         """
         # connects to database
         db = self._conn.cursor()
-
         # if there is no location, set to --, otherwise it is unsearchable. networkNoiseModel does not have a location
         # so skip
-        if (location == None or location == "") and metric_name != "networkNoiseModel":
+        if (location == None or location == "") and metric_name != "networkNoiseModel" and metric_name != "stationNoiseModel":
             location = "--"
 
         # param dictionary
