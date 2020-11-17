@@ -434,7 +434,17 @@ network_tab = html.Div(
                         ),
                     ]
                 ),
-                html.Div([dcc.Graph(id="network-graph", style={"display": "none"})]),
+                dcc.Loading(
+                    id="loading-network-graph",
+                    type="default",
+                    children=html.Div(
+                        [
+                            dcc.Graph(
+                                id="network-graph", style={"display": "none"}
+                            ),
+                        ],
+                    )
+                ),
             ]
         ),
     ],
@@ -1318,8 +1328,8 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                                 "D<0",
                                 "10>D>=0",
                                 "20>d>=10",
-                                "30>D=20",
-                                "40>D=30",
+                                "30>D>=20",
+                                "40>D>=30",
                                 "50>D>=40",
                                 "60>D>=50",
                                 "70>D>=60",
@@ -1330,7 +1340,7 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                         ),
                     )
                 )
-
+                # Correct size of bounding box for log scale
                 fig.add_shape(type="rect",
                     xref="x domain", yref="y domain",
                     x0 = ranker - ranker/24,
@@ -1543,14 +1553,8 @@ def _get_plot(network, clicks, station, plot, db_path):
 
             if plot == "stationNoiseModel":
                 style_graph = {"display": "block", "margin-top": "5em"}
-                db_metrics = db.get_metric(
-                    "stationNoiseModel",
-                    network_["network"],
-                    station_["station"],
-                    session=default_session,
-                )
+                db_metrics = db.get_metric("stationNoiseModel", network_["network"], station_["station"], session=default_session,)
                 # TODO: Check how to grab specific type/location. Otherwise, go with default
-                import pdb; pdb.set_trace();
                 psd_type = db_metrics["type"].iloc[0]
                 sta_title = (
                     "Noise Model for Station: "
@@ -1955,8 +1959,8 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                                 "D<0",
                                 "10>D>=0",
                                 "20>d>=10",
-                                "30>D=20",
-                                "40>D=30",
+                                "30>D>=20",
+                                "40>D>=30",
                                 "50>D>=40",
                                 "60>D>=50",
                                 "70>D>=60",
@@ -2256,7 +2260,6 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
         station_ = json.loads(station)
         channel_ = json.loads(channel)
         metric_name = metric
-        fig = go.Figure()
         # Initialize values
         style = {"display": "none"}
         style_img = {"display": "none"}
@@ -2289,6 +2292,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
         ]
         src = ""
         src1 = ""
+        fig = go.Figure()
         if clicks_["n_clicks"] > 0:
             if (
                 metric_name == "deadChanMeanMetric"
@@ -2296,7 +2300,6 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
             ):
                 metric_name = "deadChannel"
 
-            # Get path to png files
             db = Database(value)
             net = network_["network"]
             sta = station_["station"]
@@ -2389,6 +2392,9 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                         x=x,
                         y=y,
                         z=z_vals,
+                        zmin=-10,
+                        zmax=80,
+                        zauto=False,
                         colorscale=colormap,
                         colorbar=dict(
                             title="D",
@@ -2399,8 +2405,8 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                                 "D<0",
                                 "10>D>=0",
                                 "20>d>=10",
-                                "30>D=20",
-                                "40>D=30",
+                                "30>D>=20",
+                                "40>D>=30",
                                 "50>D>=40",
                                 "60>D>=50",
                                 "70>D>=60",
@@ -2411,16 +2417,26 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                         ),
                     )
                 )
-                axis_template = dict(
+                axis_template_y = dict(
                     showgrid=True,
                     zeroline=True,
                     linecolor="black",
                     showticklabels=True,
                     ticks="outside",
                 )
+
+                axis_template_x = dict(
+                    showgrid=True,
+                    zeroline=True,
+                    linecolor="black",
+                    showticklabels=True,
+                    ticks="outside",
+                    tickvals=x
+                )
+
                 fig.update_layout(
-                    xaxis=axis_template,
-                    yaxis=axis_template,
+                    xaxis=axis_template_x,
+                    yaxis=axis_template_y,
                     showlegend=True,
                     xaxis_title="Period (seconds)",
                     yaxis_title="Daily PDF Mode Power Grid: "
@@ -2429,6 +2445,8 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     + sta
                     + " "
                     + chan,
+                    height=600,
+                    width=1600,
                 )
                 fig.update_xaxes(type="log")
 
@@ -2471,19 +2489,33 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                 elif "pdf" in plot_style:
                     pdf_matrix = np.fliplr(stats[0]["pdf_matrix"])
                     pdf_bins = stats[0]["pdf_bins"]
+                    for indv, val in enumerate(pdf_matrix):
+                        for inde, el in enumerate(val):
+                            if el == 0.0:
+                                pdf_matrix[indv][inde] = None
+                    colormap = [[0.0, "rgb(255,64,226)"],
+                        [0.125, "rgb(0,0,200)"],
+                        [0.25, "rgb(0,25,255)"],
+                        [0.375, "rgb(0,152,255)"],
+                        [0.5, "rgb(44,255,150)"],
+                        [0.625, "rgb(151,255,0)"],
+                        [0.75, "rgb(255,234,0)"],
+                        [0.875, "rgb(255,111,0)"],
+                        [1, "rgb(255,0,0)"],
+                    ]
                     fig = go.Figure(
-                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix)
+                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix, hoverongaps=False, colorscale=colormap)
                     )
                     fig.update_xaxes(type="log", showgrid=True)
                     fig.update_layout(
                         height=600,
                         width=800,
-                        showlegend=False,
+                        showlegend=True,
                         title="PDF plot of {} hourly PSDs from {}-{} for {}.{}.{}".format(
                             psd_count, start_time, end_time, net, sta, chan
                         ),
                         xaxis_title="Period (s)",
-                        yaxis_title="Amplitude [$m^2/s^4/Hz$] [dB]",
+                        yaxis_title="Amplitude [m^2/s^4/Hz] [dB]",
                     )
 
                 if chan.startswith("B"):
@@ -2492,16 +2524,16 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                 period_sub = 1 / freq[freq <= 10]
                 nlnm, nhnm = noiseModel(freq_sub)
                 fig.add_trace(
-                    go.Scatter(x=period_sub, y=nlnm, mode="lines", name="NLNM")
+                    go.Scatter(x=period_sub, y=nlnm, name="NLNM", line=dict(color="grey", width=4))
                 )
                 fig.add_trace(
-                    go.Scatter(x=period_sub, y=nhnm, mode="lines", name="NHNM")
+                    go.Scatter(x=period_sub, y=nhnm, name="NHNM", line=dict(color="grey", dash="dash", width=4))
                 )
 
                 # This is logic for the default of showMedian being True
                 fig.add_trace(
                     go.Scatter(
-                        x=period, y=stats[0]["median"], name="Median", mode="lines"
+                        x=period, y=stats[0]["median"], name="Median", line=dict(color="green", width=4)
                     )
                 )
 
@@ -2511,7 +2543,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period,
                         y=stats[0]["percent_10"],
                         name="10th Percentile",
-                        mode="lines",
+                        line=dict(color="black", width=4)
                     )
                 )
                 fig.add_trace(
@@ -2519,9 +2551,16 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period,
                         y=stats[0]["percent_90"],
                         name="90th Percentile",
-                        mode="lines",
+                        line=dict(color="black", dash="dash", width=4)
                     )
                 )
+                fig.update_layout(legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1
+                ))
 
             else:
                 style = {"display": "block"}
@@ -2550,8 +2589,6 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                 src1,
                 fig,
             )
-        # else:
-        #     return data, columns, style, style_img, style_img2, style_cont, src, src1
     else:
         style = {"display": "hidden"}
         style_img = {"display": "hidden"}
