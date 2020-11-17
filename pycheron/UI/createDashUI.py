@@ -1308,6 +1308,8 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                         z.append(col_val)
                     z_vals.append(z)
 
+                height_scale = 300 if len(y) == 1 else 600
+                colorbar_scale = 2 if len(y) == 1 else 1
                 rank_title = (
                     "Station Ranking Plot for Channel: "
                     + chan
@@ -1350,6 +1352,7 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                         zauto=False,
                         colorscale=colormap,
                         colorbar=dict(
+                            len=colorbar_scale,
                             title="D",
                             titleside="top",
                             tickmode="array",
@@ -1404,7 +1407,7 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     xaxis_title="Period (seconds)",
                     yaxis_title="Station",
                     title=rank_title,
-                    height=600,
+                    height=height_scale,
                     width=1600,
                 )
 
@@ -1971,6 +1974,8 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         z.append(col_val)
                     z_vals.append(z)
 
+                height_scale = 300 if len(y) == 1 else 600
+                colorbar_scale = 2 if len(y) == 1 else 1
                 fig = go.Figure(
                     data=go.Heatmap(
                         x=x,
@@ -1981,6 +1986,7 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         zauto=False,
                         colorscale=colormap,
                         colorbar=dict(
+                            len=colorbar_scale,
                             title="D",
                             titleside="top",
                             tickmode="array",
@@ -2006,6 +2012,7 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     zeroline=True,
                     linecolor="black",
                     showticklabels=True,
+                    type="category",
                     ticks="outside",
                 )
 
@@ -2029,7 +2036,7 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     + sta
                     + " "
                     + chan,
-                    height=600,
+                    height=height_scale,
                     width=1600,
                 )
                 fig.update_xaxes(type="log")
@@ -2416,7 +2423,9 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     for col_val in col_vals:
                         z.append(col_val)
                     z_vals.append(z)
-
+                
+                height_scale = 300 if len(y) == 1 else 600
+                colorbar_scale = 2 if len(y) == 1 else 1
                 fig = go.Figure(
                     data=go.Heatmap(
                         x=x,
@@ -2427,6 +2436,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                         zauto=False,
                         colorscale=colormap,
                         colorbar=dict(
+                            len=colorbar_scale,
                             title="D",
                             titleside="top",
                             tickmode="array",
@@ -2452,6 +2462,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     zeroline=True,
                     linecolor="black",
                     showticklabels=True,
+                    type="category",
                     ticks="outside",
                 )
 
@@ -2475,7 +2486,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     + sta
                     + " "
                     + chan,
-                    height=600,
+                    height=height_scale,
                     width=1600,
                 )
                 fig.update_xaxes(type="log")
