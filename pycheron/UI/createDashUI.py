@@ -438,11 +438,7 @@ network_tab = html.Div(
                     id="loading-network-graph",
                     type="default",
                     children=html.Div(
-                        [
-                            dcc.Graph(
-                                id="network-graph", style={"display": "none"}
-                            ),
-                        ],
+                        [dcc.Graph(id="network-graph", style={"display": "none"}),],
                     )
                 ),
             ]
@@ -500,9 +496,13 @@ station_tab = html.Div(
         ),
         html.Div(
             [
-                dcc.Graph(
-                    id="station-graph", style={"display": "none", "margin-top": "5em"}
-                )
+                dcc.Loading(
+                    id="loading-station-graph",
+                    type="default",
+                    children=html.Div(
+                        [dcc.Graph(id="station-graph", style={"display": "none", "margin-top": "5em"}),],
+                    )
+                ),
             ],
         ),
         html.Div(
@@ -703,7 +703,14 @@ channel_tab = html.Div(
         # Image container - row, hidden
         html.Div(
             [
-                dcc.Graph(id="channel-top-graph"),
+                dcc.Loading(
+                    id="loading-channel-top-graph",
+                    type="default",
+                    style={'zIndex': '1003'},
+                    children=html.Div(
+                        [dcc.Graph(id="channel-top-graph"),],
+                    )
+                ),  
             ],
             className="row",
             id="div-image-holder-top",
@@ -712,66 +719,74 @@ channel_tab = html.Div(
         # Table container - row, hidden
         html.Div(
             [
-                dash_table.DataTable(
-                    id="top-metric-table",
-                    data=[
-                        {
-                            "network": "",
-                            "station": "",
-                            "channel": "",
-                            "location": "",
-                            "start_time": "",
-                            "end_time": "",
-                            "dc_offset_times": "",
-                            "masks": "",
-                        }
-                    ],
-                    columns=[
-                        {"name": i, "id": i}
-                        for i in [
-                            "network",
-                            "station",
-                            "channel",
-                            "location",
-                            "start_time",
-                            "end_time",
-                            "dc_offset_times",
-                            "masks",
-                        ]
-                    ],
-                    css=[
-                        {
-                            "margin-top": "12%",
-                            "selector": ".dash-cell div.dash-cell-value",
-                            "rule": "display: inline; white-space: inherit; overflow: inherit; "
-                            "text-overflow: inherit;",
-                        }
-                    ],
-                    n_fixed_rows=1,
-                    style_table={"overflowY": "scroll", "overflowX": "scroll"},
-                    style_cell_conditional=[
-                        {
-                            "if": {"row_index": "odd"},
-                            "backgroundColor": "rgb(248, 248, 248)",
-                        }
-                    ],
-                    style_cell={
-                        "font_family": "Helvetica",
-                        "font_size": "12px",
-                        "text-align": "left",
-                        "minWidth": "150px",
-                        "maxWidth": "250px",
-                        "whiteSpace": "normal",
-                        "textOverflow": "ellipsis",
-                    },
-                    style_header={
-                        "font_family": "Helvetica",
-                        "font_size": "15px",
-                        "text-align": "center",
-                    },
-                    filtering=True,
-                    sorting=True,
-                    sorting_type="multi",
+                dcc.Loading(
+                    id="loading-top-metric-table",
+                    type="default",
+                    children=html.Div(
+                        [
+                            dash_table.DataTable(
+                                id="top-metric-table",
+                                data=[
+                                    {
+                                        "network": "",
+                                        "station": "",
+                                        "channel": "",
+                                        "location": "",
+                                        "start_time": "",
+                                        "end_time": "",
+                                        "dc_offset_times": "",
+                                        "masks": "",
+                                    }
+                                ],
+                                columns=[
+                                    {"name": i, "id": i}
+                                    for i in [
+                                        "network",
+                                        "station",
+                                        "channel",
+                                        "location",
+                                        "start_time",
+                                        "end_time",
+                                        "dc_offset_times",
+                                        "masks",
+                                    ]
+                                ],
+                                css=[
+                                    {
+                                        "margin-top": "12%",
+                                        "selector": ".dash-cell div.dash-cell-value",
+                                        "rule": "display: inline; white-space: inherit; overflow: inherit; "
+                                        "text-overflow: inherit;",
+                                    }
+                                ],
+                                n_fixed_rows=1,
+                                style_table={"overflowY": "scroll", "overflowX": "scroll"},
+                                style_cell_conditional=[
+                                    {
+                                        "if": {"row_index": "odd"},
+                                        "backgroundColor": "rgb(248, 248, 248)",
+                                    }
+                                ],
+                                style_cell={
+                                    "font_family": "Helvetica",
+                                    "font_size": "12px",
+                                    "text-align": "left",
+                                    "minWidth": "150px",
+                                    "maxWidth": "250px",
+                                    "whiteSpace": "normal",
+                                    "textOverflow": "ellipsis",
+                                },
+                                style_header={
+                                    "font_family": "Helvetica",
+                                    "font_size": "15px",
+                                    "text-align": "center",
+                                },
+                                filtering=True,
+                                sorting=True,
+                                sorting_type="multi",
+                            ),
+                        ],
+                    )
                 ),
             ],
             className="row",
@@ -801,7 +816,14 @@ channel_tab = html.Div(
         # Image container - row, hidden
         html.Div(
             [
-                dcc.Graph(id="channel-bottom-graph"),
+                dcc.Loading(
+                    id="loading-channel-bottom-graph",
+                    type="default",
+                    style={'zIndex': '1003'},
+                    children=html.Div(
+                        [dcc.Graph(id="channel-bottom-graph"),],
+                    )
+                ), 
             ],
             className="row",
             id="div-image-holder-bottom",
@@ -810,67 +832,75 @@ channel_tab = html.Div(
         # Table container - row, hidden
         html.Div(
             [
-                dash_table.DataTable(
-                    id="bottom-metric-table",
-                    data=[
-                        {
-                            "network": "",
-                            "station": "",
-                            "channel": "",
-                            "location": "",
-                            "start_time": "",
-                            "end_time": "",
-                            "dc_offset_times": "",
-                            "masks": "",
-                        }
-                    ],
-                    columns=[
-                        {"name": i, "id": i}
-                        for i in [
-                            "network",
-                            "station",
-                            "channel",
-                            "location",
-                            "start_time",
-                            "end_time",
-                            "dc_offset_times",
-                            "masks",
+                dcc.Loading(
+                    id="loading-bottom-metric-table",
+                    type="default",
+                    children=html.Div(
+                        [  # ---
+                            dash_table.DataTable(
+                                id="bottom-metric-table",
+                                data=[
+                                    {
+                                        "network": "",
+                                        "station": "",
+                                        "channel": "",
+                                        "location": "",
+                                        "start_time": "",
+                                        "end_time": "",
+                                        "dc_offset_times": "",
+                                        "masks": "",
+                                    }
+                                ],
+                                columns=[
+                                    {"name": i, "id": i}
+                                    for i in [
+                                        "network",
+                                        "station",
+                                        "channel",
+                                        "location",
+                                        "start_time",
+                                        "end_time",
+                                        "dc_offset_times",
+                                        "masks",
+                                    ]
+                                ],
+                                css=[
+                                    {
+                                        "margin-top": "12%",
+                                        "selector": ".dash-cell div.dash-cell-value",
+                                        "rule": "display: inline; white-space: inherit; overflow: inherit; "
+                                        "text-overflow: inherit;",
+                                    }
+                                ],
+                                n_fixed_rows=1,
+                                style_table={"overflowY": "scroll", "overflowX": "scroll"},
+                                style_cell_conditional=[
+                                    {
+                                        "if": {"row_index": "odd"},
+                                        "backgroundColor": "rgb(248, 248, 248)",
+                                    }
+                                ],
+                                style_cell={
+                                    "font_family": "Helvetica",
+                                    "font_size": "12px",
+                                    "text-align": "left",
+                                    "minWidth": "150px",
+                                    "maxWidth": "250px",
+                                    "whiteSpace": "normal",
+                                    "textOverflow": "ellipsis",
+                                },
+                                style_header={
+                                    "font_family": "Helvetica",
+                                    "font_size": "15px",
+                                    "text-align": "center",
+                                },
+                                filtering=True,
+                                sorting=True,
+                                sorting_type="multi",
+                            ),
                         ]
-                    ],
-                    css=[
-                        {
-                            "margin-top": "12%",
-                            "selector": ".dash-cell div.dash-cell-value",
-                            "rule": "display: inline; white-space: inherit; overflow: inherit; "
-                            "text-overflow: inherit;",
-                        }
-                    ],
-                    n_fixed_rows=1,
-                    style_table={"overflowY": "scroll", "overflowX": "scroll"},
-                    style_cell_conditional=[
-                        {
-                            "if": {"row_index": "odd"},
-                            "backgroundColor": "rgb(248, 248, 248)",
-                        }
-                    ],
-                    style_cell={
-                        "font_family": "Helvetica",
-                        "font_size": "12px",
-                        "text-align": "left",
-                        "minWidth": "150px",
-                        "maxWidth": "250px",
-                        "whiteSpace": "normal",
-                        "textOverflow": "ellipsis",
-                    },
-                    style_header={
-                        "font_family": "Helvetica",
-                        "font_size": "15px",
-                        "text-align": "center",
-                    },
-                    filtering=True,
-                    sorting=True,
-                    sorting_type="multi",
-                ),
+                    )
+                )
             ],
             className="row",
             style={"display": "none"},
