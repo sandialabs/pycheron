@@ -417,7 +417,7 @@ network_tab = html.Div(
                                 "padding-right": "10px",
                             },
                             options=[{"label": "", "value": ""}],
-                            placeholder="Select Station/Channel Pair",
+                            placeholder="Select Channel",
                             disabled=True,
                         ),
                         dcc.Dropdown(
@@ -1153,19 +1153,17 @@ def _get_plot_options(clicks, network, value):
             rank_opt = [{"label": val, "value": val} for val in ranks]
 
             db = Database(value)
-            unique_nsc = (
+            unique_nc = (
                 db.get_metric("psdMetric")
-                .groupby(["network", "station", "channel"])
+                .groupby(["network", "channel"])
                 .size()
                 .reset_index(name="Freq")
             )
-            unique_nsc = unique_nsc.drop("Freq", 1)
-            unique_nsc = unique_nsc.drop("network", 1)
-            unique_nsc = unique_nsc[~unique_nsc.isin(["None"]).any(axis=1)]
-            unique_collect = []
-            for ind, row in unique_nsc.iterrows():
-                unique_collect.append(str(tuple(row.values)))
-            unique_nsc_opt = [{"label": val, "value": val} for val in unique_collect]
+            unique_nc = unique_nc.drop("Freq", 1)
+            unique_nc = unique_nc.drop("network", 1)
+            unique_nc = unique_nc[~unique_nc.isin(["None"]).any(axis=1)]
+            unique_collect = unique_nc['channel'].tolist()
+            unique_nc_opt = [{"label": val, "value": val} for val in unique_collect]
             stas = ["stas_opt"]
             stas_opt = [{"label": val, "value": val} for val in stas]
 
@@ -1174,7 +1172,7 @@ def _get_plot_options(clicks, network, value):
                 {"label": "Network Noise Model", "value": "Network Noise Model"}
             )
 
-            return network_opt, unique_nsc_opt, rank_opt
+            return network_opt, unique_nc_opt, rank_opt
 
 
 # Disablers/Ablers
@@ -1209,7 +1207,7 @@ def _disable(value):
     ],
     [State("input-db", "value")],
 )
-def _get_plot(plot, sta_chan, rank, clicks, network, path):
+def _get_plot(plot, chan, rank, clicks, network, path):
     fig = go.Figure()
     style_graph = {"display": "none"}
     if clicks is not None and network is not None and plot is not None:
@@ -1225,13 +1223,10 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                 p = p + "/" + path[i]
             p = p + "/" + network_["network"]
             db = Database("/".join(path))
-            if plot == "Station Ranking" and None not in (sta_chan, rank):
-                sta, chan = eval(sta_chan)[0], eval(sta_chan)[1]
+            if plot == "Station Ranking" and None not in (chan, rank):
                 style_graph = {"display": "block", "margin-top": "5em"}
-                # psd_channels, stats, period = calc_stats_from_psds_rankplot(
-                #     db, network_["network"], sta, chan
-                # )
                 psd_channels, stats, period = calc_stats_from_psds_rankplot(database=db, network=network_["network"], channel=chan)
+                time_start, time_end = psd_channels[0][0][0][0][-1][-2], psd_channels[0][0][0][0][-1][-1]
                 df_dict = calc_power_period_rankplot(stats, period)
                 chan_z, chan_e, chan_n = (
                     df_dict["chan_z"],
@@ -1260,12 +1255,7 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                     df_n_rank = df_n.sort_values(by=[df_n.columns[index_dn]])
                     plot_dat = plot_grid_data_fill_in(df_n_rank)
                     ranker = float(df_n.columns[index_dn])
-                # plot_dat = plot_dat.reindex(columns=plot_dat.columns[::-1])
-                # period_seconds_strings = plot_dat.columns.tolist()
-                # period_seconds = [float(x) for x in period_seconds_strings]
-                # shade = plot_dat.iloc[0].values.tolist()
-                # station_val = [sta] * len(shade)
-                plot_dat = plot_dat.sort_index()
+                plot_dat = plot_dat.reindex(index=plot_dat.index[::-1])
                 stations = plot_dat.axes[0].tolist()
                 seconds = plot_dat.axes[1].tolist()
                 x = [float(sec) for sec in seconds]
@@ -1284,6 +1274,7 @@ def _get_plot(plot, sta_chan, rank, clicks, network, path):
                     + ", Ranked by: "
                     + str(ranker)
                     + "s"
+                    + " (" + str(time_start) + " -- " + str(time_end) + ")"
                 )
 
                 colormap = [
