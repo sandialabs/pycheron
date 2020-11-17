@@ -693,7 +693,7 @@ channel_tab = html.Div(
                         "padding-right": "10px",
                         "margin-bottom": "2%",
                         "margin-top": "0%",
-                        "zIndex": "1111",
+                        "zIndex": "1112",
                         "position": "relative",
                     },
                     options=[{"label": "", "value": ""}],
@@ -761,7 +761,7 @@ channel_tab = html.Div(
                                     }
                                 ],
                                 n_fixed_rows=1,
-                                style_table={"overflowY": "scroll", "overflowX": "scroll"},
+                                style_table={"overflowY": "scroll", "overflowX": "auto"},
                                 style_cell_conditional=[
                                     {
                                         "if": {"row_index": "odd"},
@@ -875,7 +875,7 @@ channel_tab = html.Div(
                                     }
                                 ],
                                 n_fixed_rows=1,
-                                style_table={"overflowY": "scroll", "overflowX": "scroll"},
+                                style_table={"overflowY": "scroll", "overflowX": "auto"},
                                 style_cell_conditional=[
                                     {
                                         "if": {"row_index": "odd"},
