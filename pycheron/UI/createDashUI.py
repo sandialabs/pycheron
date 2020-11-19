@@ -1453,6 +1453,8 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     color="label",
                     labels={"Period": "Period (10^n)"},
                     title=net_title,
+                    height=600,
+                    width=1200
                 )
     return (fig, style_graph)
 
@@ -1660,6 +1662,8 @@ def _get_plot(network, clicks, station, plot, db_path):
                         hover_name="hl",
                         labels={"Period": "Period (10^n)"},
                         title=sta_title,
+                        height=600,
+                        width=1200
                     )
 
             # return table
@@ -2066,13 +2070,12 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                 if "psd" in plot_style and len(psd) == 1:
                     fig = go.Figure()
                     for i in noise_matrix:
-                        fig.add_trace(go.Scatter(x=period, y=i, mode="lines"))
+                        fig.add_trace(go.Scatter(x=period, y=i, mode="lines", showlegend=False))
                     fig.update_xaxes(type="log")
                     fig.update_layout(
-                        height=800,
-                        width=600,
-                        showlegend=False,
-                        title="{} Corrected, hourly PSDs from {}-{} for {}.{}.{}".format(
+                        height=600,
+                        width=1200,
+                        title="{} Corrected, hourly PSDs from {} -- {} for {}.{}.{}".format(
                             psd_count, start_time, end_time, net, sta, chan
                         ),
                         xaxis_title="Period (s)",
@@ -2102,9 +2105,9 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     fig.update_xaxes(type="log", showgrid=True)
                     fig.update_layout(
                         height=600,
-                        width=800,
+                        width=1200,
                         showlegend=True,
-                        title="PDF plot of {} hourly PSDs from {}-{} for {}.{}.{}".format(
+                        title="PDF plot of {} hourly PSDs from {} -- {} for {}.{}.{}".format(
                             psd_count, start_time, end_time, net, sta, chan
                         ),
                         xaxis_title="Period (s)",
@@ -2516,13 +2519,12 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                 if "psd" in plot_style and len(psd) == 1:
                     fig = go.Figure()
                     for i in noise_matrix:
-                        fig.add_trace(go.Scatter(x=period, y=i, mode="lines"))
+                        fig.add_trace(go.Scatter(x=period, y=i, mode="lines", showlegend=False))
                     fig.update_xaxes(type="log")
                     fig.update_layout(
-                        height=800,
-                        width=600,
-                        showlegend=False,
-                        title="{} Corrected, hourly PSDs from {}-{} for {}.{}.{}".format(
+                        height=600,
+                        width=1200,
+                        title="{} Corrected, hourly PSDs from {} -- {} for {}.{}.{}".format(
                             psd_count, start_time, end_time, net, sta, chan
                         ),
                         xaxis_title="Period (s)",
@@ -2552,9 +2554,9 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     fig.update_xaxes(type="log", showgrid=True)
                     fig.update_layout(
                         height=600,
-                        width=800,
+                        width=1200,
                         showlegend=True,
-                        title="PDF plot of {} hourly PSDs from {}-{} for {}.{}.{}".format(
+                        title="PDF plot of {} hourly PSDs from {} -- {} for {}.{}.{}".format(
                             psd_count, start_time, end_time, net, sta, chan
                         ),
                         xaxis_title="Period (s)",
