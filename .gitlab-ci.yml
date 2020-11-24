@@ -13,6 +13,7 @@ coverage-test:
     MODULE: metrics
   
   before_script:
+    - pip3 install --upgrade pip
     - pip install pre-commit==2.7.1
     - pre-commit run --all-files
     - export MPLBACKEND=Agg
