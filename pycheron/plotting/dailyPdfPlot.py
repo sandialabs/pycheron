@@ -1586,7 +1586,6 @@ def plot_grid_data_fill_in(grd_data):
     # Binning data into color ranges
     grd_data = grd_data.fillna(99999)
 
-
     for i in grd_data.columns:
         for j in grd_data.index:
             try:

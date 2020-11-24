@@ -438,8 +438,10 @@ network_tab = html.Div(
                     id="loading-network-graph",
                     type="default",
                     children=html.Div(
-                        [dcc.Graph(id="network-graph", style={"display": "none"}),],
-                    )
+                        [
+                            dcc.Graph(id="network-graph", style={"display": "none"}),
+                        ],
+                    ),
                 ),
             ]
         ),
@@ -500,8 +502,13 @@ station_tab = html.Div(
                     id="loading-station-graph",
                     type="default",
                     children=html.Div(
-                        [dcc.Graph(id="station-graph", style={"display": "none", "margin-top": "5em"}),],
-                    )
+                        [
+                            dcc.Graph(
+                                id="station-graph",
+                                style={"display": "none", "margin-top": "5em"},
+                            ),
+                        ],
+                    ),
                 ),
             ],
         ),
@@ -709,9 +716,11 @@ channel_tab = html.Div(
                     id="loading-channel-top-graph",
                     type="default",
                     children=html.Div(
-                        [dcc.Graph(id="channel-top-graph"),],
-                    )
-                ),  
+                        [
+                            dcc.Graph(id="channel-top-graph"),
+                        ],
+                    ),
+                ),
             ],
             className="row",
             id="div-image-holder-top",
@@ -761,7 +770,10 @@ channel_tab = html.Div(
                                     }
                                 ],
                                 n_fixed_rows=1,
-                                style_table={"overflowY": "scroll", "overflowX": "auto"},
+                                style_table={
+                                    "overflowY": "scroll",
+                                    "overflowX": "auto",
+                                },
                                 style_cell_conditional=[
                                     {
                                         "if": {"row_index": "odd"},
@@ -787,7 +799,7 @@ channel_tab = html.Div(
                                 sorting_type="multi",
                             ),
                         ],
-                    )
+                    ),
                 ),
             ],
             className="row",
@@ -823,9 +835,11 @@ channel_tab = html.Div(
                     id="loading-channel-bottom-graph",
                     type="default",
                     children=html.Div(
-                        [dcc.Graph(id="channel-bottom-graph"),],
-                    )
-                ), 
+                        [
+                            dcc.Graph(id="channel-bottom-graph"),
+                        ],
+                    ),
+                ),
             ],
             className="row",
             id="div-image-holder-bottom",
@@ -875,7 +889,10 @@ channel_tab = html.Div(
                                     }
                                 ],
                                 n_fixed_rows=1,
-                                style_table={"overflowY": "scroll", "overflowX": "auto"},
+                                style_table={
+                                    "overflowY": "scroll",
+                                    "overflowX": "auto",
+                                },
                                 style_cell_conditional=[
                                     {
                                         "if": {"row_index": "odd"},
@@ -901,7 +918,7 @@ channel_tab = html.Div(
                                 sorting_type="multi",
                             ),
                         ]
-                    )
+                    ),
                 )
             ],
             className="row",
@@ -1204,7 +1221,7 @@ def _get_plot_options(clicks, network, value):
             unique_nc = unique_nc.drop("Freq", 1)
             unique_nc = unique_nc.drop("network", 1)
             unique_nc = unique_nc[~unique_nc.isin(["None"]).any(axis=1)]
-            unique_collect = unique_nc['channel'].tolist()
+            unique_collect = unique_nc["channel"].tolist()
             unique_nc_opt = [{"label": val, "value": val} for val in unique_collect]
             stas = ["stas_opt"]
             stas_opt = [{"label": val, "value": val} for val in stas]
@@ -1267,8 +1284,13 @@ def _get_plot(plot, chan, rank, clicks, network, path):
             db = Database("/".join(path))
             if plot == "Station Ranking" and None not in (chan, rank):
                 style_graph = {"display": "block", "margin-top": "5em"}
-                psd_channels, stats, period = calc_stats_from_psds_rankplot(database=db, network=network_["network"], channel=chan)
-                time_start, time_end = psd_channels[0][0][0][0][-1][-2], psd_channels[0][0][0][0][-1][-1]
+                psd_channels, stats, period = calc_stats_from_psds_rankplot(
+                    database=db, network=network_["network"], channel=chan
+                )
+                time_start, time_end = (
+                    psd_channels[0][0][0][0][-1][-2],
+                    psd_channels[0][0][0][0][-1][-1],
+                )
                 df_dict = calc_power_period_rankplot(stats, period)
                 chan_z, chan_e, chan_n = (
                     df_dict["chan_z"],
@@ -1318,7 +1340,11 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     + ", Ranked by: "
                     + str(ranker)
                     + "s"
-                    + " (" + str(time_start) + " -- " + str(time_end) + ")"
+                    + " ("
+                    + str(time_start)
+                    + " -- "
+                    + str(time_end)
+                    + ")"
                 )
 
                 colormap = [
@@ -1346,9 +1372,9 @@ def _get_plot(plot, chan, rank, clicks, network, path):
 
                 fig = go.Figure(
                     data=go.Heatmap(
-                        x=x, 
-                        y=y, 
-                        z=z_vals, 
+                        x=x,
+                        y=y,
+                        z=z_vals,
                         zmin=-10,
                         zmax=80,
                         zauto=False,
@@ -1376,12 +1402,14 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     )
                 )
                 # Correct size of bounding box for log scale
-                fig.add_shape(type="rect",
-                    xref="x domain", yref="y domain",
-                    x0 = ranker - ranker/24,
-                    x1 = ranker + ranker/24,
-                    y0 = -0.5,
-                    y1 = len(y) - 0.5,
+                fig.add_shape(
+                    type="rect",
+                    xref="x domain",
+                    yref="y domain",
+                    x0=ranker - ranker / 24,
+                    x1=ranker + ranker / 24,
+                    y0=-0.5,
+                    y1=len(y) - 0.5,
                     line=dict(color="Black"),
                 )
                 fig.update_xaxes(type="log")
@@ -1400,7 +1428,7 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     linecolor="black",
                     showticklabels=True,
                     ticks="outside",
-                    tickvals=x
+                    tickvals=x,
                 )
 
                 fig.update_layout(
@@ -1454,7 +1482,7 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     labels={"Period": "Period (10^n)"},
                     title=net_title,
                     height=600,
-                    width=1200
+                    width=1200,
                 )
     return (fig, style_graph)
 
@@ -1590,7 +1618,12 @@ def _get_plot(network, clicks, station, plot, db_path):
 
             if plot == "stationNoiseModel":
                 style_graph = {"display": "block", "margin-top": "5em"}
-                db_metrics = db.get_metric("stationNoiseModel", network_["network"], station_["station"], session=default_session,)
+                db_metrics = db.get_metric(
+                    "stationNoiseModel",
+                    network_["network"],
+                    station_["station"],
+                    session=default_session,
+                )
                 # TODO: Check how to grab specific type/location. Otherwise, go with default
                 psd_type = db_metrics["type"].iloc[0]
                 sta_title = (
@@ -1663,7 +1696,7 @@ def _get_plot(network, clicks, station, plot, db_path):
                         labels={"Period": "Period (10^n)"},
                         title=sta_title,
                         height=600,
-                        width=1200
+                        width=1200,
                     )
 
             # return table
@@ -1915,7 +1948,9 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     rows=7, cols=1, shared_xaxes=True, subplot_titles=tuple(stat_list)
                 )
                 row = 1
-                basic_stats_df["start_time"] = basic_stats_df["start_time"].apply(lambda x: x.date().strftime("%Y-%m-%d"))
+                basic_stats_df["start_time"] = basic_stats_df["start_time"].apply(
+                    lambda x: x.date().strftime("%Y-%m-%d")
+                )
                 for stat in stat_list:
                     fig.append_trace(
                         go.Scatter(
@@ -2024,7 +2059,7 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     linecolor="black",
                     showticklabels=True,
                     ticks="outside",
-                    tickvals=x
+                    tickvals=x,
                 )
 
                 fig.update_layout(
@@ -2066,7 +2101,9 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                 if "psd" in plot_style and len(psd) == 1:
                     fig = go.Figure()
                     for i in noise_matrix:
-                        fig.add_trace(go.Scatter(x=period, y=i, mode="lines", showlegend=False))
+                        fig.add_trace(
+                            go.Scatter(x=period, y=i, mode="lines", showlegend=False)
+                        )
                     fig.update_xaxes(type="log")
                     fig.update_layout(
                         height=600,
@@ -2085,7 +2122,8 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         for inde, el in enumerate(val):
                             if el == 0.0:
                                 pdf_matrix[indv][inde] = None
-                    colormap = [[0.0, "rgb(255,64,226)"],
+                    colormap = [
+                        [0.0, "rgb(255,64,226)"],
                         [0.125, "rgb(0,0,200)"],
                         [0.25, "rgb(0,25,255)"],
                         [0.375, "rgb(0,152,255)"],
@@ -2096,7 +2134,13 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         [1, "rgb(255,0,0)"],
                     ]
                     fig = go.Figure(
-                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix, hoverongaps=False, colorscale=colormap)
+                        data=go.Heatmap(
+                            x=period[::-1],
+                            y=pdf_bins,
+                            z=pdf_matrix,
+                            hoverongaps=False,
+                            colorscale=colormap,
+                        )
                     )
                     fig.update_xaxes(type="log", showgrid=True)
                     fig.update_layout(
@@ -2116,16 +2160,29 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                 period_sub = 1 / freq[freq <= 10]
                 nlnm, nhnm = noiseModel(freq_sub)
                 fig.add_trace(
-                    go.Scatter(x=period_sub, y=nlnm, name="NLNM", line=dict(color="grey", width=4))
+                    go.Scatter(
+                        x=period_sub,
+                        y=nlnm,
+                        name="NLNM",
+                        line=dict(color="grey", width=4),
+                    )
                 )
                 fig.add_trace(
-                    go.Scatter(x=period_sub, y=nhnm, name="NHNM", line=dict(color="grey", dash="dash", width=4))
+                    go.Scatter(
+                        x=period_sub,
+                        y=nhnm,
+                        name="NHNM",
+                        line=dict(color="grey", dash="dash", width=4),
+                    )
                 )
 
                 # This is logic for the default of showMedian being True
                 fig.add_trace(
                     go.Scatter(
-                        x=period, y=stats[0]["median"], name="Median", line=dict(color="green", width=4)
+                        x=period,
+                        y=stats[0]["median"],
+                        name="Median",
+                        line=dict(color="green", width=4),
                     )
                 )
 
@@ -2135,7 +2192,7 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period,
                         y=stats[0]["percent_10"],
                         name="10th Percentile",
-                        line=dict(color="black", width=4)
+                        line=dict(color="black", width=4),
                     )
                 )
                 fig.add_trace(
@@ -2143,16 +2200,14 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period,
                         y=stats[0]["percent_90"],
                         name="90th Percentile",
-                        line=dict(color="black", dash="dash", width=4)
+                        line=dict(color="black", dash="dash", width=4),
                     )
                 )
-                fig.update_layout(legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=1.02,
-                    xanchor="right",
-                    x=1
-                ))
+                fig.update_layout(
+                    legend=dict(
+                        orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
+                    )
+                )
 
             else:
                 style = {"display": "block"}
@@ -2360,7 +2415,9 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     rows=7, cols=1, shared_xaxes=True, subplot_titles=tuple(stat_list)
                 )
                 row = 1
-                basic_stats_df["start_time"] = basic_stats_df["start_time"].apply(lambda x: x.date().strftime("%Y-%m-%d"))
+                basic_stats_df["start_time"] = basic_stats_df["start_time"].apply(
+                    lambda x: x.date().strftime("%Y-%m-%d")
+                )
                 for stat in stat_list:
                     fig.append_trace(
                         go.Scatter(
@@ -2420,7 +2477,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     for col_val in col_vals:
                         z.append(col_val)
                     z_vals.append(z)
-                
+
                 height_scale = 300 if len(y) == 1 else 600
                 colorbar_scale = 2 if len(y) == 1 else 1
                 fig = go.Figure(
@@ -2469,7 +2526,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     linecolor="black",
                     showticklabels=True,
                     ticks="outside",
-                    tickvals=x
+                    tickvals=x,
                 )
 
                 fig.update_layout(
@@ -2511,7 +2568,9 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                 if "psd" in plot_style and len(psd) == 1:
                     fig = go.Figure()
                     for i in noise_matrix:
-                        fig.add_trace(go.Scatter(x=period, y=i, mode="lines", showlegend=False))
+                        fig.add_trace(
+                            go.Scatter(x=period, y=i, mode="lines", showlegend=False)
+                        )
                     fig.update_xaxes(type="log")
                     fig.update_layout(
                         height=600,
@@ -2530,7 +2589,8 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                         for inde, el in enumerate(val):
                             if el == 0.0:
                                 pdf_matrix[indv][inde] = None
-                    colormap = [[0.0, "rgb(255,64,226)"],
+                    colormap = [
+                        [0.0, "rgb(255,64,226)"],
                         [0.125, "rgb(0,0,200)"],
                         [0.25, "rgb(0,25,255)"],
                         [0.375, "rgb(0,152,255)"],
@@ -2541,7 +2601,13 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                         [1, "rgb(255,0,0)"],
                     ]
                     fig = go.Figure(
-                        data=go.Heatmap(x=period[::-1], y=pdf_bins, z=pdf_matrix, hoverongaps=False, colorscale=colormap)
+                        data=go.Heatmap(
+                            x=period[::-1],
+                            y=pdf_bins,
+                            z=pdf_matrix,
+                            hoverongaps=False,
+                            colorscale=colormap,
+                        )
                     )
                     fig.update_xaxes(type="log", showgrid=True)
                     fig.update_layout(
@@ -2561,16 +2627,29 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                 period_sub = 1 / freq[freq <= 10]
                 nlnm, nhnm = noiseModel(freq_sub)
                 fig.add_trace(
-                    go.Scatter(x=period_sub, y=nlnm, name="NLNM", line=dict(color="grey", width=4))
+                    go.Scatter(
+                        x=period_sub,
+                        y=nlnm,
+                        name="NLNM",
+                        line=dict(color="grey", width=4),
+                    )
                 )
                 fig.add_trace(
-                    go.Scatter(x=period_sub, y=nhnm, name="NHNM", line=dict(color="grey", dash="dash", width=4))
+                    go.Scatter(
+                        x=period_sub,
+                        y=nhnm,
+                        name="NHNM",
+                        line=dict(color="grey", dash="dash", width=4),
+                    )
                 )
 
                 # This is logic for the default of showMedian being True
                 fig.add_trace(
                     go.Scatter(
-                        x=period, y=stats[0]["median"], name="Median", line=dict(color="green", width=4)
+                        x=period,
+                        y=stats[0]["median"],
+                        name="Median",
+                        line=dict(color="green", width=4),
                     )
                 )
 
@@ -2580,7 +2659,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period,
                         y=stats[0]["percent_10"],
                         name="10th Percentile",
-                        line=dict(color="black", width=4)
+                        line=dict(color="black", width=4),
                     )
                 )
                 fig.add_trace(
@@ -2588,16 +2667,14 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period,
                         y=stats[0]["percent_90"],
                         name="90th Percentile",
-                        line=dict(color="black", dash="dash", width=4)
+                        line=dict(color="black", dash="dash", width=4),
                     )
                 )
-                fig.update_layout(legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=1.02,
-                    xanchor="right",
-                    x=1
-                ))
+                fig.update_layout(
+                    legend=dict(
+                        orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
+                    )
+                )
 
             else:
                 style = {"display": "block"}
