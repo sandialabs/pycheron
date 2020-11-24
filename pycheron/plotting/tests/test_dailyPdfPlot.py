@@ -299,7 +299,7 @@ def test_db_dailyPdfPlots(plotting_assets, model):
     os.remove(plotting_assets["db_path"])
     os.remove(plotting_assets["f_name_grid"] + "_HHE.png")
     os.remove(plotting_assets["f_name_line"] + "_HHE.png")
-    plt.close('all')
+    plt.close("all")
 
 
 @pytest.mark.parametrize("model", ["gsn", "nlnm", "network"])
@@ -318,7 +318,7 @@ def test_db_database_arg_dailyPdfPlots(plotting_assets, model):
     os.remove(plotting_assets["db_path"])
     os.remove(plotting_assets["f_name_grid"] + "_HHE.png")
     os.remove(plotting_assets["f_name_line"] + "_HHE.png")
-    plt.close('all')
+    plt.close("all")
 
 
 @pytest.mark.parametrize("model", ["gsn", "nlnm", "network"])
@@ -337,7 +337,7 @@ def test_db_net_dict_arg_dailyPdfPlots(plotting_assets, model):
     os.remove(plotting_assets["db_path"])
     os.remove(plotting_assets["f_name_grid"] + "_HHE.png")
     os.remove(plotting_assets["f_name_line"] + "_HHE.png")
-    plt.close('all')
+    plt.close("all")
 
 
 @pytest.mark.parametrize("model", ["gsn", "nlnm", "network"])
@@ -357,7 +357,7 @@ def test_db_database_and_net_dict_args_dailyPdfPlots(plotting_assets, model):
     os.remove(plotting_assets["db_path"])
     os.remove(plotting_assets["f_name_grid"] + "_HHE.png")
     os.remove(plotting_assets["f_name_line"] + "_HHE.png")
-    plt.close('all')
+    plt.close("all")
 
 
 @pytest.mark.parametrize("model", ["gsn", "nlnm", "network"])
@@ -379,7 +379,7 @@ def test_st_dailyPdfPlots(plotting_assets, model):
     os.remove(plotting_assets["db_path"])
     os.remove(plotting_assets["f_name_grid"] + "_" + chan + ".png")
     os.remove(plotting_assets["f_name_line"] + "_" + chan + ".png")
-    plt.close('all')
+    plt.close("all")
 
 
 @pytest.mark.parametrize("model", ["gsn", "nlnm", "network"])
@@ -403,7 +403,7 @@ def test_st_database_arg_dailyPdfPlots(plotting_assets, model):
     os.remove(plotting_assets["db_path"])
     os.remove(plotting_assets["f_name_grid"] + "_" + chan + ".png")
     os.remove(plotting_assets["f_name_line"] + "_" + chan + ".png")
-    plt.close('all')
+    plt.close("all")
 
 
 @pytest.mark.parametrize("model", ["gsn", "nlnm", "network"])
@@ -427,7 +427,7 @@ def test_st_net_dict_arg_dailyPdfPlots(plotting_assets, model):
     os.remove(plotting_assets["db_path"])
     os.remove(plotting_assets["f_name_grid"] + "_" + chan + ".png")
     os.remove(plotting_assets["f_name_line"] + "_" + chan + ".png")
-    plt.close('all')
+    plt.close("all")
 
 
 @pytest.mark.parametrize("model", ["gsn", "nlnm", "network"])
@@ -452,4 +452,4 @@ def test_st_database_and_net_dict_args_dailyPdfPlots(plotting_assets, model):
     os.remove(plotting_assets["db_path"])
     os.remove(plotting_assets["f_name_grid"] + "_" + chan + ".png")
     os.remove(plotting_assets["f_name_line"] + "_" + chan + ".png")
-    plt.close('all')
+    plt.close("all")

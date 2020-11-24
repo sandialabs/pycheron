@@ -67,7 +67,7 @@ def test_st_rankPlot(f_name, model, chan):
         os.remove(f_name + chan + "_6.5_AK.png")
         os.remove(f_name + chan + "_30_AK.png")
         os.remove(f_name + chan + "_100_AK.png")
-    plt.close('all')
+    plt.close("all")
 
 
 @pytest.mark.parametrize("model", ["nlnm", "nnm"])
@@ -101,7 +101,7 @@ def test_db_rankPlot(f_name, model, chan):
         os.remove(f_name + chan + "_6.5_AK.png")
         os.remove(f_name + chan + "_30_AK.png")
         os.remove(f_name + chan + "_100_AK.png")
-    plt.close('all')
+    plt.close("all")
 
 
 @pytest.mark.parametrize("model", ["nnm"])
@@ -135,4 +135,4 @@ def test_st_rankPlot_with_db(f_name, model, chan):
     os.remove("f_name" + chan + "_6.5_AK.png")
     os.remove("f_name" + chan + "_30_AK.png")
     os.remove("f_name" + chan + "_100_AK.png")
-    plt.close('all')
+    plt.close("all")
