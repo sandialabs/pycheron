@@ -80,6 +80,7 @@ setup(
         "cx-oracle==7.3.0",
         "dash==0.43.0",
         "joblib==0.16.0",
+        "llvm==0.34.0",
         "matplotlib==2.2.5",
         "mock==3.0.5",
         "numba==0.51.1",
