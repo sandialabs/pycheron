@@ -1915,8 +1915,7 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     rows=7, cols=1, shared_xaxes=True, subplot_titles=tuple(stat_list)
                 )
                 row = 1
-                max_x = max(basic_stats_df["start_time"])
-                min_x = min(basic_stats_df["start_time"])
+                basic_stats_df["start_time"] = basic_stats_df["start_time"].apply(lambda x: x.date().strftime("%Y-%m-%d"))
                 for stat in stat_list:
                     fig.append_trace(
                         go.Scatter(
@@ -1930,10 +1929,7 @@ def _top_metric_table_plot(network, station, channel, clicks, metric, value):
                     )
                     row += 1
                 fig.update_xaxes(
-                    range=(
-                        min_x - pd.Timedelta(hours=12),
-                        max_x + pd.Timedelta(hours=12),
-                    )
+                    type="category",
                 )
                 fig.update_layout(height=800, width=600, showlegend=False)
 
@@ -2364,8 +2360,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     rows=7, cols=1, shared_xaxes=True, subplot_titles=tuple(stat_list)
                 )
                 row = 1
-                max_x = max(basic_stats_df["start_time"])
-                min_x = min(basic_stats_df["start_time"])
+                basic_stats_df["start_time"] = basic_stats_df["start_time"].apply(lambda x: x.date().strftime("%Y-%m-%d"))
                 for stat in stat_list:
                     fig.append_trace(
                         go.Scatter(
@@ -2379,10 +2374,7 @@ def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
                     )
                     row += 1
                 fig.update_xaxes(
-                    range=(
-                        min_x - pd.Timedelta(hours=12),
-                        max_x + pd.Timedelta(hours=12),
-                    )
+                    type="category",
                 )
                 fig.update_layout(height=800, width=600, showlegend=False)
 
