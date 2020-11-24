@@ -8,6 +8,7 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 echo "--------------------Uninistall any old versions...-----------------"
+pip3 install --upgrade pip
 pip3 uninstall -y pycheron
 
 echo "--------------------Building Pycheron $version----------------------"
