@@ -607,7 +607,7 @@ def _rankPlot_from_database(
 
     if model == "nlnm":
         psd_channels, stats, period = calc_stats_from_psds_rankplot(
-            database, network, station, channel, location, session
+            database, network, channel, station, location, session
         )
         df_dict = calc_power_period_rankplot(stats, period)
         df_z, df_e, df_n = drop_and_rename_rankplot(df_dict)

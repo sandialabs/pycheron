@@ -31,6 +31,7 @@ import obspy
 import os
 from obspy.imaging.cm import pqlx
 import pytest
+import matplotlib.pyplot as plt
 from pycheron.plotting.psdPlot import psdPlot
 from pycheron.db.sqllite_db import Database
 from pycheron.test.create_test_db import create_test_db
@@ -68,6 +69,7 @@ def test_psdPlot_7A(style, envelope_type, f_name, single_type, timespan):
     else:
         assert os.path.exists(f_name + "_" + chan + ".png")
         os.remove(f_name + "_" + chan + ".png")
+    plt.close('all')
 
 
 @pytest.mark.parametrize("style", ["psd", "pdf"])
@@ -104,6 +106,7 @@ def test_psdPlot_multi(style, envelope_type, f_name, single_type, timespan):
     else:
         assert os.path.exists(f_name + "_" + sta + ".png")
         os.remove(f_name + "_" + sta + ".png")
+    plt.close('all')
 
 
 @pytest.mark.parametrize("style", ["psd", "pdf"])
@@ -143,6 +146,7 @@ def test_db_psdPlot_7A(style, envelope_type, f_name, single_type, timespan):
     else:
         assert os.path.exists(f_name + "_" + chan + ".png")
         os.remove(f_name + "_" + chan + ".png")
+    plt.close('all')
 
 
 @pytest.mark.parametrize("style", ["psd", "pdf"])
@@ -181,3 +185,4 @@ def test_db_psdPlot_multi(style, envelope_type, f_name, single_type, timespan):
     else:
         assert os.path.exists(f_name + "_" + sta + ".png")
         os.remove(f_name + "_" + sta + ".png")
+    plt.close('all')
