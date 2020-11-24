@@ -17,7 +17,6 @@ coverage-test:
     - pre-commit run --all-files
     - export MPLBACKEND=Agg
     - pip install virtualenv
-    - apt-get -y install llvm
     - ./build.sh 3.0.0
     - pip install coverage==4.5.4
   script:
