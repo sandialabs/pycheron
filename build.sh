@@ -19,5 +19,5 @@ dephell deps convert --from=pyproject.toml --to=setup.py
 
 echo "--------------------Installing Pycheron $version--------------------"
 poetry run pip3 install numpy==1.19.1
-#poetry run pip3 install llvmlite==0.33.0
+poetry run pip3 install llvmlite==0.34.0
 poetry run pip3 install ./dist/pycheron-$version-py3-none-any.whl
