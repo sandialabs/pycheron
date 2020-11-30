@@ -35,6 +35,7 @@ from pycheron.plotting.dailyPdfPlot import dailyPdfplots
 from pycheron.db.sqllite_db import Database
 from pycheron.test.create_test_db import create_test_db
 from obspy import UTCDateTime
+import matplotlib.pyplot as plt
 
 # stand in for enModel and zModel for networkNoiseModel net_dict
 test_model = [
