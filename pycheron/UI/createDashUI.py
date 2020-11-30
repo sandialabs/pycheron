@@ -1948,6 +1948,7 @@ def _get_metric_botttom_panel_selections(network, station, channel, clicks, valu
 def _bottom_metric_table_plot(network, station, channel, clicks, metric, value):
     return _metric_table_plot(network, station, channel, clicks, metric, value)
 
+
 def _metric_table_plot(network, station, channel, clicks, metric, value):
     if (
         clicks is not None
@@ -2345,6 +2346,7 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
             }
         ]
         return data, columns, style, style_img, style_img2, style_cont, src, src1, fig
+
 
 if __name__ == "__main__":
     app.run_server(debug=True)
