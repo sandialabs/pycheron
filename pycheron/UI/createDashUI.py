@@ -2239,9 +2239,7 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                 fig.add_trace(
                     go.Scatter(
                         x=period,
-                        # y=stats[0]["median"],
                         y=stats[0]["mode"],
-                        # name="Median",
                         name="Mode",
                         line=dict(color="cyan", width=2),
                     )
@@ -2265,7 +2263,6 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                 )
                 # Create dataFrame
                 dff = pd.DataFrame(db)
-                # dff = db.drop(['created', 'metric_name'], axis=1)
                 columns = [{"name": i, "id": i} for i in dff.columns]
                 data = dff.to_dict("rows")
 
