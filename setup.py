@@ -61,6 +61,7 @@ setup(
         ],
         "pycheron.metricStore": ["data/000/*.h5"],
         "pycheron.metrics": [
+            "*.mseed",
             "calibration_ml_objects/*.joblib",
             "calibration_ml_objects/*.pkl",
             "repAmps/*.dat",

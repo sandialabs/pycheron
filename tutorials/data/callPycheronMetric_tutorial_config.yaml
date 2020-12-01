@@ -1,8 +1,6 @@
 # general parameters
-#output_dir: "/Users/jbobeck/Desktop/pycheron_tutorial"
-#data: '/Users/jbobeck/Desktop/pycheron_test'
-output_dir: "/home/aalber/Documents/projs/pycheron/tutorials/data/pycheron_tutorial"
-data: '/home/aalber/Documents/projs/pycheron/tutorials/data/pycheron_test'
+output_dir: "/Users/myusername/MyDirectory/pycheron_tutorial"
+data: '/Users/myusername/MyDirectory/pycheron_test'
 datatype: "dir"
 calcAll: True
 network: None
@@ -130,7 +128,7 @@ cal_metric_store: None
 
 # plots
 plots: True
-pdfModel: 'gsn'
+pdfModel: 'nlnm'
 per_arr: None
 showNoiseModel: True
 showMaxMin: False
