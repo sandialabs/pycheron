@@ -83,6 +83,42 @@ app.config["suppress_callback_exceptions"] = True
 
 mapbox_access_token = os.environ.get("MAPBOX_ACCESS_TOKEN")
 
+COLOR_SCHEMES = {
+    "psd": [
+        [0.0, "rgb(255,64,226)"],
+        [0.125, "rgb(0,0,200)"],
+        [0.25, "rgb(0,25,255)"],
+        [0.375, "rgb(0,152,255)"],
+        [0.5, "rgb(44,255,150)"],
+        [0.625, "rgb(151,255,0)"],
+        [0.75, "rgb(255,234,0)"],
+        [0.875, "rgb(255,111,0)"],
+        [1, "rgb(255,0,0)"],
+    ],
+    "daily_pdf": [
+        [0.0, "rgb(0, 0, 255)"],
+        [0.1, "rgb(0, 0, 255)"],
+        [0.1, "rgb(51, 102, 255)"],
+        [0.2, "rgb(51, 102, 255)"],
+        [0.2, "rgb(102, 204, 255)"],
+        [0.3, "rgb(102, 204, 255)"],
+        [0.3, "rgb(102, 255, 204)"],
+        [0.4, "rgb(102, 255, 204)"],
+        [0.4, "rgb(204, 255, 102)"],
+        [0.5, "rgb(204, 255, 102)"],
+        [0.5, "rgb(255,165,0)"],
+        [0.6, "rgb(255,165,0)"],
+        [0.6, "rgb(255, 0, 0)"],
+        [0.7, "rgb(255, 0, 0)"],
+        [0.7, "rgb(153, 51, 102)"],
+        [0.8, "rgb(153, 51, 102)"],
+        [0.8, "rgb(102, 9, 32)"],
+        [0.9, "rgb(102, 9, 32)"],
+        [0.9, "rgb(0, 0, 0)"],
+        [1.0, "rgb(0, 0, 0)"],
+    ],
+}
+
 app.layout = html.Div(
     [
         # Header
@@ -1346,29 +1382,7 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     + str(time_end)
                     + ")"
                 )
-
-                colormap = [
-                    [0.0, "rgb(0, 0, 255)"],
-                    [0.1, "rgb(0, 0, 255)"],
-                    [0.1, "rgb(51, 102, 255)"],
-                    [0.2, "rgb(51, 102, 255)"],
-                    [0.2, "rgb(102, 204, 255)"],
-                    [0.3, "rgb(102, 204, 255)"],
-                    [0.3, "rgb(102, 255, 204)"],
-                    [0.4, "rgb(102, 255, 204)"],
-                    [0.4, "rgb(204, 255, 102)"],
-                    [0.5, "rgb(204, 255, 102)"],
-                    [0.5, "rgb(255,165,0)"],
-                    [0.6, "rgb(255,165,0)"],
-                    [0.6, "rgb(255, 0, 0)"],
-                    [0.7, "rgb(255, 0, 0)"],
-                    [0.7, "rgb(153, 51, 102)"],
-                    [0.8, "rgb(153, 51, 102)"],
-                    [0.8, "rgb(102, 9, 32)"],
-                    [0.9, "rgb(102, 9, 32)"],
-                    [0.9, "rgb(0, 0, 0)"],
-                    [1.0, "rgb(0, 0, 0)"],
-                ]
+                colormap = COLOR_SCHEMES["daily_pdf"]
 
                 fig = go.Figure(
                     data=go.Heatmap(
@@ -2053,28 +2067,7 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                     db, network=net, station=sta, channel=chan
                 )
                 df = plot_grid_data_fill_in(df)
-                colormap = [
-                    [0.0, "rgb(0, 0, 255)"],
-                    [0.1, "rgb(0, 0, 255)"],
-                    [0.1, "rgb(51, 102, 255)"],
-                    [0.2, "rgb(51, 102, 255)"],
-                    [0.2, "rgb(102, 204, 255)"],
-                    [0.3, "rgb(102, 204, 255)"],
-                    [0.3, "rgb(102, 255, 204)"],
-                    [0.4, "rgb(102, 255, 204)"],
-                    [0.4, "rgb(204, 255, 102)"],
-                    [0.5, "rgb(204, 255, 102)"],
-                    [0.5, "rgb(255,165,0)"],
-                    [0.6, "rgb(255,165,0)"],
-                    [0.6, "rgb(255, 0, 0)"],
-                    [0.7, "rgb(255, 0, 0)"],
-                    [0.7, "rgb(153, 51, 102)"],
-                    [0.8, "rgb(153, 51, 102)"],
-                    [0.8, "rgb(102, 9, 32)"],
-                    [0.9, "rgb(102, 9, 32)"],
-                    [0.9, "rgb(0, 0, 0)"],
-                    [1.0, "rgb(0, 0, 0)"],
-                ]
+                colormap = COLOR_SCHEMES["daily_pdf"]
                 dates = df.axes[0].tolist()
                 seconds = df.axes[1].tolist()
                 x = [float(sec) for sec in seconds]
@@ -2198,17 +2191,7 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                         for inde, el in enumerate(val):
                             if el == 0.0:
                                 pdf_matrix[indv][inde] = None
-                    colormap = [
-                        [0.0, "rgb(255,64,226)"],
-                        [0.125, "rgb(0,0,200)"],
-                        [0.25, "rgb(0,25,255)"],
-                        [0.375, "rgb(0,152,255)"],
-                        [0.5, "rgb(44,255,150)"],
-                        [0.625, "rgb(151,255,0)"],
-                        [0.75, "rgb(255,234,0)"],
-                        [0.875, "rgb(255,111,0)"],
-                        [1, "rgb(255,0,0)"],
-                    ]
+                    colormap = COLOR_SCHEMES["psd"]
                     fig = go.Figure(
                         data=go.Heatmap(
                             x=period[::-1],
@@ -2240,7 +2223,7 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period_sub,
                         y=nlnm,
                         name="NLNM",
-                        line=dict(color="grey", width=4),
+                        line=dict(color="grey", width=2),
                     )
                 )
                 fig.add_trace(
@@ -2248,7 +2231,7 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                         x=period_sub,
                         y=nhnm,
                         name="NHNM",
-                        line=dict(color="grey", dash="dash", width=4),
+                        line=dict(color="grey", width=2),
                     )
                 )
 
@@ -2256,29 +2239,14 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                 fig.add_trace(
                     go.Scatter(
                         x=period,
-                        y=stats[0]["median"],
-                        name="Median",
-                        line=dict(color="green", width=4),
+                        # y=stats[0]["median"],
+                        y=stats[0]["mode"],
+                        # name="Median",
+                        name="Mode",
+                        line=dict(color="cyan", width=2),
                     )
                 )
 
-                # This is logic for the default of showEnvolope being True and envelope type set to 10_90
-                fig.add_trace(
-                    go.Scatter(
-                        x=period,
-                        y=stats[0]["percent_10"],
-                        name="10th Percentile",
-                        line=dict(color="black", width=4),
-                    )
-                )
-                fig.add_trace(
-                    go.Scatter(
-                        x=period,
-                        y=stats[0]["percent_90"],
-                        name="90th Percentile",
-                        line=dict(color="black", dash="dash", width=4),
-                    )
-                )
                 fig.update_layout(
                     legend=dict(
                         orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
