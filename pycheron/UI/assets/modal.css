@@ -1,0 +1,52 @@
+.modal {
+    position: fixed; 
+    z-index: 1002; /* Sit on top, including modebar which has z=1001 */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    background-color: rgba(0, 0, 0, 0.6); /* Black w/ opacity */
+
+}
+
+.modal-content {
+    margin: 1%;
+    height: 90%;
+    padding: 1%;
+    background-color: white;
+}
+
+.modal-success-generate {
+    background-color: #5cb85c;
+    color: white;
+    margin-right: 0.5%;
+    margin-left: 3%;
+}
+
+.modal-danger-close {
+    background-color: #d9534f;
+    float: "right";
+    position: "relative";
+    color: white;
+    margin-left: auto;
+}
+
+.modal-csv {
+    background-color: #5cb85c;
+    float: "right";
+    position: "relative";
+    color: white;
+    margin-left: auto;
+}
+
+.modal-weights {
+    background-color: #0275d8;
+    float: "right";
+    position: "relative";
+    color: white;
+    margin-left: auto;
+}
+
+td.CalendarDay {
+    padding: 0;
+}

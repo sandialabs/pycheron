@@ -1,0 +1,10 @@
+
+[paths]
+source =
+    /builds/lynm/pycheron/pycheron/
+    pycheron/
+    /root/.cache/pypoetry/virtualenvs/pycheron-Y9aC1YWk-py3.6/lib/python3.6/site-packages/pycheron/
+
+[report]
+omit = 
+    */plotting/basicStatPlots.py

@@ -1,0 +1,148 @@
+# general parameters
+output_dir : "test_data"
+data : 'test_data/test_data/'
+datatype: "dir"
+calcAll: True
+network: "UU"
+station: None
+byDay: False
+startdate: None
+enddate: None
+jul_start: None
+jul_end: None
+generateMasks: True
+masksByTime: True
+log: "pycheron.log"
+fortran: False
+database: "pycheron_test_dir_no_day.db"
+session: "test"
+overwrite: True
+to_csv: False
+stationStartAt: None
+
+# basicMetricStats
+calcBasic: False
+rmsThreshold: 50000
+maxThreshold: None
+minThreshold: None
+medianThreshold: None
+meanThreshold: None
+varianceThreshold: None
+stdThreshold: None
+
+# correlationMetric
+calcCorr: False
+
+# crossCorr
+calcCrossCorr: False
+maxLagSecs: 10
+filt: 'lowpass'
+freqmin: 1.0
+freqmax: 100.0
+corners: 4
+zerophase: False
+maxorder: None
+ba: False
+freq_passband: False
+
+# DCOffSetTimesMetric
+calcDcOffset: False
+windowSecs: 1800
+incrementSecs: None
+threshold: 0.9
+
+# gapMetric
+calcGap: False
+separateMasks: True
+completeDay: True
+
+# psdMetric
+calcPsds: False
+expLoPeriod: None
+expHiPeriod: 100
+linLoPeriod: None
+linHiPeriod: 50
+evalresp: None
+dcExpThreshold: .3
+pctBelowNoiseThreshold: 20
+pctAboveNoiseThreshold: 20
+dcLinThreshold: 2
+num_gaps: 10
+pctBelowNoiseThresholdRESP: 90
+pctAboveNoiseThresholdRESP: 90
+processesPSD: 7
+dcExpThresholdHour: 0.25
+dcLinThresholdHour: 2
+byHourOn: True
+
+# repeatedAmplitude
+calcAmp: False
+minRep: 10
+
+# snrMetric
+calcSNR: False
+algorithmSNR: "splitWindow"
+windowSecsSNR: 60
+snrThreshold: 2
+
+# sohMetric
+calcSOH: False
+data_quality: False
+activity: False
+io_clock: False
+
+# spikesMetric
+calcSpikes: False
+windowSize: 41
+thresholdSpikes: 20
+selectivity: None
+fixedThreshold: True
+processesSpikes: 7
+
+# staltaMetric
+calcStalta: False
+staSecs: 3
+ltaSecs: 30
+increment: 1
+algorithmSTA: "classic_LR"
+
+# deadChannelMetric
+calcAllDeadChan: False
+
+# deadChanADFMetric
+dcADF_win_size: 500
+dcADF_pval_thresh: 0.01
+dcADF_threshold: 1.5
+dcADF_use_thresh: "pvalue"
+
+# deadChanMeanMetric
+dcMean_win_size: None
+dcMean_thresh: .05
+
+# transferFunctionMetric
+calcTransfer: False
+
+# calibrationMetric
+calcCal: True
+cal_metric_store: None
+
+# plots
+plots: True
+pdfModel: 'nlnm'
+per_arr: None
+showNoiseModel: True
+showMaxMin: False
+showMode: False
+showMean: False
+showMedian: True
+showEnvelope: True
+envelopeType: "10_90"
+showSingle: False
+singleType: None
+min_stations: 5
+rank_by: None
+timespan: "all"
+
+
+
+

@@ -1,0 +1,118 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+! Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+! certain rights in this software.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! NOTICE:
+! For five (5) years from 10/21/2019 the United States Government is granted for
+! itself and others acting on its behalf a paid-up, nonexclusive, irrevocable worldwide
+! license in this data to reproduce, prepare derivative works, and perform publicly and
+! display publicly, by or on behalf of the Government. There is provision for the
+! possible extension of the term of this license. Subsequent to that period or any
+! extension granted, the United States Government is granted for itself and others
+! acting on its behalf a paid-up, nonexclusive, irrevocable worldwide license in this
+! data to reproduce, prepare derivative works, distribute copies to the public,
+! perform publicly and display publicly, and to permit others to do so. The specific
+! term of the license can be identified by inquiry made to National Technology and
+! Engineering Solutions of Sandia, LLC or DOE. NEITHER THE UNITED STATES GOVERNMENT,
+! NOR THE UNITED STATES DEPARTMENT OF ENERGY, NOR NATIONAL TECHNOLOGY AND ENGINEERING
+! SOLUTIONS OF SANDIA, LLC, NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR
+! IMPLIED, OR ASSUMES ANY LEGAL RESPONSIBILITY FOR THE ACCURACY, COMPLETENESS, OR
+! USEFULNESS OF ANY INFORMATION, APPARATUS, PRODUCT, OR PROCESS DISCLOSED, OR REPRESENTS
+! THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED RIGHTS. Any licensee of this software
+! has the obligation and responsibility to abide by the applicable export control laws,
+! regulations, and general prohibitions relating to the export of technical data.
+! Failure to obtain an export control license or other authority from the Government
+! may result in criminal liability under U.S. laws.
+! (End of Notice)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module fib2 ! in 
+    interface  ! in :fib2
+        subroutine psdlist(tr,n,fs,z,secs,lof,hif,af,psdslist,psdtruncx,psdtruncy) ! in :fib2:specTaper.f
+            integer*8 dimension(n) :: tr
+            integer, optional,check(len(tr)>=n),depend(tr) :: n=len(tr)
+            real :: fs
+            integer :: z
+            real :: secs
+            real :: lof
+            real :: hif
+            real :: af
+            real*8 dimension(n,n),intent(out),depend(n,n) :: psdslist
+            integer intent(out) :: psdtruncx
+            integer intent(out) :: psdtruncy
+        end subroutine psdlist
+        subroutine mcnamarapsds(x,n,fs,bin,lof,hif,af,freq,psd,trunc,trunca) ! in :fib2:specTaper.f
+            integer*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real :: fs
+            integer :: bin
+            real :: lof
+            real :: hif
+            real :: af
+            real*8 dimension(n),intent(out),depend(n) :: freq
+            real*8 dimension(n),intent(out),depend(n) :: psd
+            integer intent(out) :: trunc
+            integer intent(out) :: trunca
+        end subroutine mcnamarapsds
+        subroutine mcnamarabins(f,pxx,n,trunc,lof,hif,af,dlen,dff,dfp,dfpmask,dfpcount) ! in :fib2:specTaper.f
+            real*8 dimension(n) :: f
+            real*8 dimension(n),depend(n) :: pxx
+            integer, optional,check(len(f)>=n),depend(f) :: n=len(f)
+            integer :: trunc
+            real :: lof
+            real :: hif
+            real :: af
+            integer :: dlen
+            real*8 dimension(dlen),intent(out),depend(dlen) :: dff
+            real*8 dimension(dlen),intent(out),depend(dlen) :: dfp
+            integer*8 dimension(dlen),intent(out),depend(dlen) :: dfpmask
+            integer intent(out) :: dfpcount
+        end subroutine mcnamarabins
+        subroutine digitize(f,n,binfreq,binn,bins) ! in :fib2:specTaper.f
+            real*8 dimension(n) :: f
+            integer, optional,check(len(f)>=n),depend(f) :: n=len(f)
+            real*8 dimension(binn) :: binfreq
+            integer, optional,check(len(binfreq)>=binn),depend(binfreq) :: binn=len(binfreq)
+            integer dimension(n),intent(out),depend(n) :: bins
+        end subroutine digitize
+        subroutine spec_pgram(x,n,fs,tap,fa,dmean,dtrend,f,pxx,trunc) ! in :fib2:specTaper.f
+            integer*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real :: fs
+            real :: tap
+            integer :: fa
+            integer :: dmean
+            integer :: dtrend
+            real*8 dimension(n),intent(out),depend(n) :: f
+            real*8 dimension(n),intent(out),depend(n) :: pxx
+            integer intent(out) :: trunc
+        end subroutine spec_pgram
+        subroutine spec_taper(x,n,p,arr) ! in :fib2:specTaper.f
+            real*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real :: p
+            real*8 dimension(n),intent(out),depend(n) :: arr
+        end subroutine spec_taper
+        subroutine spec_detrend(x,n,arr) ! in :fib2:specTaper.f
+            integer*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real*8 dimension(n),intent(out),depend(n) :: arr
+        end subroutine spec_detrend
+        subroutine spec_demean(x,n,arr) ! in :fib2:specTaper.f
+            real*8 dimension(n) :: x
+            integer, optional,check(len(x)>=n),depend(x) :: n=len(x)
+            real*8 dimension(n),intent(out),depend(n) :: arr
+        end subroutine spec_demean
+        subroutine nextn(n,out) ! in :fib2:specTaper.f
+            integer :: n
+            integer intent(out) :: out
+        end subroutine nextn
+    end interface 
+end python module fib2
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

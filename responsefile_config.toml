@@ -1,0 +1,15 @@
+# This file is used to manually point to response files of the following formats: EVRESP, FAP
+#
+# For the channel level arguments (example, CHA), the 3 element list needs to contain the following in the correct order:
+# [path to the folder containing the response files, response file name, format of response file]
+#
+# This will be considered when iris_compatible is set to False in a callPycheronMetric config
+# IMPORTANT: THIS CONFIG FILE IS NOT NEEDED WHEN USING 'wfdb' IN CALLPYCHERON, 'wfdb' WILL KNOW WHERE TO GET FILES
+#
+# IMPORTANT: IF USING THIS FEATURE, INFORMATION FOR EVERY NETWORK/STATION/LOCATION/CHANNEL MUST BE PROVIDED
+#
+# Example, where NE is network, STTN is station, -- is location, and CHA is channel
+# [NE]
+#   [NE.STTN]
+#     [NE.STTN.--]
+#       CHA = ["/path/to/resp/folder", "RESP.NE.STTN..CHA", "evresp"]

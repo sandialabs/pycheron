@@ -1,0 +1,19 @@
+  rms: '866.4443879572756'
+  number_of_samples: '6451437'
+  metric_name: 'basicStatsMetric'
+  max_mask: None
+  std_mask: None
+  standard_deviation: '197.98584010776364'
+  start_time: UTCDateTime(2011, 1, 1, 2, 16, 8, 968300)
+  median: '855.0'
+  maximum: 9223
+  snclq: u'UU.BGU..HHE'
+  min_mask: None
+  variance_mask: None
+  minimum: '-9569'
+  end_time: UTCDateTime(2011, 1, 1, 20, 11, 23, 328300)
+  median_mask: None
+  variance: '39198.39288317695'
+  mean_mask: None
+  rms_mask: None
+  mean:  '843.5208856569475'

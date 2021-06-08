@@ -1,0 +1,10 @@
+[flake8]
+max-line-length = 120
+ignore = E266, W291, E203, W605, W293, W503, E741
+per-file-ignores=
+    pycheron/UI/createDashUI.py:F811
+    UI/createDashUI.py:F811
+    */__init__.py: W391
+
+exclude = 
+    pycheron/__init__.py

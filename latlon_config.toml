@@ -1,0 +1,10 @@
+# This file is used to manually add lat/lon values for networks and stations
+# This will be considered when manual is set to True in a callPycheronMetric config
+#
+# IMPORTANT: IF USING THIS FEATURE, ALL LAT/LON VALUES FOR EACH STATION MUST BE PROVIDED
+#
+# Example, where NE is network and STTN is station
+# [NE]
+#   [NE.STTN]
+#       lat = 1.0
+#       lon = -1.0

@@ -1,0 +1,4 @@
+[run]
+data_file = coverage_reports/.coverage.$MODULE
+concurrency = Process
+

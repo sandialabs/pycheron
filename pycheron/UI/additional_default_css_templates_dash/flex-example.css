@@ -1,0 +1,21 @@
+.total-flex { 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    width: 90%;
+    margin-left: 5%;
+}
+.my-row {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+.Map-Table { 
+    display: flex;
+    width: 40%;
+    }
+
+.Plot {
+    display: flex;
+    width: 40%;
+}

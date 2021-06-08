@@ -1,0 +1,53 @@
+default:
+  image: cee-gitlab.sandia.gov:4567/tfx/docker/poetry:pycheron
+  tags:
+    - docker
+
+stages:
+  - test-coverage
+
+coverage-test:
+  stage: test-coverage
+  variables:
+    MODULE: metrics
+  
+  before_script:
+    - pip3 install --upgrade pip
+    - pip install pre-commit==2.9.2
+    - pre-commit run --all-files
+    - export MPLBACKEND=Agg
+    - pip install virtualenv
+    - ./build.sh
+    - pip install coverage==4.5.4
+  script:
+    - cd pycheron
+    - MODULE="plotting"
+    - poetry run pytest -s --cov=pycheron ./plotting/tests
+    - MODULE="metrics"
+    - poetry run pytest -s --cov=pycheron ./metrics/tests
+    - MODULE="metricStore"
+    - poetry run pytest -s --cov=pycheron ./metricStore/tests
+    - MODULE="dataAcq"
+    - poetry run pytest -s --cov=pycheron ./dataAcq/tests
+    - MODULE="util"
+    - poetry run pytest -s --cov=pycheron ./util/tests
+    - MODULE="sigpro"
+    - poetry run pytest -s --cov=pycheron ./sigpro/tests
+    - MODULE="rollseis"
+    - poetry run pytest -s --cov=pycheron ./rollseis/tests
+    - MODULE="psd"
+    - poetry run pytest -s --cov=pycheron ./psd/tests
+    - MODULE="db"
+    - poetry run pytest -s --cov=pycheron ./db/tests
+    - MODULE="callPycheronMetric"
+    - poetry run pytest -s --cov=pycheron ./test_callPycheronMetric/test_callPycheronMetric.py
+    - MODULE="UI"
+    - poetry run pytest -s --cov=pycheron ./UI/tests
+    - cd coverage_reports
+    - ls -la
+    - coverage combine
+    - coverage report
+    - coverage html -i
+  artifacts:
+    paths:
+      - pycheron/coverage_reports
