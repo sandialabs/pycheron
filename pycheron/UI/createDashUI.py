@@ -218,6 +218,20 @@ SUMMARY_WHOLE_LIST = [
     "timing_correction_count",
     "timing_quality_record_count",
     "timing_quality_statistics",
+    "dropout_fraction",
+    "distinct_values_ratio",
+    "packet_time_bandwidth_product",
+    "frequency_sigma",
+    "discontinuity_max_value",
+    "artifacts",
+    "is_chan_sps_Seedcompliant",
+    "does_sps_match_data",
+    "is_chan_orientation_compliant",
+    "is_vert_chan_orientation_compliant",
+    "is_horz_chan_orientation_compliant_tr1",
+    "is_horz_chan_orientation_compliant_tr2",
+    "sample_rate_resp",
+    "max_range",
     "session",
     "range",
 ]
@@ -284,6 +298,14 @@ SUMMARY_COUNTS_LIST = [
     "microseism_masks",
     "banded_masks",
     "snr_masks",
+    "artifacts",
+    "is_chan_sps_Seedcompliant",
+    "does_sps_match_data",
+    "is_chan_orientation_compliant",
+    "is_vert_chan_orientation_compliant",
+    "is_horz_chan_orientation_compliant_tr1",
+    "is_horz_chan_orientation_compliant_tr2",
+    "sample_rate_resp",
 ]
 
 SUMMARY_HEADER = ["channel", "network", "station", "all_counts", "counts_calculated"]
@@ -1017,7 +1039,7 @@ station_tab = html.Div(
                     style_table={
                         "maxHeight": "500",
                         "overflowY": "scroll",
-                        "overflowX": "scroll",
+                        "overflowX": "auto",
                     },
                     fixed_rows={"headers": True, "data": 1},
                     style_cell={
@@ -1033,6 +1055,7 @@ station_tab = html.Div(
                         "font_family": "Helvetica",
                         "font_size": "15px",
                         "text-align": "center",
+                        "overflowX": "auto",
                     },
                     filter_action="native",
                     sort_action="native",

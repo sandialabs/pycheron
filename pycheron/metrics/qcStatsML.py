@@ -110,6 +110,12 @@ def evaluate(
             "start_time": trace.stats.starttime,
             "end_time": trace.stats.endtime,
             "metric_name": "qcMLMetric",
+            "dropout_fraction": [],
+            "distinct_values_ratio": [],
+            "packet_time_bandwidth_product": [],
+            "frequency_sigma": [],
+            "discontinuity_max_value": [],
+            "artifacts": 0,
             "qc_ml_results": []
         }
 
@@ -144,6 +150,12 @@ def evaluate(
                 "prediction": res.tolist(),
             }
             # Append result to overall list
+            d["dropout_fraction"].append(features_one_instance[0][0])
+            d["distinct_values_ratio"].append(features_one_instance[0][1])
+            d["packet_time_bandwidth_product"].append(features_one_instance[0][2])
+            d["frequency_sigma"].append(features_one_instance[0][3])
+            d["discontinuity_max_value"].append(features_one_instance[0][4])
+            d["artifacts"] += 1
             d["qc_ml_results"].append(data)
 
         # increment window using stride length
@@ -202,6 +214,12 @@ def evaluate_stream(
                                             * discontinuity max value - maximum value of discontinuities
                 * prediction": (`numpy.array`) - array of a list with a string. Since only concerned with artifacts, these
                                                 will all have the following value ['artifact']
+            * dropout_fraction (`list`): series of results from the feature metric, starts at first window/ends at last
+            * distinct_values_ratio (`list`): series of results from the feature metric, starts at first window/ends at last
+            * packet_time_bandwidth_product (`list`): series of results from the feature metric, starts at first window/ends at last
+            * frequency_sigma (`list`): series of results from the feature metric, starts at first window/ends at last
+            * discontinuity_max_value (`list`): series of results from the feature metric, starts at first window/ends at last
+            * artifacts (`list`): series of results from the feature metric, starts at first window/ends at last
 
     :rtype: list of dictionaries
     """
@@ -272,6 +290,12 @@ def evaluate_file(
                                             * discontinuity max value - maximum value of discontinuities
                 * prediction": (`numpy.array`) - array of a list with a string. Since only concerned with artifacts, these
                                                 will all have the following value ['artifact']
+            * dropout_fraction (`list`): series of results from the feature metric, starts at first window/ends at last
+            * distinct_values_ratio (`list`): series of results from the feature metric, starts at first window/ends at last
+            * packet_time_bandwidth_product (`list`): series of results from the feature metric, starts at first window/ends at last
+            * frequency_sigma (`list`): series of results from the feature metric, starts at first window/ends at last
+            * discontinuity_max_value (`list`): series of results from the feature metric, starts at first window/ends at last
+            * artifacts (`list`): series of results from the feature metric, starts at first window/ends at last
 
     :rtype: dict
     """
@@ -351,6 +375,12 @@ def evaluate_webservice(
                                             * discontinuity max value - maximum value of discontinuities
                 * prediction": (`numpy.array`) - array of a list with a string. Since only concerned with artifacts, these
                                                 will all have the following value ['artifact']
+            * dropout_fraction (`list`): series of results from the feature metric, starts at first window/ends at last
+            * distinct_values_ratio (`list`): series of results from the feature metric, starts at first window/ends at last
+            * packet_time_bandwidth_product (`list`): series of results from the feature metric, starts at first window/ends at last
+            * frequency_sigma (`list`): series of results from the feature metric, starts at first window/ends at last
+            * discontinuity_max_value (`list`): series of results from the feature metric, starts at first window/ends at last
+            * artifacts (`list`): series of results from the feature metric, starts at first window/ends at last
 
     :rtype: list of dictionaries
     """
