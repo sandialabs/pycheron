@@ -3,7 +3,9 @@
 Developed by Kale Aur (kaaur@sandia.gov), Jessica Bobeck (jbobeck@sandia.gov), Anthony Alberti (aalber@sandia.gov), 
 and Phillip Kay (prkay@sandia.gov)
 
-For an overview of Pycheron, its features, basic workflow, and an example application using a synthetic QC dataset, please refer to the following paper: Aur, K.A., Bobeck, J., Alberti, A., Kay, P. (2021) Pycheron: A Python-based seismic quality control software package. Seismological Research Letters, Volume XX, Number XX.
+For an overview of Pycheron, its features, basic workflow, and an example application using a synthetic QC dataset, please refer to the following paper:
+
+* **Aur, K.A., Bobeck, J., Alberti, A., Kay, P. (2021). Pycheron: A Python-based seismic quality control software package. Seismological Research Letters. https://doi.org/10.1785/0220200418**
 
 Python library for seismic data quality control originally ported from IRIS's IRISMustangMetrics, IRISSeismic, and
 seismicRoll R packages:

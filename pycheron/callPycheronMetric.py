@@ -4003,12 +4003,15 @@ def _mdcm_wrapper(st, network, station, logger,
                 vcoc = verticalChanOrientationCompliance(tr, iris_compatible=iris_compatible, database=database)
     
     if horz_chan_orientation_compliance:
-        # creates pairs for each trace without duplicate pairs
+        # creates pairs for each trace without duplicate pairs. In this case, we want duplicate pairs
+        # (for example, (1,2) and (2,1)) even if this creates duplicate information. This is because
+        # network/station/channels are evaluated individually in the summary report, so duplicate values
+        # must be present 
         if len(st) < 2:
             logger.log("callPycheron(): metadataComplianceMetric: horzChanOrientationCompliance: Can not compute pairs, stream contains less than 2 traces for: " + str(st))
             print(("callPycheron(): metadataComplianceMetric: horzChanOrientationCompliance: Can not compute pairs, stream contains less than 2 traces for: " + str(st)))
         else:
-            tr_pairs = tuple((x, y) for x in st for y in st if y.id > x.id)
+            tr_pairs = tuple((x, y) for x in st for y in st)
             for tr_pair in tr_pairs:
                 if tr_pair[0].stats.component != "Z" and tr_pair[1].stats.component != "Z":
                     hcoc = horzChanOrientationCompliance(tr_pair[0], tr_pair[1], iris_compatible=iris_compatible, database=database)

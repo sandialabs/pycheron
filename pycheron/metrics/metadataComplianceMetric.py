@@ -692,9 +692,9 @@ def horzChanOrientationCompliance(tr1, tr2, inv1=None, inv2=None, angle_toleranc
     # Output data to dictionary
     data = {
         "is_horz_chan_orientation_compliant_tr1": is_horz_chan_orientation_compliant1,
-        "snclq_tr1": tr1.get_id(),
-        "start_time_tr1": tr1.stats.starttime.isoformat(),
-        "end_time_tr1": tr1.stats.endtime.isoformat(),
+        "snclq": tr1.get_id(),
+        "start_time": tr1.stats.starttime.isoformat(),
+        "end_time": tr1.stats.endtime.isoformat(),
         "is_horz_chan_orientation_compliant_tr2": is_horz_chan_orientation_compliant2,
         "snclq_tr2": tr2.get_id(),
         "start_time_tr2": tr2.stats.starttime.isoformat(),

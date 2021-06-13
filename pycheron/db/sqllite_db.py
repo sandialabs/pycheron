@@ -587,6 +587,7 @@ class Database:
                """
             )
 
+            # make summaryReportCountsAndValues table
             db.execute(
                 """create table summaryReportCountsAndValues(
                                 created VARCHAR PRIMARY KEY,
@@ -767,7 +768,36 @@ class Database:
 
                                 --staltaMetric
                                 max_stalta varchar,
-                                event_time varchar)
+                                event_time varchar,
+
+                                --qcMLMetric
+                                dropout_fraction varchar,
+                                distinct_values_ratio varchar,
+                                packet_time_bandwidth_product varchar,
+                                frequency_sigma varchar,
+                                discontinuity_max_value varchar,
+                                artifacts int,
+
+                                --seedChanSpsCompliance
+                                is_chan_sps_Seedcompliant int,
+                                does_sps_match_data int,
+
+                                --ChanOrientationCompliance
+                                is_chan_orientation_compliant int,
+
+                                --verticalChanOrientationCompliance
+                                is_vert_chan_orientation_compliant int,
+
+                                --horzChanOrientationCompliance
+                                is_horz_chan_orientation_compliant_tr1 int,
+                                is_horz_chan_orientation_compliant_tr2 int,
+
+                                --sampleRateRespVerification
+                                sample_rate_resp int,
+
+                                --maxRangeMetric
+                                max_range varchar)
+
                 """
             )
 
@@ -975,6 +1005,12 @@ class Database:
                                snclq varchar,
                                start_time varchar,
                                end_time varchar,
+                               dropout_fraction varchar,
+                               distinct_values_ratio varchar,
+                               packet_time_bandwidth_product varchar,
+                               frequency_sigma varchar,
+                               discontinuity_max_value varchar,
+                               artifacts varchar,
                                qc_ml_results varchar,
                                FOREIGN KEY (metric_name) REFERENCES pycheron(metric),
                                FOREIGN KEY (network) REFERENCES pycheron(network),
@@ -1064,22 +1100,22 @@ class Database:
             db.execute(
                 """create table horzChanOrientationCompliance(
                                created VARCHAR PRIMARY KEY,
-                               network_tr1 varchar,
+                               network varchar,
                                network_tr2 varchar,
-                               station_tr1 varchar,
+                               station varchar,
                                station_tr2 varchar,
-                               location_tr1 varchar,
+                               location varchar,
                                location_tr2 varchar,
-                               channel_tr1 varchar,
+                               channel varchar,
                                channel_tr2 varchar,
                                session varchar,
                                metric_name varchar,
                                metric_subname varchar,
-                               snclq_tr1 varchar,
+                               snclq varchar,
                                snclq_tr2 varchar,
-                               start_time_tr1 varchar,
+                               start_time varchar,
                                start_time_tr2 varchar,
-                               end_time_tr1 varchar,
+                               end_time varchar,
                                end_time_tr2 varchar,
                                is_horz_chan_orientation_compliant_tr1 varchar,
                                is_horz_chan_orientation_compliant_tr2 varchar,
@@ -2084,7 +2120,7 @@ class Database:
                 #         (see metadataComplianceMetric as example below)
                 timestamp = UTCDateTime(time.time()).isoformat()
                 # helper to retrieve correct data for metadataComplianceMetrics
-                if metric[i]["metric_name"] in ("metadataComplianceMetric"):
+                if metric[i]["metric_name"] == "metadataComplianceMetric":
                     metric_name, network, station, channel, location, st, et, lat, lon = self._metadataComplianceMetric_insert_helper(metric[i], client)
 
                 else:
@@ -2333,6 +2369,7 @@ class Database:
             "spikesMetric": ["total_spike_count"],
             "dailyPdfPlot": ["noise_masks", "microseism_masks", "banded_masks"],
             "snrMetric": ["masks"],
+            "qcMLMetric": ["artifacts"],
         }
 
         summary_value_dict = {
@@ -2346,6 +2383,14 @@ class Database:
             "spikesMetric": ["non_adjacent_spikes"],
             "snrMetric": ["SNR"],
             "staltaMetric": ["max_stalta", "event_time"],
+            "qcMLMetric": [
+                "dropout_fraction",
+                "distinct_values_ratio",
+                "packet_time_bandwidth_product",
+                "frequency_sigma",
+                "discontinuity_max_value"
+            ],
+            "maxRangeMetric": ["max_range"],
         }
 
         if mn == "deadChanMeanMetric" or mn == "deadChannelMetric" or mn == "deadChanADFMetric":
@@ -2412,39 +2457,13 @@ class Database:
                     )
                 db.execute(update)
 
-                if metric["metric_name"] in summary_count_dict.keys():
-                    if key in summary_count_dict[metric["metric_name"]]:
-                        key = table_key_qc(key, metric["metric_name"])
-                        qc_layout = count_included(key, value)
-                        update = """UPDATE summaryReportCountsAndValues SET '{qc_layout_key}' = '{qc_layout_value}' 
-                            WHERE range = '{dt}' AND session = '{ses}' AND network = '{net}' 
-                            AND station = '{sta}'""".format(
-                            dt=dt_range,
-                            qc_layout_key=key,
-                            qc_layout_value=qc_layout[f"{key}_counts"],
-                            ses=self._session_name,
-                            net=network,
-                            sta=station,
-                        )
-                        if channel:
-                            update += """AND channel = '{chan}'""".format(chan=channel)
-                        db.execute(update)
+                sum_counts_sql = self._insert_summary_sql(mn, key, value, summary_count_dict, dt_range, network, station, "_counts", channel)
+                if sum_counts_sql:
+                    db.execute(sum_counts_sql)
 
-                if metric["metric_name"] in summary_value_dict.keys():
-                    if key in summary_value_dict[metric["metric_name"]]:
-                        key = table_key_qc(key, metric["metric_name"])
-                        qc_layout = standalone(key, value)
-                        update = """UPDATE summaryReportCountsAndValues SET '{qc_layout_key}' = '{qc_layout_value}' 
-                            WHERE session = '{ses}' AND network = '{net}' AND station = '{sta}'""".format(
-                            qc_layout_key=key,
-                            qc_layout_value=qc_layout[f"{key}_value"],
-                            ses=self._session_name,
-                            net=network,
-                            sta=station,
-                        )
-                        if channel:
-                            update += """AND channel = '{chan}'""".format(chan=channel)
-                        db.execute(update)
+                sum_value_sql = self._insert_summary_sql(mn, key, value, summary_value_dict, dt_range, network, station, "_value", channel)
+                if sum_value_sql:
+                    db.execute(sum_value_sql)
 
         # overwrite entry
         else:
@@ -2566,23 +2585,9 @@ class Database:
                     )
                 db.execute(update)
 
-                if mn in summary_value_dict.keys():
-                    if key in summary_value_dict[mn]:
-                        key = table_key_qc(key, mn)
-                        qc_layout = standalone(key, value)
-                        update = """UPDATE summaryReportCountsAndValues SET '{qc_layout_key}' = '{qc_layout_value}'
-                             WHERE range = '{dt}' AND session = '{ses}' 
-                             AND network = '{net}' AND station = '{sta}'""".format(
-                            dt=dt_range,
-                            qc_layout_key=key,
-                            qc_layout_value=qc_layout[f"{key}_value"],
-                            ses=self._session_name,
-                            net=network,
-                            sta=station,
-                        )
-                        if channel:
-                            update += """AND channel = '{chan}'""".format(chan=ch)
-                        db.execute(update)
+                sum_value_sql = self._insert_summary_sql(mn, key, value, summary_value_dict, dt_range, network, station, "_value", channel)
+                if sum_value_sql:
+                    db.execute(sum_value_sql)
 
         # overwrite entry
         else:
@@ -2689,42 +2694,13 @@ class Database:
 
                 db.execute(update)
 
-                if mn in summary_count_dict.keys():
-                    if key in summary_count_dict[mn]:
-                        key = table_key_qc(key, mn)
-                        qc_layout = count_included(key, value)
-                        update = """UPDATE summaryReportCountsAndValues SET '{qc_layout_key}' = '{qc_layout_value}'
-                            WHERE range = '{dt}' AND session = '{ses}' 
-                            AND network = '{net}' AND station = '{sta}'""".format(
-                            dt=dt_range,
-                            qc_layout_key=key,
-                            qc_layout_value=qc_layout[f"{key}_counts"],
-                            ses=self._session_name,
-                            net=network,
-                            sta=station,
-                        )
-                        if channel:
-                            update += """AND channel = '{chan}'""".format(chan=channel)
-                        db.execute(update)
+                sum_counts_sql = self._insert_summary_sql(mn, key, value, summary_count_dict, dt_range, network, station, "_counts", channel)
+                if sum_counts_sql:
+                    db.execute(sum_counts_sql)
 
-                if mn in summary_value_dict.keys():
-                    if key in summary_value_dict[mn]:
-                        key = table_key_qc(key, mn)
-                        qc_layout = standalone(key, value)
-                        update = """UPDATE summaryReportCountsAndValues 
-                            SET '{qc_layout_key}' = '{qc_layout_value}' 
-                            WHERE range = '{dt}' AND session = '{ses}' 
-                            AND network = '{net}' AND station = '{sta}'""".format(
-                            dt=dt_range,
-                            qc_layout_key=key,
-                            qc_layout_value=qc_layout[f"{key}_value"],
-                            ses=self._session_name,
-                            net=network,
-                            sta=station,
-                        )
-                        if channel:
-                            update += """AND channel = '{chan}'""".format(chan=channel)
-                        db.execute(update)
+                sum_value_sql = self._insert_summary_sql(mn, key, value, summary_value_dict, dt_range, network, station, "_value", channel)
+                if sum_value_sql:
+                    db.execute(sum_value_sql)
 
         # overwrite entry
         else:
@@ -2938,43 +2914,19 @@ class Database:
                     metric_summary_prep = {k: v for k, v in metric.items() if not isinstance(v, dict)}
                     metric_summary_prep.update(app)
                     metric_summary_prep.update(metric["timing_quality"])
+                    mspn = metric_summary_prep["metric_name"]
 
                     for key, value in metric_summary_prep.items():
-                        if metric_summary_prep["metric_name"] in summary_count_dict.keys():
-                            if key in summary_count_dict[metric_summary_prep["metric_name"]]:
-                                key = table_key_qc(key, metric_summary_prep["metric_name"])
-                                qc_layout = count_included(key, value)
-                                update = """UPDATE summaryReportCountsAndValues SET '{qc_layout_key}' = '{qc_layout_value}' 
-                                    WHERE range = '{dt}' AND session = '{ses}' 
-                                    AND network = '{net}' AND station = '{sta}'""".format(
-                                    dt=dt_range,
-                                    qc_layout_key=key,
-                                    qc_layout_value=qc_layout[f"{key}_counts"],
-                                    ses=self._session_name,
-                                    net=network,
-                                    sta=station,
-                                )
-                                if channel:
-                                    update += """AND channel = '{chan}'""".format(chan=channel)
-                                db.execute(update)
 
-                        if metric_summary_prep["metric_name"] in summary_value_dict.keys():
-                            if key in summary_value_dict[metric_summary_prep["metric_name"]]:
-                                key = table_key_qc(key, metric_summary_prep["metric_name"])
-                                qc_layout = standalone(key, value)
-                                update = """UPDATE summaryReportCountsAndValues 
-                                    SET '{qc_layout_key}' = '{qc_layout_value}' 
-                                    WHERE session = '{ses}' AND network = '{net}' 
-                                    AND station = '{sta}'""".format(
-                                    qc_layout_key=key,
-                                    qc_layout_value=qc_layout[f"{key}_value"],
-                                    ses=self._session_name,
-                                    net=network,
-                                    sta=station,
-                                )
-                                if channel:
-                                    update += """AND channel = '{chan}'""".format(chan=channel)
-                                db.execute(update)
+                        sum_counts_sql = self._insert_summary_sql(mspn, key, value, summary_count_dict, dt_range, network, station, "_counts", channel)
+                        if sum_counts_sql:
+                            db.execute(sum_counts_sql)
+
+                        sum_value_sql = self._insert_summary_sql(mspn, key, value, summary_value_dict, dt_range, network, station, "_value", channel)
+                        if sum_value_sql:
+                            db.execute(sum_value_sql)
+
+
 
                 else:
                     for count_key in count_key_lst:
@@ -3238,74 +3190,6 @@ class Database:
             )
             db.execute(update)
 
-    # def _insert_calibration(self, conn, metric, timestamp, overwrite=None):
-    #     """Internal function which inserts calibration metric into database
-    #
-    #     :param conn: database conncetion
-    #     :param metric: calibration metric metric data
-    #     :param timestamp: timestamp to be used as primary key
-    #     :param overwrite: overwrite term
-    #     """
-    #     db = conn.cursor()
-    #
-    #     for i in range(len(metric[1])):
-    #         metric = metric[1][i]
-    #         mn = metric[0]["metric_name"]
-    #         snclq = metric[0]["snclq"]
-    #
-    #         network, station, channel, location, quality = parse_snclq(snclq)
-    #
-    #         if location == None or location == "":
-    #             location = "--"
-    #
-    #         if overwrite is None:
-    #             sql = """insert into {mn} ( created, network, station, channel, location, session )
-    #                       values ( '{c}', '{n}',
-    #              '{s}', '{chan}', '{l}', '{sn}' )""".format(mn=mn, c=timestamp,
-    #                                                         n=network, s=station, chan=channel,
-    #                                                         l=location, sn=self._session_name)
-    #             db.execute(sql)
-    #
-    #             for key, value in metric.iteritems():
-    #
-    #                 if key == "snclq":
-    #                     continue
-    #
-    #                 else:
-    #                     update = """UPDATE {mn} SET '{key}' = '{val}' where created = '{c}'""".format(mn=mn, key=key,
-    #                                                                                                   val=value,
-    #                                                                                                   c=timestamp)
-    #                     db.execute(update)
-    #
-    #         # overwrite entry
-    #         else:
-    #
-    #             for key, value in metric.iteritems():
-    #                 # update metric values
-    #                 if key == "snclq":
-    #                     continue
-    #                 else:
-    #                     update = """UPDATE {mn} SET '{key}' = '{val}' where created = '{c}'""".format(mn=mn, key=key,
-    #                                                                                                   val=value,
-    #                                                                                                   c=overwrite)
-    #                     db.execute(update)
-    #
-    #             # update session, not found in results dict
-    #             update = """UPDATE {mn} SET session = '{val}' where created = '{c}'""".format(mn=mn,
-    #                                                                                           val=self._session_name,
-    #                                                                                           c=overwrite)
-    #             db.execute(update)
-    #
-    #             # update created, must be last
-    #             update = """UPDATE {mn} SET created = '{val}' where created = '{c}'""".format(mn=mn, val=timestamp,
-    #                                                                                           c=overwrite)
-    #             db.execute(update)
-    #
-    #         conn.commit()
-    #
-    #     else:
-    #         pass
-
     def _insert_dbIntegrityMetric(self, conn, metric, timestamp, overwrite=None):
         db = conn.cursor()
         mn = metric["metric_name"]
@@ -3333,11 +3217,27 @@ class Database:
         mn = metric["metric_name"]
         smn = metric["metric_subname"]
 
-        if smn != "horzChanOrientationCompliance":
-            network, station, channel, location, _ = parse_snclq(metric["snclq"])
+        network, station, channel, location, _ = parse_snclq(metric["snclq"])
 
-            if location == "":
-                location = "--"
+        if location == "":
+            location = "--"
+
+            
+
+        # fields for summary report metado
+        summary_count_dict = {
+            "seedChanSpsCompliance": [
+                "is_chan_sps_Seedcompliant",
+                "does_sps_match_data",
+            ],
+            "ChanOrientationCompliance": ["is_chan_orientation_compliant"],
+            "verticalChanOrientationCompliance": ["is_vert_chan_orientation_compliant"],
+            "horzChanOrientationCompliance": [
+                "is_horz_chan_orientation_compliant_tr1",
+                "is_horz_chan_orientation_compliant_tr2",
+            ],
+            "sampleRateRespVerification": ["sample_rate_resp"],
+        }
         
         if smn == "seedChanSpsCompliance":
             sql = self._insert_seedChanSpsCompliance_sql(metric, network, station, channel, location, timestamp)
@@ -3352,9 +3252,52 @@ class Database:
         else:
             raise ValueError(f"{smn} is not a valid metric_subname for {mn}, unable to write to sqlite")
 
+        dt_range=None
+        if "start_time" and "end_time" in metric:
+            dt_range = uniform_time(metric["start_time"], metric["end_time"])
+            qc_insert = summary_table_check_exist(db, self._session_name, network, station, channel, dt_range)
+
+            if qc_insert:
+                db.execute(qc_insert)
+
         db.execute(sql)
 
+        for key, value in metric.items():
+            # TODO T: Need case for horzChan and other metrics which have two snclq values
+            sum_sql = self._insert_summary_sql(smn, key, value, summary_count_dict, dt_range, network, station, "_counts", channel)
+            if sum_sql:
+                db.execute(sum_sql)
+
         conn.commit()
+
+    def _insert_summary_sql(self, metric_name, key, value, summary_dict, dt_range, network, station, c_or_v, channel=None):
+        # Determine if counts are values are to be inserted
+        if c_or_v not in ("_counts", "_value"):
+            raise ValueError(f"_insert_summary_sql function error: Can not insert to summaryCountsAndValues, expect '_counts' or '_value' for c_or_v, but received: {c_or_v}")
+        else:
+            # If counts, use the counting function to assign them. If values, use the standalone function
+            if c_or_v == "_counts":
+                assign_to_report = count_included
+            if c_or_v == "_value":
+                assign_to_report = standalone
+        # Iterate through metric keys. If a key is in the summary dictionary, add it to the summary report with appropriate function
+        if metric_name in summary_dict.keys():
+            if key in summary_dict[metric_name]:
+                key = table_key_qc(key, metric_name)
+                qc_layout = assign_to_report(key, value)
+                update = """UPDATE summaryReportCountsAndValues SET '{qc_layout_key}' = '{qc_layout_value}' 
+                    WHERE range = '{dt}' AND session = '{ses}' AND network = '{net}' 
+                    AND station = '{sta}'""".format(
+                    dt=dt_range,
+                    qc_layout_key=key,
+                    qc_layout_value=qc_layout[f"{key}{c_or_v}"],
+                    ses=self._session_name,
+                    net=network,
+                    sta=station,
+                )
+                if channel:
+                    update += """AND channel = '{chan}'""".format(chan=channel)
+                return update
 
     def _insert_seedChanSpsCompliance_sql(self, metric, network, station, channel, location, timestamp):
         sql = """insert into {ms} (created, network, station, location, channel, session, metric_name, metric_subname, snclq, start_time, end_time, is_chan_sps_Seedcompliant, does_sps_match_data)
@@ -3412,7 +3355,9 @@ class Database:
         return sql
 
     def _insert_horzChanOrientationCompliance_sql(self, metric, timestamp):
-        network1, station1, channel1, location1, _ = parse_snclq(metric["snclq_tr1"])
+        # TODO T: Update to be similar to other multi network/station metrics
+        # (crossCor, transferFunction, etc.)
+        network1, station1, channel1, location1, _ = parse_snclq(metric["snclq"])
         network2, station2, channel2, location2, _ = parse_snclq(metric["snclq_tr2"])
 
         if location1 == "":
@@ -3420,9 +3365,9 @@ class Database:
         if location2 == "":
             location2 = "--"
 
-        sql = """insert into {ms} (created, network_tr1, network_tr2, station_tr1, station_tr2, location_tr1,
-        location_tr2, channel_tr1, channel_tr2, session, metric_name, metric_subname, snclq_tr1, snclq_tr2,
-        start_time_tr1, start_time_tr2, end_time_tr1, end_time_tr2, is_horz_chan_orientation_compliant_tr1,
+        sql = """insert into {ms} (created, network, network_tr2, station, station_tr2, location,
+        location_tr2, channel, channel_tr2, session, metric_name, metric_subname, snclq, snclq_tr2,
+        start_time, start_time_tr2, end_time, end_time_tr2, is_horz_chan_orientation_compliant_tr1,
         is_horz_chan_orientation_compliant_tr2) values ('{c}', '{n1}', '{n2}', '{s1}', '{s2}', '{l1}', '{l2}',
         '{ch1}', '{ch2}', '{sn}', '{mn}', '{ms}', '{snclq1}', '{snclq2}', '{st1}', '{st2}', '{et1}', '{et2}',
         '{is_hchan_ori1}', '{is_hchan_ori2}')""".format(
@@ -3438,11 +3383,11 @@ class Database:
             ch2=channel2,
             sn=self._session_name,
             mn=metric["metric_name"],
-            snclq1=metric["snclq_tr1"],
+            snclq1=metric["snclq"],
             snclq2=metric["snclq_tr2"],
-            st1=metric["start_time_tr1"],
+            st1=metric["start_time"],
             st2=metric["start_time_tr2"],
-            et1=metric["end_time_tr1"],
+            et1=metric["end_time"],
             et2=metric["end_time_tr2"],
             is_hchan_ori1=metric["is_horz_chan_orientation_compliant_tr1"],
             is_hchan_ori2=metric["is_horz_chan_orientation_compliant_tr2"],
@@ -3509,12 +3454,12 @@ class Database:
         metric_name = metric["metric_subname"]
 
         if metric_name == "horzChanOrientationCompliance":
-            network1, station1, channel1, location1, _ = parse_snclq(metric["snclq_tr1"])
+            network1, station1, channel1, location1, _ = parse_snclq(metric["snclq"])
             network2, station2, channel2, location2, _ = parse_snclq(metric["snclq_tr2"])
 
-            st1 = metric["start_time_tr1"]
+            st1 = metric["start_time"]
             st2 = metric["start_time_tr2"]
-            et1 = metric["end_time_tr1"]
+            et1 = metric["end_time"]
             et2 = metric["end_time_tr2"]
 
             lat1, lon1 = get_latlon(
@@ -3542,8 +3487,8 @@ class Database:
             if location2 is None or location2 == "":
                 location2 = "--"
             
-            st = f"{metric['start_time_tr1']}:{metric['start_time_tr2']}"
-            et = f"{metric['end_time_tr1']}:{metric['end_time_tr2']}"
+            st = f"{metric['start_time']}:{metric['start_time_tr2']}"
+            et = f"{metric['end_time']}:{metric['end_time_tr2']}"
 
             network = f"{network1}:{network2}"
             station = f"{station1}:{station2}"
