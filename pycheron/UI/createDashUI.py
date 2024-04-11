@@ -2774,7 +2774,7 @@ def _summary_report_query(db, set_weight=[1] * WEIGHT_LEN):
     table_info = db.query("""PRAGMA table_info(summaryReportCountsAndValues)""")
 
     # Adhere to schema
-    sum_cols = list(table_info.loc[table_info["type"] == "int"]["name"])
+    sum_cols = list(table_info.loc[table_info["type"] == "INT"]["name"])
     dont_sum_cols = list(table_info.loc[table_info["type"] == "varchar"]["name"])
     crsnsc_cols = ["created", "range", "session", "network", "station", "channel"]
     value_cols = [x for x in dont_sum_cols if x not in crsnsc_cols]
