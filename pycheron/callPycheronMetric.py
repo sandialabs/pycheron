@@ -3134,9 +3134,6 @@ def _call_pycheron_wrapper(
 
     # # ----------------------qcStatsML-------------------------------------------
     if calcAll or calcQcStatsML:
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print("ABOUT TO CALL QCSTATSML")
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         st_qcml = st.copy()
         t_qcml = Process(
             target=_qc_ml_wrapper,
@@ -3490,7 +3487,6 @@ def _psd_wrapper(
     # if psds returned
     if psds:
         print(("callPycheron(): Finished psdMetric for: " + network + "." + station))
-        print(f"PSDS: {psds}")
         logger.log("callPycheron(): Finished psdMetric for: " + network + "." + station)
 
     else:
