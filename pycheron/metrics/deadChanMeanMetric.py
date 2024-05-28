@@ -29,6 +29,7 @@
 
 import numpy as np
 from pycheron.util.masks import consecutive
+from pycheron.db.sqllite_db import Database
 
 __all__ = ["deadChanMean"]
 
@@ -39,7 +40,7 @@ def deadChanMean(
     threshold=0.05,
     generateMasks=False,
     masksByTime=True,
-    database=None,
+    database_config=None,
 ):
     """
     Function uses a simplistic rolling mean, using win_size and increments over the trace object by that win_size.
@@ -210,7 +211,8 @@ def deadChanMean(
             out.append(dt)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(out)
 
     return out

@@ -30,6 +30,7 @@
 import numpy as np
 from statsmodels.tsa.stattools import adfuller
 from pycheron.util.masks import consecutive
+from pycheron.db.sqllite_db import Database
 
 __all__ = ["deadChanADFMetric"]
 
@@ -42,7 +43,7 @@ def deadChanADFMetric(
     generateMasks=False,
     masksByTime=True,
     use_thresh="pvalue",
-    database=None,
+    database_config=None,
 ):
     """
     DeadChannelMetric test using the Augmented Dickey Fuller Test
@@ -292,7 +293,8 @@ def deadChanADFMetric(
             out.append(dt)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(out)
 
     return out

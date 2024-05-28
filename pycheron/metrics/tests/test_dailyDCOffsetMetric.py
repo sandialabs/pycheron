@@ -61,6 +61,7 @@ def test_dailyDCOffsetMetricNoMean():
 
 def test_DC():
     d = utils.make_dict_of_lists(basicStatsMetric(utils.get_stream_from_file("test_data/qualityflags.mseed")))
+    print(d)
     off = dailyDCOffSetMetric(d, offsetDays=1)
     assert len(off) > 0
     utils.compare_dicts(expected_output, off)

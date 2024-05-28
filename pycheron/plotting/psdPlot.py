@@ -213,7 +213,7 @@ def psdPlot(
     # Register cmap
     plt.close()
     plt.style.use("default")
-    plt.register_cmap(cmap=pqlx)
+    #plt.register_cmap(cmap=pqlx)
     # If from the database, then grab out the appropriate information
     if isinstance(st, Database):
         _psdPlot_from_database(
@@ -1174,6 +1174,7 @@ def _psdPlot_from_database(
             try:
                 network, station, channel, location, quality = parse_snclq(PSD[i][0][2][0])
             except IndexError:
+                print(f"GOING to try and parse PSD[i] {PSD[i]}")
                 network, station, channel, location = parse_snclq(PSD[i][0][2][0])
             starttime = PSD[i][0][3]
             endtime = PSD[i][-1][4]
@@ -1408,6 +1409,7 @@ def _read_psds(
     """
     Internal function to read psd from db
     """
+    #import pdb; pdb.set_trace()
 
     # Set up logger
     if logger is None:

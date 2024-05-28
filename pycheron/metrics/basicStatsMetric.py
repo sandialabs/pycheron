@@ -32,6 +32,7 @@ __all__ = ["basicStatsMetric"]
 import numpy as np
 from pycheron.util.masks import samples2time
 from pycheron.util.logger import Logger
+from pycheron.db.sqllite_db import Database
 
 
 def basicStatsMetric(
@@ -47,7 +48,7 @@ def basicStatsMetric(
     generateMasks=False,
     masksByTime=True,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
     Reads in Stream object, creates Trace data, and outputs basic statistics for each respective trace
@@ -347,7 +348,8 @@ def basicStatsMetric(
         )
 
     # Put information in the database if defined
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(d)
 
     return d

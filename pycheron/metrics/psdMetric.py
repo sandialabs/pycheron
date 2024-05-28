@@ -39,6 +39,7 @@ from pycheron.metrics.basicStatsMetric import basicStatsMetric
 import warnings
 from pycheron.util.logger import Logger
 from pycheron.util.masks import samples2time
+from pycheron.db.sqllite_db import Database
 
 warnings.filterwarnings("ignore")
 
@@ -64,7 +65,7 @@ def psdMetric(
     logger=None,
     masksByTime=True,
     byHourOn=False,
-    database=None,
+    database_config=None,
     session=None,
     overwrite=True,
 ):
@@ -1113,7 +1114,8 @@ def psdMetric(
         d.append(metrics)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(d)
 
     return d

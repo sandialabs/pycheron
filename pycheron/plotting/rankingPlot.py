@@ -223,7 +223,7 @@ def rankPlot(
                             diff, per = noiseDiff(period, mode, m_power_z, m_period)
                             # adding data to DF
                             df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df_z = df_z.append(df2, ignore_index=True)
+                            df_z = pd.concat([df_z, df2], ignore_index=True)
 
                 # adding indexs
                 df_z["Station"] = sta_z
@@ -243,7 +243,7 @@ def rankPlot(
                             diff, per = noiseDiff(period, mode, m_power_en, m_period)
                             # adding data to DF
                             df2_e = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df_e = df_e.append(df2_e, ignore_index=True)
+                            df_e = pd.concat([df_e, df2_e], ignore_index=True)
 
                         # grabbing N channel
                         if chan.endswith("N"):
@@ -253,7 +253,7 @@ def rankPlot(
                             diff, per = noiseDiff(period, mode, m_power_en, m_period)
                             # adding data to DF
                             df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df_n = df_n.append(df2, ignore_index=True)
+                            df_n = pd.concat([df_n, df2], ignore_index=True)
                 # adding station as index
                 df_e["Station"] = sta_en
                 df_e = df_e.rename(df_e["Station"])
@@ -348,7 +348,7 @@ def rankPlot(
                         diff, per = noiseDiff(period, mode, m_power, m_period)
                         # adding data to DF
                         df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                        df_n = df_n.append(df2, ignore_index=True)
+                        df_n = pd.concat([df_n, df2], ignore_index=True)
                     # E component
                     if chan.endswith("E"):
                         sta_e.append(stats[i]["snclq"].split(".")[1])
@@ -359,7 +359,7 @@ def rankPlot(
                         diff, per = noiseDiff(period, mode, m_power, m_period)
                         # adding data to DF
                         df2_e = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                        df_e = df_e.append(df2_e, ignore_index=True)
+                        df_e = pd.concat([df_e, df2_e], ignore_index=True)
                     # Z component
                     if chan.endswith("Z"):
                         sta_z.append(stats[i]["snclq"].split(".")[1])
@@ -370,7 +370,7 @@ def rankPlot(
                         diff, per = noiseDiff(period, mode, m_power, m_period)
                         # adding data to DF
                         df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                        df_z = df_z.append(df2, ignore_index=True)
+                        df_z = pd.concat([df_z, df2], ignore_index=True)
 
                 # adding station as index
                 df_z["Station"] = sta_z
@@ -543,11 +543,11 @@ def _rankPlot_from_database(
                             diff, per = noiseDiff(period, mode, m_power_z, m_period)
                             # adding data to DF
                             df_z_temp = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df2 = df2.append(df_z_temp)
+                            df2 = pd.concat([df2, df_z_temp])
             df2 = df2.mode()
             if len(df2) > 1:
                 df2 = df2.mean()
-            df_z = df_z.append(df2, ignore_index=True)
+            df_z = pd.concat([df_z, df2], ignore_index=True)
         # adding indexs
         df_z["Station"] = sta_z
         df_z = df_z.rename(df_z["Station"])
@@ -570,7 +570,7 @@ def _rankPlot_from_database(
                             diff, per = noiseDiff(period, mode, m_power_en, m_period)
                             # adding data to DF
                             df2_e_temp = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df2_e = df2_e.append(df2_e_temp)
+                            df2_e = pd.concat([df2_e, df2_e_temp])
 
                         # grabbing N channel
                         if chan.endswith("N"):
@@ -580,17 +580,17 @@ def _rankPlot_from_database(
                             diff, per = noiseDiff(period, mode, m_power_en, m_period)
                             # adding data to DF
                             df2_n_temp = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df2_n = df2_e.append(df2_n_temp)
+                            df2_n = pd.concat([df2_e, df2_n_temp])
 
             df2_e = df2_e.mode()
             if len(df2_e) > 1:
                 df2_e = df2_e.mean()
-            df_e = df_e.append(df2_e, ignore_index=True)
+            df_e = pd.concat([df_e, df2_e], ignore_index=True)
 
             df2_n = df2_n.mode()
             if len(df2_n) > 1:
                 df2_n = df2_n.mean()
-            df_n = df_n.append(df2_n, ignore_index=True)
+            df_n = pd.concat([df_n, df2_n], ignore_index=True)
 
         # adding station as index
         df_e["Station"] = sta_en
@@ -718,7 +718,7 @@ def calc_power_period_rankplot(stats, period):
             diff, per = noiseDiff(period, mode, m_power, m_period)
             # adding data to DF
             df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-            df_n = df_n.append(df2, ignore_index=True)
+            df_n = pd.concat([df_n, df2], ignore_index=True)
         # E component
         if chan.endswith("E"):
             # Get sta, channel
@@ -732,7 +732,7 @@ def calc_power_period_rankplot(stats, period):
             diff, per = noiseDiff(period, mode, m_power, m_period)
             # adding data to DF
             df2_e = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-            df_e = df_e.append(df2_e, ignore_index=True)
+            df_e = pd.concat([df_e, df2_e], ignore_index=True)
         # Z component
         if chan.endswith("Z"):
             # Get sta, channel
@@ -746,7 +746,7 @@ def calc_power_period_rankplot(stats, period):
             diff, per = noiseDiff(period, mode, m_power, m_period)
             # adding data to DF
             df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-            df_z = df_z.append(df2, ignore_index=True)
+            df_z = pd.concat([df_z, df2], ignore_index=True)
     df_dict = {}
     df_dict["sta_n"], df_dict["sta_e"], df_dict["sta_z"] = sta_n, sta_e, sta_z
     df_dict["chan_n"], df_dict["chan_e"], df_dict["chan_z"] = chan_n, chan_e, chan_z

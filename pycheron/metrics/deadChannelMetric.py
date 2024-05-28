@@ -29,11 +29,12 @@
 
 from pycheron.util.logger import Logger
 from pycheron.psd.noise.deadChannel import isDC
+from pycheron.db.sqllite_db import Database
 
 __all__ = ["deadChannelMetric"]
 
 
-def deadChannelMetric(st, logger=None, database=None):
+def deadChannelMetric(st, logger=None, database_config=None):
     """
     Individaul metric that tests a channel to see if it is a dead channel
 
@@ -126,7 +127,8 @@ def deadChannelMetric(st, logger=None, database=None):
         all.append(data)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(all)
 
     return all

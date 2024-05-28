@@ -32,6 +32,7 @@ __all__ = ["DCOffSetTimesMetric"]
 import numpy as np
 from pycheron.util.logger import Logger
 from pycheron.util.masks import samples2time
+from pycheron.db.sqllite_db import Database
 
 
 def DCOffSetTimesMetric(
@@ -42,7 +43,7 @@ def DCOffSetTimesMetric(
     generateMasks=False,
     masksByTime=True,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
     Metric to determine DC offset times (ie., where a shift in the signal mean is detected)
@@ -229,7 +230,8 @@ def DCOffSetTimesMetric(
         d.append(metrics)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(d)
 
     return d

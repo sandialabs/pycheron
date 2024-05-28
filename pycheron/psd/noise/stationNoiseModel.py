@@ -191,6 +191,7 @@ def stationNoiseModel(
 
     .. image:: _static/stationNoiseModel.png
     """
+    # import pdb; pdb.set_trace();
 
     # Set up logger
     if logger is None:
@@ -212,25 +213,33 @@ def stationNoiseModel(
 
             # if returns no data, calculate and insert into db
             if tb.empty:
+                print(f"TB IS EMPTY")
                 psds = psdList(st)
+                print(f"@@@@@@@@ PSDS: {psds}")
                 database.insert_metric(psds)
 
             else:
+                print(f"TB NOT EMPTY")
                 tb_psds = tb.uncorrected_psds[tb.channel == channel]
+                print(f"TB PSDS: {tb_psds}")
                 psds = []
                 for j in range(len(tb_psds)):
                     psd = database.extract_masks(tb_psds.iloc[j])
                     psds.append(psd)
+                print(f"########## PSDS: {psds}")
         # Otherwise, calculate psds
         else:
             psds = psdList(st)
+            print(f"$$$$$$$$$$$$ PSDS: {psds}")
 
     # If st is a database object, then grab psd from db. Grab out station name.
     else:
         database = st
         psds = create_psds_from_metric_table(database, network, station, session, location, logger)
+        print(f"****************** PSDS: {psds}")
 
     # get psd statistics for the psds
+    print(f"!!!!!!!! PSDS: {psds}")
     df_dict = gen_stats_plot_vals(psds, type, logger, database)
 
     # Based on theose statistics, generate single or envelope list
@@ -319,6 +328,7 @@ def create_psds_from_metric_table(database, network, station, session=None, loca
         channel=None,
         location=location,
     )
+    print(f"TB: {tb}")
     # If empty, complain and exit
     if tb.empty:
         logger.error(
@@ -332,6 +342,7 @@ def create_psds_from_metric_table(database, network, station, session=None, loca
 
     # Initialize empty psd list
     psds = []
+    print(f"Length of Uncorrected_psds: {tb.uncorrected_psds}")
     # Loop through psds an append to new output list
     for i in range(len(tb.uncorrected_psds)):
         psd = database.extract_masks(tb.uncorrected_psds.iloc[i])
@@ -405,26 +416,26 @@ def gen_stats_plot_vals(psds, type, logger=None, database=None):
             if chan.endswith("Z"):
                 if type == "single10":
                     df2 = pd.DataFrame(data=per10.reshape(1, len(per10)), columns=per)
-                    df_z = df_z.append(df2, ignore_index=True)
+                    df_z = pd.concat([df_z, df2], ignore_index=True)
                 elif type == "single05":
                     df2 = pd.DataFrame(data=per05.reshape(1, len(per05)), columns=per)
-                    df_z = df_z.append(df2, ignore_index=True)
+                    df_z = pd.concat([df_z, df2], ignore_index=True)
                 elif type == "single90":
                     df2 = pd.DataFrame(data=per90.reshape(1, len(per90)), columns=per)
-                    df_z = df_z.append(df2, ignore_index=True)
+                    df_z = pd.concat([df_z, df2], ignore_index=True)
                 elif type == "single95":
                     df2 = pd.DataFrame(data=per95.reshape(1, len(per95)), columns=per)
-                    df_z = df_z.append(df2, ignore_index=True)
+                    df_z = pd.concat([df_z, df2], ignore_index=True)
                 elif type == "envelope10_90":
                     df2 = pd.DataFrame(data=per10.reshape(1, len(per10)), columns=per)
-                    df_z_en1 = df_z_en1.append(df2, ignore_index=True)
+                    df_z_en1 = pd.concat([df_z_en1, df2], ignore_index=True)
                     df2 = pd.DataFrame(data=per90.reshape(1, len(per90)), columns=per)
-                    df_z_en2 = df_z_en2.append(df2, ignore_index=True)
+                    df_z_en2 = pd.concat([df_z_en2, df2], ignore_index=True)
                 elif type == "envelope05_95":
                     df2 = pd.DataFrame(data=per05.reshape(1, len(per05)), columns=per)
-                    df_z_en1 = df_z_en1.append(df2, ignore_index=True)
+                    df_z_en1 = pd.concat([df_z_en1, df2], ignore_index=True)
                     df2 = pd.DataFrame(data=per95.reshape(1, len(per95)), columns=per)
-                    df_z_en2 = df_z_en2.append(df2, ignore_index=True)
+                    df_z_en2 = pd.concat([df_z_en2, df2], ignore_index=True)
 
             # For channels that endwith E or 2, structure the dataframes appropriately for the various options:
             # single10, single05, single90, single95, or the envelopes of 10 and 90 percentiles or 5 and 95 percentiles
@@ -432,52 +443,52 @@ def gen_stats_plot_vals(psds, type, logger=None, database=None):
 
                 if type == "single10":
                     df2 = pd.DataFrame(data=per10.reshape(1, len(per10)), columns=per)
-                    df_e = df_e.append(df2, ignore_index=True)
+                    df_e = pd.concat([df_e, df2], ignore_index=True)
                 elif type == "single05":
                     df2 = pd.DataFrame(data=per05.reshape(1, len(per05)), columns=per)
-                    df_e = df_e.append(df2, ignore_index=True)
+                    df_e = pd.concat([df_e, df2], ignore_index=True)
                 elif type == "single90":
                     df2 = pd.DataFrame(data=per90.reshape(1, len(per90)), columns=per)
-                    df_e = df_e.append(df2, ignore_index=True)
+                    df_e = pd.concat([df_e, df2], ignore_index=True)
                 elif type == "single95":
                     df2 = pd.DataFrame(data=per95.reshape(1, len(per95)), columns=per)
-                    df_e = df_e.append(df2, ignore_index=True)
+                    df_e = pd.concat([df_e, df2], ignore_index=True)
                 elif type == "envelope10_90":
                     df2 = pd.DataFrame(data=per10.reshape(1, len(per10)), columns=per)
-                    df_e_en1 = df_e_en1.append(df2, ignore_index=True)
+                    df_e_en1 = pd.concat([df_e_en1, df2], ignore_index=True)
                     df2 = pd.DataFrame(data=per90.reshape(1, len(per90)), columns=per)
-                    df_e_en2 = df_e_en2.append(df2, ignore_index=True)
+                    df_e_en2 = pd.concat([df_e_en2 ,df2], ignore_index=True)
                 elif type == "envelope05_95":
                     df2 = pd.DataFrame(data=per05.reshape(1, len(per05)), columns=per)
-                    df_e_en1 = df_e_en1.append(df2, ignore_index=True)
+                    df_e_en1 = pd.concat([df_e_en1, df2], ignore_index=True)
                     df2 = pd.DataFrame(data=per95.reshape(1, len(per95)), columns=per)
-                    df_e_en2 = df_e_en2.append(df2, ignore_index=True)
+                    df_e_en2 = pd.concat([df_e_en2 ,df2], ignore_index=True)
 
             # For channels that endwith N or 1, structure the dataframes appropriately for the various options:
             # single10, single05, single90, single95, or the envelopes of 10 and 90 percentiles or 5 and 95 percentiles
             elif chan.endswith("N") or chan.endswith("1"):
                 if type == "single10":
                     df2 = pd.DataFrame(data=per10.reshape(1, len(per10)), columns=per)
-                    df_n = df_n.append(df2, ignore_index=True)
+                    df_n = pd.concat([df_n, df2], ignore_index=True)
                 elif type == "single05":
                     df2 = pd.DataFrame(data=per05.reshape(1, len(per05)), columns=per)
-                    df_n = df_n.append(df2, ignore_index=True)
+                    df_n = pd.concat([df_n, df2], ignore_index=True)
                 elif type == "single90":
                     df2 = pd.DataFrame(data=per90.reshape(1, len(per90)), columns=per)
-                    df_n = df_n.append(df2, ignore_index=True)
+                    df_n = pd.concat([df_n, df2], ignore_index=True)
                 elif type == "single95":
                     df2 = pd.DataFrame(data=per95.reshape(1, len(per95)), columns=per)
-                    df_n = df_n.append(df2, ignore_index=True)
+                    df_n = pd.concat([df_n, df2], ignore_index=True)
                 elif type == "envelope10_90":
                     df2 = pd.DataFrame(data=per10.reshape(1, len(per10)), columns=per)
-                    df_n_en1 = df_n_en1.append(df2, ignore_index=True)
+                    df_n_en1 = pd.concat([df_n_en1, df2], ignore_index=True)
                     df2 = pd.DataFrame(data=per90.reshape(1, len(per90)), columns=per)
-                    df_n_en2 = df_n_en2.append(df2, ignore_index=True)
+                    df_n_en2 = pd.concat([df_n_en2, df2], ignore_index=True)
                 elif type == "envelope05_95":
                     df2 = pd.DataFrame(data=per05.reshape(1, len(per05)), columns=per)
-                    df_n_en1 = df_n_en1.append(df2, ignore_index=True)
+                    df_n_en1 = pd.concat([df_n_en1, df2], ignore_index=True)
                     df2 = pd.DataFrame(data=per95.reshape(1, len(per95)), columns=per)
-                    df_n_en2 = df_n_en2.append(df2, ignore_index=True)
+                    df_n_en2 = pd.concat([df_n_en2, df2], ignore_index=True)
 
     # Create output dictionary of values
     df_dict = {}

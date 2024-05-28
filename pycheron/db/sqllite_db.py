@@ -1398,6 +1398,19 @@ class Database:
         :rtype: `pandas.DataFrame`
 
         """
+        print("INSIDE GET METRIC")
+
+        
+
+        
+        # gets everything from specific metric table
+        tb = pd.read_sql_query("""select {cn} from {tn}""".format(tn=metric_name, cn="*"), self._conn)
+
+        #Try to get location out of dataframe and then use that
+        try:
+            location = tb["location"][0]
+        except KeyError:
+            location = None
 
         # if there is no location, set to --, otherwise it is unsearchable. networkNoiseModel does not have a location
         # so skip
@@ -1417,21 +1430,27 @@ class Database:
             "time": time,
             "session": session,
         }
-        # gets everything from specific metric table
-        tb = pd.read_sql_query("""select {cn} from {tn}""".format(tn=metric_name, cn="*"), self._conn)
 
         # loops thru input params
         for key, value in d.items():
             # if value is not set, or key is time, skip
             if value is not None and key != "time":
                 # matching input param to database values
-                tb = tb.loc[tb[key] == value]
+                if key == "location" and value != "--":
+                    temp = tb.loc[tb[key] == value]
+                    if temp.empty:
+                        temp = tb.loc[tb[key] == "--"]
+                    tb = temp
+                else:
+                    tb = tb.loc[tb[key] == value]
+                print(f"key: {key}, value: {value}, TB: {tb}")
             # if key is time, split into start and end time, then filter.
             elif value is not None and key == "time":
                 st = value[0]
                 et = value[1]
                 tb = tb.loc[tb["start_time"] >= st]
                 tb = tb.loc[tb["end_time"] <= et]
+                print(f"key: {key}, value: {value}, TB: {tb}")
 
         # if no results are returned
         if tb.empty:

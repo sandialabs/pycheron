@@ -41,9 +41,10 @@ from ispaq.evalresp import evalresp as read_Evalresp
 from obspy import UTCDateTime
 from pycheron.dataAcq.css import platform_file_path
 from pycheron.dataAcq.fap import fap_reader
+from pycheron.db.sqllite_db import Database
 
 
-def transferFunctionMetric(tr1, tr2, logger=None, database=None, evalresp=None):
+def transferFunctionMetric(tr1, tr2, logger=None, database_config=None, evalresp=None):
     """
     Calculates gain ratio, phase difference and MS coherence to assess the relationship between
     two SNCLs with the same network, station and channel but separate locations.
@@ -506,7 +507,8 @@ def transferFunctionMetric(tr1, tr2, logger=None, database=None, evalresp=None):
     }
 
     # Insert data into database if available
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(d)
 
     return d

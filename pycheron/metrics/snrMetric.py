@@ -36,6 +36,7 @@ from pycheron.psd.noise.deadChannel import DDT
 from pycheron.sigpro.STALTA import STALTA
 from pycheron.sigpro.triggerOnset import triggerOnset
 from pycheron.util.logger import Logger
+from pycheron.db.sqllite_db import Database
 
 
 def snrMetric(
@@ -46,7 +47,7 @@ def snrMetric(
     generateMasks=False,
     masksByTime=True,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
     Calculates Signal to Noise Ratio of an ObsPy Stream object using 'splitWindow', 'staltaTrigge' or 'pick options
@@ -379,7 +380,8 @@ def snrMetric(
             )
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(d)
 
     return d

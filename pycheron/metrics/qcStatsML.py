@@ -40,6 +40,7 @@ import numpy as np
 import os
 import sklearn
 from pycheron.sigpro.qcStatisticsML.feature_generator import FeatureGenerator
+from pycheron.db.sqllite_db import Database
 
 
 def evaluate(
@@ -174,7 +175,7 @@ def evaluate_stream(
     model_path="/sigpro/qcStatisticsML/models/1621881059_RF-Raw-QC_Balanced.joblib.pkl",
     window_size=60,
     stride_length=50,
-    database=None,
+    database_config=None,
 ):
     """
     Function to loop through each traces in stream object and evaluate whether it contains signal or an artifact using
@@ -238,7 +239,8 @@ def evaluate_stream(
             )
         )
 
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(artifact_list)
 
     return artifact_list
@@ -249,7 +251,7 @@ def evaluate_file(
     model_path="/sigpro/qcStatisticsML/models/1621881059_RF-Raw-QC_Balanced.joblib.pkl",
     window_size=60,
     stride_length=50,
-    database=None,
+    database_config=None,
 ):
     """
     Function to evaluate a user-provided file, convert it to a stream object, and loop through each trace in the
@@ -308,7 +310,7 @@ def evaluate_file(
         model_path=model_path,
         window_size=window_size,
         stride_length=stride_length,
-        database=database,
+        database=database_config,
     )
 
     return d
@@ -324,7 +326,7 @@ def evaluate_webservice(
     station=None,
     channel=None,
     location=None,
-    database=None,
+    database_config=None,
 ):
     """
     Function to evaluate a user-requested SNCL from IRIS webservices, convert it to a stream object, then loop through
@@ -396,7 +398,7 @@ def evaluate_webservice(
         model_path=model_path,
         window_size=window_size,
         stride_length=stride_length,
-        database=database,
+        database=database_config,
     )
 
     return d

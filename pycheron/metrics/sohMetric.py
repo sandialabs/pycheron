@@ -37,6 +37,7 @@ from pycheron.util.logger import Logger
 import os
 import warnings
 import numpy as np
+from pycheron.db.sqllite_db import Database
 
 
 def sohMetric(
@@ -46,7 +47,7 @@ def sohMetric(
     io_clock=True,
     timing_quality=True,
     logger=None,
-    database=None,
+    database_config=None,
     generateMasks=False,
     masksByTime=True,
     noGPSTimeThreshold=0,
@@ -632,7 +633,8 @@ def sohMetric(
             os.remove(st_filename)
 
     # Insert data into database if available
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(sohFlags)
 
     return sohFlags

@@ -35,6 +35,7 @@ import pandas as pd
 from pathlib2 import Path
 
 from pycheron.util.logger import Logger
+from pycheron.db.sqllite_db import Database
 
 __all__ = ["_repeatedAmplitudeMetric", "repeatedAmplitudeMetric"]
 
@@ -68,7 +69,7 @@ if platform.system() != "Windows":
             import repAmpsMetric
 
 
-def repeatedAmplitudeMetric(st, minRep=10, generateMasks=False, logger=None, fortran=False, database=None):
+def repeatedAmplitudeMetric(st, minRep=10, generateMasks=False, logger=None, fortran=False, database_config=None):
     """
     Wrapper for repeatedAmplitudeMetric so entire stream will be processed
 
@@ -165,7 +166,8 @@ def repeatedAmplitudeMetric(st, minRep=10, generateMasks=False, logger=None, for
         out.append(repAmps)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(out)
 
     return out
@@ -278,8 +280,8 @@ def _repeatedAmplitudeMetric(tr, minRep=10, generateMasks=False, logger=None, fo
     if generateMasks:
         if repAmps:
             df = pd.DataFrame(repAmps)
-            df.drop("value", 1)
-            df.drop("duration", 1)
+            df.drop("value", axis=1)
+            df.drop("duration", axis=1)
             m = df.to_dict()
         else:
             m = None

@@ -68,4 +68,6 @@ def test_calibration(input_file_name, expected_output):
         assert len(calibration[0]["detections"]) == 2
         utils.compare_dicts(expected_output, calibration[0]["detections"][0])
     else:
+        print(expected_output)
+        print(calibration[0])
         utils.compare_dicts(expected_output, calibration[0])

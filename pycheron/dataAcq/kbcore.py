@@ -57,7 +57,7 @@ def read_kb_core(kb_file, site_or_sitechan, logger=None):
         for line in kb:
             line_as_dict = _format_kb_core(line)
             if len(line_as_dict["sta"][0]) > 0:
-                df = df.append(line_as_dict, ignore_index=True)
+                df = pd.concat([df, line_as_dict], ignore_index=True)
     return df
 
 

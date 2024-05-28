@@ -36,6 +36,7 @@ from pycheron.rollseis.roll_median import roll_median
 from pycheron.rollseis.roll_sd import roll_sd
 from pycheron.util.logger import Logger
 from scipy.stats.mstats import mquantiles
+from pycheron.db.sqllite_db import Database
 
 
 def dailyDCOffSetMetric(
@@ -45,7 +46,7 @@ def dailyDCOffSetMetric(
     outlierThreshold=6.0,
     OutputType=1,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
     Metric to process a list of dictionaries with daily means from basicStatsMetric and return a vector of daily
@@ -233,7 +234,8 @@ def dailyDCOffSetMetric(
             )
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(metricList)
 
     return metricList

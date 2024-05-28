@@ -34,6 +34,7 @@ from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import text
 from cx_Oracle import makedsn
 from pycheron.util.logger import Logger
+from pycheron.db.sqllite_db import Database
 
 
 def dbIntegrityCheck(
@@ -46,7 +47,7 @@ def dbIntegrityCheck(
     CSSType="CSS",
     table_names=None,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
 
@@ -609,7 +610,8 @@ def dbIntegrityCheck(
             "integrity_results": basic_db_checks
         }
 
-    if database:
+    if database_config:
+        database = Database(**database_config)
         database.insert_metric(imet)
 
     #return basic_db_checks

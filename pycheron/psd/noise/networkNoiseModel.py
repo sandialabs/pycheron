@@ -221,7 +221,7 @@ def networkNoiseModel(
                 chan.append(getChannelName(stats[j]["snclq"]))
                 # adding modes to df
                 df2 = pd.DataFrame(data=mode.reshape(1, len(mode)), columns=per)
-                df_chan = df_chan.append(df2, ignore_index=True)
+                df_chan = pd.concat([df_chan, df2], ignore_index=True)
             # adding indexes
             df_chan["snclq"] = chan
 
@@ -237,7 +237,7 @@ def networkNoiseModel(
                         df_chan.iloc[k].values.reshape(1, len(df_chan.iloc[k].values)),
                         columns=list(df_chan.iloc[k].index),
                     )
-                    dfz_chan = dfz_chan.append(df, ignore_index=True)
+                    dfz_chan = pd.concat([dfz_chan, df], ignore_index=True)
                     # drop z channel from E/N df
                     df_chan_copy = df_chan_copy.drop(k)
             # reassigning the df with dropped Z channels to original df
@@ -266,14 +266,14 @@ def networkNoiseModel(
                     columns=per,
                     index=[station],
                 )
-                df_sta = df_sta.append(df_sta2)
+                df_sta = pd.concat([df_sta, df_sta2])
             if not dfz_chan.empty:
                 dfz_sta2 = pd.DataFrame(
                     data=mode_sta_z.values.reshape(1, len(mode_sta_z)),
                     columns=per,
                     index=[station],
                 )
-                dfz_sta = dfz_sta.append(dfz_sta2)
+                dfz_sta = pd.concat([dfz_sta, dfz_sta2])
 
         # Add stats, sta, z sta and nlnm to output
         df_dict = {}
@@ -467,7 +467,7 @@ def unique_stations_psds_stats(
             chan.append(getChannelName(stats[j]["snclq"]))
             # adding modes to df
             df2 = pd.DataFrame(data=mode.reshape(1, len(mode)), columns=per)
-            df_chan = df_chan.append(df2, ignore_index=True)
+            df_chan = pd.concat([df_chan, df2], ignore_index=True)
         # adding indexes
         df_chan["snclq"] = chan
 
@@ -483,7 +483,7 @@ def unique_stations_psds_stats(
                     df_chan.iloc[k].values.reshape(1, len(df_chan.iloc[k].values)),
                     columns=list(df_chan.iloc[k].index),
                 )
-                dfz_chan = dfz_chan.append(df, ignore_index=True)
+                dfz_chan = pd.concat([dfz_chan, df], ignore_index=True)
                 # drop z channel from E/N df
                 df_chan_copy = df_chan_copy.drop(k)
         # reassigning the df with dropped Z channels to original df
@@ -512,14 +512,14 @@ def unique_stations_psds_stats(
                 columns=per,
                 index=[station],
             )
-            df_sta = df_sta.append(df_sta2)
+            df_sta = pd.concat([df_sta, df_sta2])
         if dfz_chan.empty is False:
             dfz_sta2 = pd.DataFrame(
                 data=mode_sta_z.values.reshape(1, len(mode_sta_z)),
                 columns=per,
                 index=[station],
             )
-            dfz_sta = dfz_sta.append(dfz_sta2)
+            dfz_sta = pd.concat([dfz_sta, dfz_sta2])
     df_dict = {}
     df_dict["stats"] = stats
     df_dict["df_sta"] = df_sta

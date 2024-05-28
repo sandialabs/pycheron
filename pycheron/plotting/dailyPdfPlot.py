@@ -299,10 +299,10 @@ def dailyPdfplots(
                     diff, per = noiseDiff(period, pmode, m_power, m_period)
 
                     df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                    df = df.append(df2, ignore_index=True)
+                    df = pd.concat([df, df2], ignore_index=True)
 
                     df_line2 = pd.DataFrame(data=pmode.reshape(1, len(pmode)), columns=per)
-                    df_line = df_line.append(df_line2, ignore_index=True)
+                    df_line = pd.concat([df_line, df_line2], ignore_index=True)
 
                 # Drop and rename
                 df["Date"] = date_index
@@ -485,10 +485,10 @@ def dailyPdfplots(
                     diff, per = noiseDiff(period, pmode, m_power, m_period)
 
                     df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                    df = df.append(df2, ignore_index=True)
+                    df = pd.concat([df, df2], ignore_index=True)
 
                     df_line2 = pd.DataFrame(data=pmode.reshape(1, len(pmode)), columns=per)
-                    df_line = df_line.append(df_line2, ignore_index=True)
+                    df_line = pd.concat([df_line, df_line2], ignore_index=True)
 
                 # Drop and rename
                 df["Date"] = date_index
@@ -685,10 +685,10 @@ def dailyPdfplots(
                     diff, per = noiseDiff(period, pmode, m_power, m_period)
 
                     df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                    df = df.append(df2, ignore_index=True)
+                    df = pd.concat([df, df2], ignore_index=True)
 
                     df_line2 = pd.DataFrame(data=pmode.reshape(1, len(pmode)), columns=per)
-                    df_line = df_line.append(df_line2, ignore_index=True)
+                    df_line = pd.concat([df_line, df_line2], ignore_index=True)
 
                 # Drop and rename
                 df["Date"] = date_index
@@ -883,10 +883,10 @@ def get_pdf_plot_data(
                 diff, per = noiseDiff(period, pmode, m_power, m_period)
 
                 df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                df = df.append(df2, ignore_index=True)
+                df = pd.concat([df, df2], ignore_index=True)
 
                 df_line2 = pd.DataFrame(data=pmode.reshape(1, len(pmode)), columns=period)
-                df_line = df_line.append(df_line2, ignore_index=True)
+                df_line = pd.concat([df_line, df_line2], ignore_index=True)
 
             df["Date"] = date_index
             df = df.rename(df["Date"])
@@ -920,6 +920,7 @@ def _pdf_plots_from_database(
     banded_threshold=5,
     logger=None,
 ):
+    #import pdb; pdb.set_trace()
     if model == "gsn":
         # Create empty arrays to fill for thresholds
         data = []
@@ -980,10 +981,10 @@ def _pdf_plots_from_database(
                 diff, per = noiseDiff(period, pmode, m_power, m_period)
 
                 df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                df = df.append(df2, ignore_index=True)
+                df = pd.concat([df, df2], ignore_index=True)
 
                 df_line2 = pd.DataFrame(data=pmode.reshape(1, len(pmode)), columns=per)
-                df_line = df_line.append(df_line2, ignore_index=True)
+                df_line = pd.concat([df_line, df_line2], ignore_index=True)
 
             df["Date"] = date_index
             df = df.rename(df["Date"])
@@ -994,6 +995,7 @@ def _pdf_plots_from_database(
             df_line = df_line.drop(["Date"], axis=1)
 
             # dropping digitizer values
+            print(f"Network: {network}, Station: {station}, Channel: {channel}")
             df = df.drop([df.columns[-1]], axis=1)
             df = df.drop([df.columns[-2]], axis=1)
             df = df.drop([df.columns[-3]], axis=1)
@@ -1146,10 +1148,10 @@ def _pdf_plots_from_database(
                 diff, per = noiseDiff(period, pmode, m_power, m_period)
 
                 df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                df = df.append(df2, ignore_index=True)
+                df = pd.concat([df, df2], ignore_index=True)
 
                 df_line2 = pd.DataFrame(data=pmode.reshape(1, len(pmode)), columns=period)
-                df_line = df_line.append(df_line2, ignore_index=True)
+                df_line = pd.concat([df_line, df_line2], ignore_index=True)
 
             df["Date"] = date_index
             df = df.rename(df["Date"])
@@ -1328,10 +1330,10 @@ def _pdf_plots_from_database(
                 diff, per = noiseDiff(period, pmode, m_power, m_period)
 
                 df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                df = df.append(df2, ignore_index=True)
+                df = pd.concat([df, df2], ignore_index=True)
 
                 df_line2 = pd.DataFrame(data=pmode.reshape(1, len(pmode)), columns=per)
-                df_line = df_line.append(df_line2, ignore_index=True)
+                df_line = pd.concat([df_line, df_line2], ignore_index=True)
 
             df["Date"] = date_index
             df = df.rename(df["Date"])
@@ -1499,7 +1501,7 @@ def _find_nearest(array, value):
 
 
     """
-    if array.dtype != np.float:
+    if array.dtype != float:
         array = np.array(array, dtype=float)
     idx = (np.abs(array - float(value))).argmin()
     return idx

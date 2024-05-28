@@ -38,7 +38,6 @@ def get_latlon(
     :return: latitude and longitude values from obspy station
     :rtype: (obspy.core.inventory.util.Latitude, obspy.core.inventory.util.Longitude)
     """
-
     # If database connection
     if wfdb_conn and not manual:
         # Try reading from the site table and getting the lat, lon
@@ -64,7 +63,6 @@ def get_latlon(
             lon = conf[network][station]["lon"]
         # If excpetion, set lat, lon to 0
         except Exception as e:
-            print(f"Unable to find config for network {network} and station {station}. Assigning lat/lon as 0,0: {e}")
             lat, lon = 0.0, 0.0
         return lat, lon
     # If not database, or manual, get the metadata from IRIS
@@ -85,11 +83,11 @@ def get_latlon(
                 )
         # If exception note unable to get lat, lon values
         except Exception as e:
-            print(f"Unable to generate lat or lon values: {e}")
             return None, None
         # lat/lon information is found in station. Can not use get_coordinates() because this requires "channel" info
         # which isn't always provided when setting a database metric
         # Get lat, lon values from inventory object
+    
         lat = inv._networks[0]._stations[0]._latitude
         lon = inv._networks[0]._stations[0]._longitude
         return lat, lon
