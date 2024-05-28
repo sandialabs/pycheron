@@ -46,8 +46,10 @@ def maxRange(st, window=300, increment=150, database_config=None, logger=None):
     :type window: integer
     :param increment: number of seconds to advance window for each calculation (default = 150s)
     :type increment: integer
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
     :param logger: logger object
     :type logger: pycheron.util.logger.Logger
 

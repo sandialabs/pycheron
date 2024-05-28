@@ -42,8 +42,10 @@ def deadChannelMetric(st, logger=None, database_config=None):
     :type st: obspy.core.stream.Stream
     :param logger: logger object
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: list of dictionaries for each channel in stream with the following keys and types
 

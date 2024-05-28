@@ -68,8 +68,10 @@ def staltaMetric(
     :type processes: int
     :param fortran: Use Fortran libs or not. If libs will not compile or on a Windows Machine, set to False
     :type fortran: bool
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: list of dictionaries containing the following keys and types:
 

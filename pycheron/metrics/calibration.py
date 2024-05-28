@@ -1024,7 +1024,10 @@ def calibrationMetric(st, metric_store=None, debug=False, database_config=None, 
     """
     Wrapper function for calibration. Enable stream processing
     :param st: Stream object
-
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
     :return: List of calibration detections
     """
 

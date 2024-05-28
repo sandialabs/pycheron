@@ -58,8 +58,10 @@ def transferFunctionMetric(tr1, tr2, logger=None, database_config=None, evalresp
     :param evalresp: dict containing tuple of respfile information (file location, file, file type).
                      Either obtained from client.evalresp if None, or can be user supplied.
     :type evalresp: dict {channel (str): resp file information (file location, file, file type)}
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: (dict) - dictionary with the following keys and values:
 

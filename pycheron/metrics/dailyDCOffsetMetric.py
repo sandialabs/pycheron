@@ -66,8 +66,10 @@ def dailyDCOffSetMetric(
     :type OutputType: bool
     :param logger: If using a logger, (you must create one using the util.logger class)
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: A list or list of dictionaries is returned for the `last day - np.floor(outlierWindow/2)`
              (default 3rd day from last) in incoming data if outputType = 1

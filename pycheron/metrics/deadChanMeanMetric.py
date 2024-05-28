@@ -60,8 +60,10 @@ def deadChanMean(
     :type generateMasks: bool
     :param masksByTime: Generate a time-based qc mask list.
     :type masksByTime: bool
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: Returns list of dictionaries that includes the following keys and type for each trace within the stream:
 

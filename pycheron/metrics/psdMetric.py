@@ -119,8 +119,10 @@ def psdMetric(
     :param byHourOn: Turn on hourly thresholding checks for dead_channel_exponential, dead_channel_linear,
                                  and dead_channel_gsn checks
     :type byHourOn: bool
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: List of dictionaries containing the following keys and types:
 

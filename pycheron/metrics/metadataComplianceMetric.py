@@ -63,8 +63,10 @@ def seedChanSpsCompliance(st, sps_tolerance=0.01, database_config=None):
                           calculated from data. Also used for allowable tolerance when comparing to band code sps
                           ranges (default = 0.01 or 1%)
     :type sps_tolerance: float
-    :param database: Pycheron database to ingest metrics into
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return:
 

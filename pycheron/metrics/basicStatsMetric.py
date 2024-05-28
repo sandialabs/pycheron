@@ -81,8 +81,10 @@ def basicStatsMetric(
     :type masksByTime: bool
     :param logger: If using a logger, (you must create one using the util.logger class)
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: a dictionary with the following keys and types:
 

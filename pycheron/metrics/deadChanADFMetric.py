@@ -66,8 +66,10 @@ def deadChanADFMetric(
     :param use_thresh: String option for choosing whether to use the pvalue_threshold or the threshold for determining
                        whether null hypothesis fails. Options are `pvalue` or `diffs`.
     :type use_thresh: str
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
 
     :return: Returns list of dictionaries that includes the following for each trace within the stream:

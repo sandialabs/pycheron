@@ -83,8 +83,10 @@ def sohMetric(
     :type timing_quality: bool
     :param logger: logger object
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
     :param generateMasks: Return generated masks. Boolean mask types generated only, and generated for the whole data
                           that spans the issue, as flags don't indicate the exact record it was discovered.
     :type generateMasks: bool
