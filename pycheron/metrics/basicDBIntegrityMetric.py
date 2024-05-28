@@ -76,7 +76,7 @@ def dbIntegrityCheck(
     :param database_config: dictionary containing the necessary parameters to create
                             a pycheron Database object. 
                             These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
-    :type database: dict
+    :type database_config: dict
 
     Input format should provide info to create this information:
         dialect[+driver]://user:password@host:port/service name.

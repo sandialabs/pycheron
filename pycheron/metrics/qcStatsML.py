@@ -172,7 +172,7 @@ def evaluate(
 
 def evaluate_stream(
     st,
-    model_path="/sigpro/qcStatisticsML/models/1621881059_RF-Raw-QC_Balanced.joblib.pkl",
+    model_path="/sigpro/qcStatisticsML/models/1715965925_RF-Raw-QC_Balanced.joblib.pkl",
     window_size=60,
     stride_length=50,
     database_config=None,
