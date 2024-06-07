@@ -1174,7 +1174,6 @@ def _psdPlot_from_database(
             try:
                 network, station, channel, location, quality = parse_snclq(PSD[i][0][2][0])
             except IndexError:
-                print(f"GOING to try and parse PSD[i] {PSD[i]}")
                 network, station, channel, location = parse_snclq(PSD[i][0][2][0])
             starttime = PSD[i][0][3]
             endtime = PSD[i][-1][4]

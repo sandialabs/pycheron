@@ -1,6 +1,6 @@
 # general parameters
-output_dir : "/home/jbobeck/pycheron_WFpych"
-data : '/home/jbobeck/pycheron_WFpych'
+output_dir : "/Users/prkay/workspace/github-pycheron/pycheron/tutorials/data/pycheron_tutorial"
+data : '/Users/prkay/workspace/github-pycheron/pycheron/tutorials/data/pycheron_test'
 datatype: "dir"
 calcAll: True
 network: "UU"
@@ -14,14 +14,14 @@ generateMasks: True
 masksByTime: True
 log: "pycheron.log"
 fortran: True
-database: "pycheron.db"
+database: "pycheron_test0.db"
 session: "WFpych"
 overwrite: True
 to_csv: False
 stationStartAt: None
 
 # basicMetricStats
-calcBasic: False
+calcBasic: True
 rmsThreshold: 50000
 maxThreshold: None
 minThreshold: None
@@ -128,7 +128,7 @@ cal_metric_store: None
 
 # qcStatsML
 calcQcStatsML: False
-model_path: "/sigpro/qcStatisticsML/models/1621881059_RF-Raw-QC_Balanced.joblib.pkl"
+model_path: "/sigpro/qcStatisticsML/models/1715965925_RF-Raw-QC_Balanced.joblib.pkl"
 window_size: 60
 stride_length: 50
 
@@ -154,7 +154,7 @@ maxrange_window: 300
 maxrange_increment: 150
 
 # plots
-plots: False
+plots: True
 pdfModel: 'gsn'
 per_arr: None
 showNoiseModel: True
@@ -173,7 +173,7 @@ ylo: -200
 yhi: -50
 
 # manually insert lat/lon values in latlon_config.toml
-manual: False
+manual: True
 
 # wfdb values
 # connection to database
