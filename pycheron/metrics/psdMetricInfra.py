@@ -27,7 +27,7 @@
 # (End of Notice)
 ####################################################################################
 
-__all__ = ["psdMetric"]
+__all__ = ["psdMetricInfra"]
 
 import numpy as np
 from pycheron.psd.psdList import psdList
@@ -44,7 +44,7 @@ from pycheron.db.sqllite_db import Database
 warnings.filterwarnings("ignore")
 
 
-def psdMetric(
+def psdMetricInfra(
     st,
     expLoPeriod=None,
     expHiPeriod=100,
@@ -70,7 +70,7 @@ def psdMetric(
     overwrite=True,
 ):
     """
-    Performs a power spectral density analysis (based on McNamara method) on seismic traces within the user provided
+    Performs a power spectral density analysis (based on McNamara method) on infrasound traces within the user provided
     stream object and returns PSDs, PSD PDFs, and their corresponding statistics and masks (if desired).
 
     :param st: ObsPy Stream object
@@ -95,13 +95,13 @@ def psdMetric(
     :type dcExpThreshold: int
     :param dcExpThresholdHour: Dead channel exponent hourly threshold. Only used if byHourOn is True
     :type dcExpThresholdHour: int
-    :param pctBelowNoiseThreshold: Percent below NLNM threshold
+    :param pctBelowNoiseThreshold: Percent below IDC low noise model threshold
     :type pctBelowNoiseThreshold: int
-    :param pctAboveNoiseThreshold: Percent above NHNM threshold
+    :param pctAboveNoiseThreshold: Percent above IDC high noise model threshold
     :type pctAboveNoiseThreshold: int
-    :param pctBelowNoiseThresholdRESP: Percent below NLNM for bad response threshold
+    :param pctBelowNoiseThresholdRESP: Percent below IDC low noise model for bad response threshold
     :type pctBelowNoiseThresholdRESP: int
-    :param pctAboveNoiseThresholdRESP: Percent above NHNM for bad response threshold.
+    :param pctAboveNoiseThresholdRESP: Percent above IDC high noise model for bad response threshold.
     :type pctAboveNoiseThresholdRESP: int
     :param rmsThreshold: RMS threshold
     :type rmsThreshold: int
@@ -129,8 +129,8 @@ def psdMetric(
                    * start_time (`str`)
                    * end_time (`str`)
                    * snclq (`str`)
-                   * percent_above_nhnm (`float`)
-                   * percent_below_nlnm (`float`)
+                   * percent_above_idc_hhnm (`float`)
+                   * percent_below_idc_nlnm (`float`)
                    * dead_channel_exponent (`float`)
                    * dead_channel_linear (`float`)
                    * dead_channel_gsn (`bool`)
@@ -169,6 +169,10 @@ def psdMetric(
     https://cran.r-project.org/web/packages/IRISMustangMetrics/index.html) and augmented and adapted for use within
     Pycheron
 
+    * Extended for infrasound using the IDC high and IDC low noise models from
+    (Brown, D., Ceranna, L., Prior, M. et al. The IDC Seismic, Hydroacoustic and Infrasound Global Low and High Noise Models. 
+    Pure Appl. Geophys. 171, 361–375 (2014)).
+
     **Detailed Return Values:**
 
     .. list-table::
@@ -191,17 +195,17 @@ def psdMetric(
           - Station.Network.Channel.Location.Quality
           - `str`
           -
-        * - pct_above_nhnm
-          - percent above new high noise model
+        * - pct_above_idc_hnm
+          - percent above IDC high noise model
           - `float`
-          - "Percentage of PSD values that are above the new High Noise model for their frequency.
+          - "Percentage of PSD values that are above the IDC High Noise model for their frequency.
             Only frequencies less than `sample_rate`/2 are considered to avoid instrument response effects as you
             approach the nyquist frequency. This value is calculated over the entire time period"
             (https://cran.r-project.org/web/packages/IRISMustangMetrics/IRISMustangMetrics.pdf)
-        * - pct_below_nlnm
-          - percent below new low noise model
+        * - pct_below_idc_lnm
+          - percent below IDC low noise model
           - `float`
-          - "Percentage of PSD values that are below the new low noise model for their frequency.
+          - "Percentage of PSD values that are below the IDC low noise model for their frequency.
              Only frequencies less than `sample_rate`/2 are considered to avoid instrument response
              effects as you approach the nyquist frequency.
              This value is calculated over the entire time period
@@ -244,14 +248,14 @@ def psdMetric(
         * - dead_channel_gsn
           - dead channel metric gsn fit
           - `bool`
-          - Boolean metric using '0' or '1' to indicate if the average median deviation below the NLNM is sufficient to
+          - Boolean metric using '0' or '1' to indicate if the average median deviation below the IDC LNM is sufficient to
             label channel as dead or not. If average > 5.0, mark dead_channel_gsn value = 1 (TRUE) (dead), else
             mark value = 0 (FALSE) (not dead).
             (https://cran.r-project.org/web/packages/IRISMustangMetrics/IRISMustangMetrics.pdf)
         * - dead_channel_gsn_hourly
           - dead channel metric gsn fit for each hour PSD
           - `list`
-          - Boolean metric using '0' or '1' to indicate if the average median deviation below the NLNM is sufficient to
+          - Boolean metric using '0' or '1' to indicate if the average median deviation below the IDC LNM is sufficient to
             label channel as dead or not for each hourly PSD. If average > 5.0, mark dead_channel_gsn value = 1 (TRUE)
             (dead), else mark value = 0 (FALSE) (not dead).
         * - uncorrected_psds
@@ -386,8 +390,8 @@ def psdMetric(
             start_time: starttime,
             end_time: endtime,
             snclq: snclq,
-            percent_above_nhnm: avg_pctAbove,
-            percent_below_nlnm: avg_pctBelow,
+            percent_above_idc_lhnm: avg_pctAbove,
+            percent_below_idc_lnm: avg_pctBelow,
             dead_channel_exponent: dead_channel_exp,
             dead_channel_linear: dead_channel_lin,
             dead_channel_gsn: dead_channel_gsn,
@@ -432,7 +436,7 @@ def psdMetric(
     **Examples**
 
     .. code-block:: python
-
+        #TODO update this test data to an infrasound file & good threshold values
         #test data
         data = 'test/test_data/7a_cabn_bhe.884965.tar.mseed'
         #reading in stream
@@ -453,10 +457,10 @@ def psdMetric(
         >>> Endtime: 2013-11-02T00:00:10.225000Z
         print 'SNCLQ:', psd[0]['snclq']
         >>> SNCLQ: 7A.CABN..BHE
-        print 'Percent_above_nhnm:', psd[0]['percent_above_nhnm']
-        >>> Percent_above_nhnm: 14.940378770166003
-        print 'Percent_below_nlnm:', psd[0]['percent_below_nlnm']
-        >>> Percent_above_nhnm: 14.940378770166003
+        print 'percent_above_nhnm:', psd[0]['percent_above_nhnm']
+        >>> percent_above_nhnm: 14.940378770166003
+        print 'percent_below_nlnm:', psd[0]['percent_below_nlnm']
+        >>> percent_above_nhnm: 14.940378770166003
         print 'Dead_Channel_Exponent:', psd[0]['dead_channel_exponent']
         >>> Dead_Channel_Exponent: 0.43778437537150205
         print 'Dead_Channel_Linear:', psd[0]['dead_channel_linear']
@@ -473,7 +477,7 @@ def psdMetric(
 
     # Error check for empty stream objects
     if not st:
-        logger.warn("psdMetric(): stopping PSD calculation because stream is empty")
+        logger.warn("psdMetricInfra(): stopping PSD calculation because stream is empty")
         return
 
     # Initialize empty list to append information to
@@ -491,9 +495,9 @@ def psdMetric(
     # needs, else, use the user provided response
     if psds:
         if evalresp is None:
-            stats = psdStatistics(psds, evalresp=None, logger=logger)
+            stats = psdStatistics(psds, evalresp=None, logger=logger, special_handling='infrasound')
         else:
-            stats = psdStatistics(psds, evalresp=evalresp, logger=logger)
+            stats = psdStatistics(psds, evalresp=evalresp, logger=logger, special_handling='infrasound')
     # If nothing returned from psdList, error out
     else:
         logger.error("psdMetric(): No PSDS Computed")
@@ -718,14 +722,14 @@ def psdMetric(
 
         # Note that the dead_channel_exp and dead_channel_lin metrics are not valid for LH? or VH? channels,
         # thus another metric was added to deal with looking at a narrow band of the PDF to determine if
-        # the deviation below the NLNM is sufficient to label it as dead or not dead. This is a boolean metric using
+        # the deviation below the IDC LNM is sufficient to label it as dead or not dead. This is a boolean metric using
         # numeric indicators, called dead_channel_gsn
         #
         # "GSN dead channel metric steps:
         #  1) Only accept 1 SPS and greater sample rate
         #  2) Get the PDF matrix and slice the 4 to 8 second period
         #  3) Calculate the median value at each period step, writing result to a vector
-        #  4) Collect differences in the median vector from the equivalent NLNM vector [ NLNM(x) - Y(x) ]
+        #  4) Collect differences in the median vector from the equivalent IDC LNM vector [ LNM(x) - Y(x) ]
         #  5) Average the result of the differences
         #  6) If average > 5.0, mark dead_channel_gsn value = 1 (TRUE), else mark value = 0 (FALSE)"
         # (https://cran.r-project.org/web/packages/IRISMustangMetrics/IRISMustangMetrics.pdf)
@@ -746,11 +750,11 @@ def psdMetric(
             psdMedian = np.median(unHistogram(pdfSlice, unH_floor, 1), axis=0)
 
             # Ensure we have an average low dB value and if so, treat as a dead channel condition
-            # Grab out NLNM slice to match, reverse order to match how pulled in R code base
-            nlnmSlice = trStats["nlnm"][lastGSN:firstGSN][::-1]
+            # Grab out IDC LNM slice to match, reverse order to match how pulled in R code base
+            lnmSlice = trStats["nlnm"][lastGSN:firstGSN][::-1]
 
-            # Get difference between NLNM and values in psdMedian, then get average of differences (i.e., deviation)
-            diffToNM = nlnmSlice[~np.isnan(psdMedian)] - psdMedian
+            # Get difference between IDC LNM and values in psdMedian, then get average of differences (i.e., deviation)
+            diffToNM = lnmSlice[~np.isnan(psdMedian)] - psdMedian
             avgDiff = np.mean(diffToNM)
 
             # Compare average to 5 db, save 1 if condition is true, and 0 if condition is false
@@ -766,8 +770,8 @@ def psdMetric(
                 avgDiff = []
                 # Loop through individual PSD slices for the period band of interest pulled above
                 for j in range(len(psdSlice)):
-                    # Difference PSD from nlnmSlice for same periods, then take average
-                    diffToNM = nlnmSlice - psdSlice[j]
+                    # Difference PSD from lnmSlice for same periods, then take average
+                    diffToNM = lnmSlice - psdSlice[j]
                     avgDiff.append(np.mean(diffToNM))
 
                 # Loop through average diff and put
@@ -847,8 +851,8 @@ def psdMetric(
             # Filter out values in the dataframe to only include values where hits > 0
             pdfDf = pdfDF[pdfDF["hits"] > 0]
 
-            pctBelowNLNM = np.repeat(trStats["percent_below_nlnm"], len(trStats["noise_matrix_noise"]))
-            pctAboveNLNM = np.repeat(trStats["percent_above_nhnm"], len(trStats["noise_matrix_noise"]))
+            pctBelowLNM = np.repeat(trStats["percent_below_nlnm"], len(trStats["noise_matrix_noise"]))
+            pctAboveHNM = np.repeat(trStats["percent_above_nhnm"], len(trStats["noise_matrix_noise"]))
 
             # Boolean threshold checks
             # dead channel check
@@ -900,36 +904,36 @@ def psdMetric(
                     # Check threshold, if met, then apply 1 to indexes where low amp is occurring
                     if dead_channel_lin <= dcLinThreshold and avg_pctBelow > pctBelowNoiseThreshold:
                         lowAmpMask = np.zeros(len(cPsdDF))
-                        index_pct = np.where(pctBelowNLNM > pctBelowNoiseThreshold)
+                        index_pct = np.where(pctBelowLNM > pctBelowNoiseThreshold)
                         lowAmpMask[index_pct] = 1
 
                     # noise1
                     # Check threshold, if met, then apply 1 to indexes where noise is occurring
                     if dead_channel_exp < dcExpThreshold and avg_pctAbove > pctAboveNoiseThreshold:
                         noise1Mask = np.zeros(len(cPsdDF))
-                        index_pct = np.where(pctAboveNLNM > pctAboveNoiseThreshold)
+                        index_pct = np.where(pctAboveHNM > pctAboveNoiseThreshold)
                         noise1Mask[index_pct] = 1
 
                     # noise 2
                     # Check threshold, if met, then apply 1 to indexes where noise2 is occurring
                     if dead_channel_lin >= dcLinThreshold and avg_pctAbove > pctAboveNoiseThreshold:
                         noise2Mask = np.zeros(len(cPsdDF))
-                        index_pct = np.where(pctBelowNLNM <= pctBelowNoiseThreshold)
+                        index_pct = np.where(pctBelowLNM <= pctBelowNoiseThreshold)
                         noise2Mask[index_pct] = 1
 
                     # hiAmp
                     # Check threshold, if met, then apply 1 to indexes where high amp is occurring
                     if rms > rmsThreshold and avg_pctAbove > pctAboveNoiseThreshold:
                         hiAmpMask = np.zeros(len(cPsdDF))
-                        index_pct = np.where(pctBelowNLNM > pctBelowNoiseThreshold)
+                        index_pct = np.where(pctBelowLNM > pctBelowNoiseThreshold)
                         hiAmpMask[index_pct] = 1
 
                     # bad resp
                     # Check threshold, if met, then apply 1 to indexes where bad resp is occurring
                     if avg_pctAbove > pctAboveNoiseThresholdRESP or avg_pctBelow > pctBelowNoiseThresholdRESP:
                         badRESPMask = np.zeros(len(cPsdDF))
-                        index_pct = np.where(pctBelowNLNM > pctBelowNoiseThresholdRESP)
-                        index_pct_1 = np.where(pctAboveNLNM > pctAboveNoiseThresholdRESP)
+                        index_pct = np.where(pctBelowLNM > pctBelowNoiseThresholdRESP)
+                        index_pct_1 = np.where(pctAboveHNM > pctAboveNoiseThresholdRESP)
                         badRESPMask[index_pct] = 1
                         badRESPMask[index_pct_1] = 1
 
@@ -988,32 +992,32 @@ def psdMetric(
                     # low Amp
                     # Check threshold, if met, then create masks for times where issues occur
                     if dead_channel_lin <= dcLinThreshold and avg_pctBelow > pctBelowNoiseThreshold:
-                        index_pct = np.where(pctBelowNLNM > pctBelowNoiseThreshold)[0]
+                        index_pct = np.where(pctBelowLNM > pctBelowNoiseThreshold)[0]
                         lowAmpMask = samples2time(index_pct, samplingRate, starttime)
 
                     # noise1
                     # Check threshold, if met, then create masks for times where issues occur
                     if dead_channel_exp < dcExpThreshold and avg_pctAbove > pctAboveNoiseThreshold:
-                        index_pct = np.where(pctAboveNLNM > pctAboveNoiseThreshold)[0]
+                        index_pct = np.where(pctAboveHNM > pctAboveNoiseThreshold)[0]
                         noise1Mask = samples2time(index_pct, samplingRate, starttime)
 
                     # noise 2
                     # Check threshold, if met, then create masks for times where issues occur
                     if dead_channel_lin >= dcLinThreshold and avg_pctAbove > pctAboveNoiseThreshold:
-                        index_pct = np.where(pctBelowNLNM <= pctBelowNoiseThreshold)[0]
+                        index_pct = np.where(pctBelowLNM <= pctBelowNoiseThreshold)[0]
                         noise2Mask = samples2time(index_pct, samplingRate, starttime)
 
                     # hiAmp
                     # Check threshold, if met, then create masks for times where issues occur
                     if rms > rmsThreshold and avg_pctAbove > pctAboveNoiseThreshold:
-                        index_pct = np.where(pctBelowNLNM > pctBelowNoiseThreshold)[0]
+                        index_pct = np.where(pctBelowLNM > pctBelowNoiseThreshold)[0]
                         hiAmpMask = samples2time(index_pct, samplingRate, starttime)
 
                     # bad resp
                     # Check threshold, if met, then create masks for times where issues occur
                     if avg_pctAbove > pctAboveNoiseThresholdRESP or avg_pctBelow > pctBelowNoiseThresholdRESP:
-                        index_pct = np.where(pctBelowNLNM > pctBelowNoiseThresholdRESP)[0]
-                        index_pct_1 = np.where(pctAboveNLNM > pctAboveNoiseThresholdRESP)[0]
+                        index_pct = np.where(pctBelowLNM > pctBelowNoiseThresholdRESP)[0]
+                        index_pct_1 = np.where(pctAboveHNM > pctAboveNoiseThresholdRESP)[0]
                         badRESPMask = samples2time(index_pct, samplingRate, starttime)
                         badRESPMask = badRESPMask + samples2time(index_pct_1, samplingRate, starttime)
 
@@ -1053,8 +1057,8 @@ def psdMetric(
                 "start_time": starttime.isoformat(),
                 "end_time": endtime.isoformat(),
                 "snclq": snclq_tr,
-                "percent_above_nhnm": avg_pctAbove,
-                "percent_below_nlnm": avg_pctBelow,
+                "percent_above_idc_hnm": avg_pctAbove,
+                "percent_below_idc_lnm": avg_pctBelow,
                 "dead_channel_exponent": dead_channel_exp,
                 "dead_channel_exponent_hourly": dead_channel_exp_hour,
                 "dead_channel_linear": dead_channel_lin,
@@ -1089,8 +1093,8 @@ def psdMetric(
                 "start_time": starttime.isoformat(),
                 "end_time": endtime.isoformat(),
                 "snclq": snclq_tr,
-                "percent_above_nhnm": avg_pctAbove,
-                "percent_below_nlnm": avg_pctBelow,
+                "percent_above_idc_hnm": avg_pctAbove,
+                "percent_below_idc_lnm": avg_pctBelow,
                 "dead_channel_exponent": dead_channel_exp,
                 "dead_channel_linear": dead_channel_lin,
                 "dead_channel_gsn": dead_channel_gsn,

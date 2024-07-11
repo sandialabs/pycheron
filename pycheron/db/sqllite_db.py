@@ -226,7 +226,7 @@ class Database:
                                FOREIGN KEY (channel) REFERENCES pycheron(channel))"""
             )
 
-            # make dedChanADFMetric table
+            # make deadChanADFMetric table
             db.execute(
                 """create table deadChannel(
                                created VARCHAR PRIMARY KEY,
@@ -341,6 +341,52 @@ class Database:
                                FOREIGN KEY (channel) REFERENCES pycheron(channel))"""
             )
 
+              # make psdMetricInfra table
+            db.execute(
+                """create table psdMetricInfra(
+                               created VARCHAR PRIMARY KEY,
+                               network varchar,
+                               station varchar,
+                               channel varchar,
+                               location varchar,
+                               session varchar,
+                               snclq varchar,
+                               start_time varchar,
+                               end_time varchar,
+                               metric_name varchar,
+                               noise2_mask varchar,
+                               dead_channel_exponent varchar,
+                               percent_above_idc_hnm varchar,
+                               dead_channel_linear varchar,
+                               uncorrected_psds varchar,
+                               percent_below_idc_lnm varchar,
+                               noise1_mask varchar,
+                               bad_resp_mask varchar,
+                               pdfs varchar,
+                               hi_amp_mask varchar,
+                               dc_mask varchar,
+                               low_amp_mask varchar,
+                               corrected_psds varchar,
+                               dead_channel_gsn varchar,
+                               dead_channel_exponent_hourly varchar,
+                               dead_channel_linear_hourly varchar,
+                               dead_channel_gsn_hourly varchar,
+                               dead_chan_exp_hourly_masks varchar,
+                               dead_chan_lin_hourly_masks varchar,
+                               dead_chan_gsn_hourly_masks varchar,
+                               dead_channel varchar,
+                               low_amp varchar,
+                               noise1 varchar,
+                               noise2 varchar,
+                               highAmp varchar,
+                               badResp varchar,
+                               dead_channel_gsn_mask varchar,
+                               FOREIGN KEY (metric_name) REFERENCES pycheron(metric),
+                               FOREIGN KEY (network) REFERENCES pycheron(network),
+                               FOREIGN KEY (station) REFERENCES pycheron(station),
+                               FOREIGN KEY (channel) REFERENCES pycheron(channel))"""
+            )
+            
             # make repeatedAmplitudeMetric table
             db.execute(
                 """create table repeatedAmplitudeMetric(
@@ -654,6 +700,23 @@ class Database:
                                 dead_chan_lin_hourly_masks int,
                                 dead_chan_gsn_hourly_masks int,
 
+                                --psdMetricInfra
+                                dc_mask int,
+                                low_amp_mask int,
+                                noise1_mask int,
+                                noise2_mask int,
+                                hi_amp_mask int,
+                                bad_resp_mask int,
+                                percent_above_idc_hnm varchar,
+                                percent_below_idc_lnm varchar,
+                                dead_channel_exponent varchar,
+                                dead_channel_linear varchar,
+                                dead_channel_gsn varchar,
+                                --(hourly psd)
+                                dead_chan_exp_hourly_masks int,
+                                dead_chan_lin_hourly_masks int,
+                                dead_chan_gsn_hourly_masks int,
+
                                 --repeatedAmplitudeMetric
                                 repAmp int,
 
@@ -801,7 +864,7 @@ class Database:
                 """
             )
 
-            # make transferFucntionMetric table
+            # make transferFunctionMetric table
             db.execute(
                 """create table transferFunctionMetric(
                                created VARCHAR PRIMARY KEY,
@@ -1398,6 +1461,19 @@ class Database:
         :rtype: `pandas.DataFrame`
 
         """
+        print("INSIDE GET METRIC")
+
+        
+
+        
+        # gets everything from specific metric table
+        tb = pd.read_sql_query("""select {cn} from {tn}""".format(tn=metric_name, cn="*"), self._conn)
+
+        #Try to get location out of dataframe and then use that
+        try:
+            location = tb["location"][0]
+        except KeyError:
+            location = None
 
         # if there is no location, set to --, otherwise it is unsearchable. networkNoiseModel does not have a location
         # so skip
@@ -1417,21 +1493,27 @@ class Database:
             "time": time,
             "session": session,
         }
-        # gets everything from specific metric table
-        tb = pd.read_sql_query("""select {cn} from {tn}""".format(tn=metric_name, cn="*"), self._conn)
 
         # loops thru input params
         for key, value in d.items():
             # if value is not set, or key is time, skip
             if value is not None and key != "time":
                 # matching input param to database values
-                tb = tb.loc[tb[key] == value]
+                if key == "location" and value != "--":
+                    temp = tb.loc[tb[key] == value]
+                    if temp.empty:
+                        temp = tb.loc[tb[key] == "--"]
+                    tb = temp
+                else:
+                    tb = tb.loc[tb[key] == value]
+                print(f"key: {key}, value: {value}, TB: {tb}")
             # if key is time, split into start and end time, then filter.
             elif value is not None and key == "time":
                 st = value[0]
                 et = value[1]
                 tb = tb.loc[tb["start_time"] >= st]
                 tb = tb.loc[tb["end_time"] <= et]
+                print(f"key: {key}, value: {value}, TB: {tb}")
 
         # if no results are returned
         if tb.empty:
@@ -2365,6 +2447,17 @@ class Database:
                 "dead_chan_lin_hourly_masks",
                 "dead_chan_gsn_hourly_masks",
             ],
+             "psdMetricInfra": [
+                "dc_mask",
+                "low_amp_mask",
+                "noise1_mask",
+                "noise2_mask",
+                "hi_amp_mask",
+                "bad_resp_mask",
+                "dead_chan_exp_hourly_masks",
+                "dead_chan_lin_hourly_masks",
+                "dead_chan_gsn_hourly_masks",
+            ],
             "repeatedAmplitudeMetric": ["count"],
             "spikesMetric": ["total_spike_count"],
             "dailyPdfPlot": ["noise_masks", "microseism_masks", "banded_masks"],
@@ -2376,6 +2469,13 @@ class Database:
             "psdMetric": [
                 "percent_above_nhnm",
                 "percent_below_nlnm",
+                "dead_channel_exponent",
+                "dead_channel_linear",
+                "dead_channel_gsn",
+            ],
+            "psdMetricInfra": [
+                "percent_above_idc_hnm",
+                "percent_below_idc_lnm",
                 "dead_channel_exponent",
                 "dead_channel_linear",
                 "dead_channel_gsn",

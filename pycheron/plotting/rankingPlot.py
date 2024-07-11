@@ -67,7 +67,7 @@ def rankPlot(
     :type st: obspy.core.stream.Stream or pycheron.db.sqllite_db.Database
     :param f_name: name of output file to save ranking plot
     :type f_name: str
-    :param model: Model. "nlnm" (new low noise model) or "nnm" (network noise model).
+    :param model: Model. "nlnm" (new low noise model), "idc" (IDC low noise model, used for infrasound) or "nnm" (network noise model).
     :type model: str
     :param rank_by: Array of period values to rank the stations at. If none, default will be [1, 6.5, 30, 100]
     :type rank_by: numpy.ndarray
@@ -223,7 +223,7 @@ def rankPlot(
                             diff, per = noiseDiff(period, mode, m_power_z, m_period)
                             # adding data to DF
                             df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df_z = df_z.append(df2, ignore_index=True)
+                            df_z = pd.concat([df_z, df2], ignore_index=True)
 
                 # adding indexs
                 df_z["Station"] = sta_z
@@ -243,7 +243,7 @@ def rankPlot(
                             diff, per = noiseDiff(period, mode, m_power_en, m_period)
                             # adding data to DF
                             df2_e = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df_e = df_e.append(df2_e, ignore_index=True)
+                            df_e = pd.concat([df_e, df2_e], ignore_index=True)
 
                         # grabbing N channel
                         if chan.endswith("N"):
@@ -253,7 +253,7 @@ def rankPlot(
                             diff, per = noiseDiff(period, mode, m_power_en, m_period)
                             # adding data to DF
                             df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df_n = df_n.append(df2, ignore_index=True)
+                            df_n = pd.concat([df_n, df2], ignore_index=True)
                 # adding station as index
                 df_e["Station"] = sta_en
                 df_e = df_e.rename(df_e["Station"])
@@ -262,6 +262,7 @@ def rankPlot(
                 df_n["Station"] = sta_en
                 df_n = df_n.rename(df_n["Station"])
                 df_n = df_n.drop(["Station"], axis=1)
+    
         # If NLNM model
         if model == "nlnm":
             # Get time
@@ -348,7 +349,7 @@ def rankPlot(
                         diff, per = noiseDiff(period, mode, m_power, m_period)
                         # adding data to DF
                         df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                        df_n = df_n.append(df2, ignore_index=True)
+                        df_n = pd.concat([df_n, df2], ignore_index=True)
                     # E component
                     if chan.endswith("E"):
                         sta_e.append(stats[i]["snclq"].split(".")[1])
@@ -359,7 +360,7 @@ def rankPlot(
                         diff, per = noiseDiff(period, mode, m_power, m_period)
                         # adding data to DF
                         df2_e = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                        df_e = df_e.append(df2_e, ignore_index=True)
+                        df_e = pd.concat([df_e, df2_e], ignore_index=True)
                     # Z component
                     if chan.endswith("Z"):
                         sta_z.append(stats[i]["snclq"].split(".")[1])
@@ -370,7 +371,133 @@ def rankPlot(
                         diff, per = noiseDiff(period, mode, m_power, m_period)
                         # adding data to DF
                         df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                        df_z = df_z.append(df2, ignore_index=True)
+                        df_z = pd.concat([df_z, df2], ignore_index=True)
+
+                # adding station as index
+                df_z["Station"] = sta_z
+                df_z = df_z.rename(df_z["Station"])
+                df_z = df_z.drop(["Station"], axis=1)
+                # adding station as index
+                df_e["Station"] = sta_e
+                df_e = df_e.rename(df_e["Station"])
+                df_e = df_e.drop(["Station"], axis=1)
+                # adding station as index
+                df_n["Station"] = sta_n
+                df_n = df_n.rename(df_n["Station"])
+                df_n = df_n.drop(["Station"], axis=1)
+        
+        # If IDC model
+        if model == "idc":
+            # Get time
+            if database is not None:
+                time = (
+                    st[0].stats.starttime.isoformat(),
+                    st[0].stats.endtime.isoformat(),
+                )
+                # Get metric information if database available
+                tb = database.get_metric(
+                    "networkNoiseModel",
+                    network=network,
+                    station=station,
+                    channel=channel,
+                    location=location,
+                    session=session,
+                    time=time,
+                )
+
+                # if returns no data, calculate and insert into db
+                if tb.empty:
+                    networkNoiseModel(
+                        st,
+                        plot=True,
+                        fname=nnm_fname,
+                        station=station,
+                        network=network,
+                        channel=channel,
+                        session=session,
+                        database=database,
+                    )
+
+                    _rankPlot_from_database(
+                        st,
+                        f_name,
+                        model,
+                        rank_by,
+                        nnm_fname,
+                        station,
+                        network,
+                        channel,
+                        location,
+                        session,
+                    )
+                # Otherwise just get data
+                else:
+                    _rankPlot_from_database(
+                        st,
+                        f_name,
+                        model,
+                        rank_by,
+                        nnm_fname,
+                        station,
+                        network,
+                        channel,
+                        location,
+                        session,
+                    )
+            # If not database, then start calculating everything
+            else:
+                # Initialize lists for each component
+                sta_n = []
+                sta_e = []
+                sta_z = []
+                # Calculate psds, get freq, period
+                psds = psdList(st)
+                freq = psds[0][0][0]
+                period = 1 / freq
+                period = period[np.where(period > 0.1)]
+                # Calculate psd statistics
+                stats = psdStatistics(psds, evalresp=None, database=database, special_handling = 'infrasound')
+                # Loop through the stats and grab out the sta, chan, mode, period and power and difference between IDC
+                # Low Noise Model for each component
+                for i in range(len(stats)):
+                    chan = getChannelName(stats[i]["snclq"])
+                    # N component
+                    if chan.endswith("N"):
+                        sta_n.append(stats[i]["snclq"].split(".")[1])
+                        chan_n = chan
+                        mode = stats[i]["mode"][np.where(period)]
+                        m_period = 1 / stats[i]["noise_matrix_frequency"][np.where(period)]
+                        m_power = stats[i]["nlnm"][np.where(period)]
+                        # Get diff between model and psds
+                        diff, per = noiseDiff(period, mode, m_power, m_period)
+                        # adding data to DF
+                        df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
+                        df_n = pd.concat([df_n, df2], ignore_index=True)
+                    # E component
+                    if chan.endswith("E"):
+                        sta_e.append(stats[i]["snclq"].split(".")[1])
+                        chan_e = chan
+                        mode = stats[i]["mode"][np.where(period)]
+                        m_period = 1 / stats[i]["noise_matrix_frequency"][np.where(period)]
+                        m_power = stats[i]["nlnm"][np.where(period)]
+                        diff, per = noiseDiff(period, mode, m_power, m_period)
+                        # adding data to DF
+                        df2_e = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
+                        df_e = pd.concat([df_e, df2_e], ignore_index=True)
+                    # Z component or for infrasound just fill "F" component into Z component
+                    # TODO this should probably be updated to be less confusing, is a stopgap for now
+                    # As is we may want to remove E and N components as well or just make a separate
+                    # ranking plot function for infrasound data 
+                    if chan.endswith("Z") or chan.endswith("F"):
+                        sta_z.append(stats[i]["snclq"].split(".")[1])
+                        chan_z = chan
+                        mode = stats[i]["mode"][np.where(period)]
+                        m_period = 1 / stats[i]["noise_matrix_frequency"][np.where(period)]
+                        m_power = stats[i]["nlnm"][np.where(period)]
+                        diff, per = noiseDiff(period, mode, m_power, m_period)
+                        # adding data to DF
+                        df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
+                        df_z = pd.concat([df_z, df2], ignore_index=True)
 
                 # adding station as index
                 df_z["Station"] = sta_z
@@ -543,11 +670,11 @@ def _rankPlot_from_database(
                             diff, per = noiseDiff(period, mode, m_power_z, m_period)
                             # adding data to DF
                             df_z_temp = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df2 = df2.append(df_z_temp)
+                            df2 = pd.concat([df2, df_z_temp])
             df2 = df2.mode()
             if len(df2) > 1:
                 df2 = df2.mean()
-            df_z = df_z.append(df2, ignore_index=True)
+            df_z = pd.concat([df_z, df2], ignore_index=True)
         # adding indexs
         df_z["Station"] = sta_z
         df_z = df_z.rename(df_z["Station"])
@@ -570,7 +697,7 @@ def _rankPlot_from_database(
                             diff, per = noiseDiff(period, mode, m_power_en, m_period)
                             # adding data to DF
                             df2_e_temp = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df2_e = df2_e.append(df2_e_temp)
+                            df2_e = pd.concat([df2_e, df2_e_temp])
 
                         # grabbing N channel
                         if chan.endswith("N"):
@@ -580,17 +707,17 @@ def _rankPlot_from_database(
                             diff, per = noiseDiff(period, mode, m_power_en, m_period)
                             # adding data to DF
                             df2_n_temp = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-                            df2_n = df2_e.append(df2_n_temp)
+                            df2_n = pd.concat([df2_e, df2_n_temp])
 
             df2_e = df2_e.mode()
             if len(df2_e) > 1:
                 df2_e = df2_e.mean()
-            df_e = df_e.append(df2_e, ignore_index=True)
+            df_e = pd.concat([df_e, df2_e], ignore_index=True)
 
             df2_n = df2_n.mode()
             if len(df2_n) > 1:
                 df2_n = df2_n.mean()
-            df_n = df_n.append(df2_n, ignore_index=True)
+            df_n = pd.concat([df_n, df2_n], ignore_index=True)
 
         # adding station as index
         df_e["Station"] = sta_en
@@ -603,7 +730,16 @@ def _rankPlot_from_database(
 
     if model == "nlnm":
         psd_channels, stats, period = calc_stats_from_psds_rankplot(
-            database, network, channel, station, location, session
+            database, network, channel, station, location, session, special_handling=None
+        )
+        df_dict = calc_power_period_rankplot(stats, period)
+        df_z, df_e, df_n = drop_and_rename_rankplot(df_dict)
+        chan_z, chan_e, chan_n = df_dict["chan_z"], df_dict["chan_e"], df_dict["chan_n"]
+        snclq = str(psd_channels[0][0][0][0][0][2][0])
+
+    if model == "idc":
+        psd_channels, stats, period = calc_stats_from_psds_rankplot(
+            database, network, channel, station, location, session, special_handling='infrasound'
         )
         df_dict = calc_power_period_rankplot(stats, period)
         df_z, df_e, df_n = drop_and_rename_rankplot(df_dict)
@@ -665,7 +801,7 @@ def _rankPlot_from_database(
             )
 
 
-def calc_stats_from_psds_rankplot(database, network, channel, station=None, location=None, session=None):
+def calc_stats_from_psds_rankplot(database, network, channel, station=None, location=None, session=None, special_handling=None):
     """
     Function to calculate psd statistics from psds that exist within the database
     """
@@ -688,7 +824,10 @@ def calc_stats_from_psds_rankplot(database, network, channel, station=None, loca
     freq = np.array(psd_channels[0][0][0][0][0][0])
     period = 1 / freq
     period = period[np.where(period > 0.1)]
-    stats = psdStatistics(psd_channels[0][0][0], evalresp=None)
+    if special_handling is None:
+        stats = psdStatistics(psd_channels[0][0][0], evalresp=None, special_handling=None)
+    else: 
+        stats = psdStatistics(psd_channels[0][0][0], evalresp=None, special_handling='infrasound')
     return (psd_channels, stats, period)
 
 
@@ -718,7 +857,7 @@ def calc_power_period_rankplot(stats, period):
             diff, per = noiseDiff(period, mode, m_power, m_period)
             # adding data to DF
             df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-            df_n = df_n.append(df2, ignore_index=True)
+            df_n = pd.concat([df_n, df2], ignore_index=True)
         # E component
         if chan.endswith("E"):
             # Get sta, channel
@@ -732,9 +871,12 @@ def calc_power_period_rankplot(stats, period):
             diff, per = noiseDiff(period, mode, m_power, m_period)
             # adding data to DF
             df2_e = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-            df_e = df_e.append(df2_e, ignore_index=True)
-        # Z component
-        if chan.endswith("Z"):
+            df_e = pd.concat([df_e, df2_e], ignore_index=True)
+        # Z component or for infrasound just fill "F" component into Z component
+        # TODO this should probably be updated to be less confusing, is a stopgap for now
+        # As is we may want to remove E and N components as well or just make a separate
+        # ranking plot function for infrasound data 
+        if chan.endswith("Z") or chan.endswith("F"):
             # Get sta, channel
             sta_z.append(stats[i]["snclq"].split(".")[1])
             chan_z = chan
@@ -746,7 +888,7 @@ def calc_power_period_rankplot(stats, period):
             diff, per = noiseDiff(period, mode, m_power, m_period)
             # adding data to DF
             df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
-            df_z = df_z.append(df2, ignore_index=True)
+            df_z = pd.concat([df_z, df2], ignore_index=True)
     df_dict = {}
     df_dict["sta_n"], df_dict["sta_e"], df_dict["sta_z"] = sta_n, sta_e, sta_z
     df_dict["chan_n"], df_dict["chan_e"], df_dict["chan_z"] = chan_n, chan_e, chan_z

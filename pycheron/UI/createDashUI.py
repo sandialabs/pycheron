@@ -30,9 +30,10 @@
 import dash
 import json
 import os
-import dash_table
-import dash_html_components as html
-import dash_core_components as dcc
+from dash import dash_table
+#import dash as html
+from dash import html
+from  dash import  dcc
 import plotly.express as px
 import pandas as pd
 import plotly.graph_objs as go
@@ -1325,6 +1326,7 @@ def _connect(n_clicks):
 
 # ------ Map data functions and storage -----------
 def _make_data(db):
+    #import pdb; pdb.set_trace()
     pycheron_df = db.view()
 
     ########## Manipulate data ###########
@@ -1659,6 +1661,7 @@ def _get_network_selections(children, value):
     clicks = json.loads(children)
     if clicks["n_clicks"] > 0:
         db = Database(value).networks()
+        ret = [{"label": val, "value": val} for val in np.unique(db) if ":" not in val]        
         return [{"label": val, "value": val} for val in np.unique(db) if ":" not in val]
     else:
         return []
@@ -1680,6 +1683,7 @@ def _get_network(value):
     ],
 )
 def _make_map(map_data, clicks, network):
+    #import pdb; pdb.set_trace()
     if clicks is not None and network is not None:
         clicks_ = json.loads(clicks)
         value = json.loads(network)
@@ -1753,13 +1757,14 @@ def _get_plot_options(clicks, network, value):
         clicks_ = json.loads(clicks)
         network_ = json.loads(network)
         connect_ = value
-        if clicks_["n_clicks"] > 0:
+        if clicks_["n_clicks"] > 0 and network_["network"] is not None:
             # default values for network-channel/rank-selector disabled
+            #import pdb; pdb.set_trace()
             path = connect_.split("/")
-            p = ""
+            p0 = ""
             for i in range(1, len(path) - 1):
-                p = p + "/" + path[i]
-            p = p + "/" + network_["network"]
+                p0 = p0 + "/" + path[i]
+            p0 = p0 + "/" + network_["network"]
             network_opt = []
             network_opt.append({"label": "Station Ranking", "value": "Station Ranking"})
             ranks = [1, 6.5, 30, 100]
@@ -1767,8 +1772,8 @@ def _get_plot_options(clicks, network, value):
 
             db = Database(value)
             unique_nc = db.get_metric("psdMetric").groupby(["network", "channel"]).size().reset_index(name="Freq")
-            unique_nc = unique_nc.drop("Freq", 1)
-            unique_nc = unique_nc.drop("network", 1)
+            unique_nc = unique_nc.drop(labels=["Freq"], axis=1)
+            unique_nc = unique_nc.drop(labels=["network"], axis=1)
             unique_nc = unique_nc[~unique_nc.isin(["None"]).any(axis=1)]
             unique_collect = unique_nc["channel"].tolist()
             unique_nc_opt = [{"label": val, "value": val} for val in unique_collect]
@@ -1777,6 +1782,8 @@ def _get_plot_options(clicks, network, value):
             network_opt.append({"label": "Network Noise Model", "value": "Network Noise Model"})
 
             return network_opt, unique_nc_opt, rank_opt
+        
+    return dash.no_update, dash.no_update, dash.no_update
 
 
 # Disablers/Ablers
@@ -1843,18 +1850,25 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     df_z_avg = get_rank_day_averages(df_z_rank)
                     plot_dat = plot_grid_data_fill_in(df_z_avg)
                     ranker = float(df_z.columns[index_dz])
+                    next_index = float(df_z.columns[index_dz +1])
+                    prev_index = float(df_z.columns[index_dz - 1])
                 if df_e.empty is False:
                     index_de = _find_nearest(np.asarray(df_e.columns, dtype=float), rank)
                     df_e_rank = df_e.sort_values(by=[df_e.columns[index_de]])
                     df_e_avg = get_rank_day_averages(df_e_rank)
                     plot_dat = plot_grid_data_fill_in(df_e_avg)
                     ranker = float(df_e.columns[index_de])
+                    next_index = float(df_e.columns[index_de + 1])
+                    prev_index = float(df_e.columns[index_de - 1])
                 if df_n.empty is False:
                     index_dn = _find_nearest(np.asarray(df_n.columns, dtype=float), rank)
+                    print('i am index_dn', index_dn)
                     df_n_rank = df_n.sort_values(by=[df_n.columns[index_dn]])
                     df_n_avg = get_rank_day_averages(df_n_rank)
                     plot_dat = plot_grid_data_fill_in(df_n_avg)
                     ranker = float(df_n.columns[index_dn])
+                    next_index = float(df_n.columns[index_dn + 1])
+                    prev_index = float(df_n.columns[index_dn - 1])
                 plot_dat = plot_dat.reindex(index=plot_dat.index[::-1])
                 stations = plot_dat.axes[0].tolist()
                 seconds = plot_dat.axes[1].tolist()
@@ -1918,13 +1932,11 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                 # Correct size of bounding box for log scale
                 fig.add_shape(
                     type="rect",
-                    xref="x domain",
-                    yref="y domain",
-                    x0=ranker - ranker / 24,
-                    x1=ranker + ranker / 24,
-                    y0=-0.5,
-                    y1=len(y) - 0.5,
-                    line=dict(color="Black"),
+                    x0 = next_index,
+                    x1 = prev_index,
+                    y0 = -0.5,
+                    y1 = len(y) - 0.5,
+                    line=dict(color="Black")
                 )
                 fig.update_xaxes(type="log")
 
@@ -1993,7 +2005,7 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     x="Period",
                     y="Power (dB)",
                     color="label",
-                    labels={"Period": "Period (10^n)"},
+                    labels={"Period": "Period (s)"},
                     title=net_title,
                     height=600,
                     width=1200,
@@ -2066,11 +2078,11 @@ def _get_plot_options(network, station, clicks, value):
 
 @app.callback(
     [
-        Output("station-plot", "style"),
+        # Output("station-plot", "style"),
         Output("div-station-table", "style"),
         Output("div-soh-table", "style"),
         Output("div-soh-table1", "style"),
-        Output("station-plot", "src"),
+        # Output("station-plot", "src"),
         Output("station-table", "data"),
         Output("station-table", "columns"),
         Output("soh-table", "data"),
@@ -2095,7 +2107,7 @@ def _get_plot(network, clicks, station, plot, db_path):
         network_ = json.loads(network)
         connect_ = db_path
         # Initializing values
-        style_img = {"display": "none"}
+        style_img = {"display": ""}
         style_table = {"display": "none"}
         style_soh = {"display": "none"}
         # For gapMetricStation and sohMetricActivity
@@ -2110,13 +2122,15 @@ def _get_plot(network, clicks, station, plot, db_path):
         src = ""
         name = ""
         style_graph = {"display": "none", "margin-top": "5em"}
-        if clicks_["n_clicks"] > 0:
+        # import pdb; pdb.set_trace()
+        if clicks_["n_clicks"] > 0 and json.loads(station)["station"] is not None:
             station_ = json.loads(station)
 
             path = connect_.split("/")
             p = ""
             for i in range(1, len(path) - 1):
                 p = p + "/" + path[i]
+            
             p = p + "/" + network_["network"] + "/" + station_["station"]
             default_session = "WFpych"
             db = Database(db_path)
@@ -2191,7 +2205,7 @@ def _get_plot(network, clicks, station, plot, db_path):
                         color="sta",
                         line_group="hl",
                         hover_name="hl",
-                        labels={"Period": "Period (10^n)"},
+                        labels={"Period": "Period (s)"},
                         title=sta_title,
                         height=600,
                         width=1200,
@@ -2203,7 +2217,7 @@ def _get_plot(network, clicks, station, plot, db_path):
                 db = Database(db_path)
                 if plot == "sohMetric":
                     name = "State of Health Metric Activity Flags"
-                    style_soh = {"display": "block"}
+                    style_soh = {"display": "block", "overflow": "scroll"}
                     # Table 1, sohActivity
                     af = db.get_metric(
                         metric_name=plot + "ActivityFlags",
@@ -2241,11 +2255,11 @@ def _get_plot(network, clicks, station, plot, db_path):
                     cols = [{"name": i, "id": i} for i in metric.columns]
 
             return (
-                style_img,
+                # style_img,
                 style_table,
                 style_soh,
                 style_soh,
-                src,
+                # src,
                 tb,
                 cols,
                 tb1,
@@ -2254,8 +2268,9 @@ def _get_plot(network, clicks, station, plot, db_path):
                 cols2,
                 name,
                 fig,
-                style_graph,
+                style_graph
             )
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 # ---------- Channel Functions -------------------
@@ -2343,11 +2358,11 @@ def _get_metric_top_panel_selections(network, station, channel, clicks, value):
         Output("top-metric-table", "data"),
         Output("top-metric-table", "columns"),
         Output("top-metric-table-div", "style"),
-        Output("top-plot", "style_img"),
-        Output("top-plot2", "style_img"),
+        # Output("top-plot", "style_img"),
+        # Output("top-plot2", "style_img"),
         Output("div-image-holder-top", "style"),
-        Output("top-plot", "src"),
-        Output("top-plot2", "src"),
+        # Output("top-plot", "src"),
+        # Output("top-plot2", "src"),
         Output("channel-top-graph", "figure"),
     ],
     [
@@ -2410,11 +2425,11 @@ def _get_metric_botttom_panel_selections(network, station, channel, clicks, valu
         Output("bottom-metric-table", "data"),
         Output("bottom-metric-table", "columns"),
         Output("bottom-metric-table-div", "style"),
-        Output("bottom-plot", "style"),
-        Output("bottom-plot2", "style"),
+        # Output("bottom-plot", "style"),
+        # Output("bottom-plot2", "style"),
         Output("div-image-holder-bottom", "style"),
-        Output("bottom-plot", "src"),
-        Output("bottom-plot2", "src"),
+        # Output("bottom-plot", "src"),
+        # Output("bottom-plot2", "src"),
         Output("channel-bottom-graph", "figure"),
     ],
     [
@@ -2446,7 +2461,7 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
         metric_name = metric
         # Initialize values
         style = {"display": "none"}
-        style_img = {"display": "none"}
+        style_img = {"display": "block"}
         style_img2 = {"display": "none"}
         style_cont = {"display": "none"}
         columns = [
@@ -2712,17 +2727,17 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                 # Create dataFrame
                 dff = pd.DataFrame(db)
                 columns = [{"name": i, "id": i} for i in dff.columns]
-                data = dff.to_dict("rows")
+                data = dff.to_dict("records")
 
             return (
                 data,
                 columns,
                 style,
-                style_img,
-                style_img2,
+                # style_img,
+                # style_img2,
                 style_cont,
-                src,
-                src1,
+                # src,
+                # src1,
                 fig,
             )
     else:
@@ -2758,7 +2773,7 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                 "masks": "",
             }
         ]
-        return data, columns, style, style_img, style_img2, style_cont, src, src1, fig
+        return data, columns, style, style_cont, fig
 
 
 def _summary_report_query(db, set_weight=[1] * WEIGHT_LEN):
