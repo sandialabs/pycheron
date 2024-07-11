@@ -75,6 +75,26 @@ dcExpThresholdHour: 0.25
 dcLinThresholdHour: 2
 byHourOn: True
 
+# psdMetricInfra
+# TODO: Currently made same defaults until talk to infrasound folks 
+calcPsds: False
+expLoPeriod: None
+expHiPeriod: 100
+linLoPeriod: None
+linHiPeriod: 50
+evalresp: None
+dcExpThreshold: .3
+pctBelowNoiseThreshold: 20
+pctAboveNoiseThreshold: 20
+dcLinThreshold: 2
+num_gaps: 10
+pctBelowNoiseThresholdRESP: 90
+pctAboveNoiseThresholdRESP: 90
+processesPSD: 7
+dcExpThresholdHour: 0.25
+dcLinThresholdHour: 2
+byHourOn: True
+
 # repeatedAmplitude
 calcAmp: False
 minRep: 10
