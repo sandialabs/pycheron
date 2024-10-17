@@ -226,7 +226,7 @@ class Database:
                                FOREIGN KEY (channel) REFERENCES pycheron(channel))"""
             )
 
-            # make dedChanADFMetric table
+            # make deadChanADFMetric table
             db.execute(
                 """create table deadChannel(
                                created VARCHAR PRIMARY KEY,
@@ -341,6 +341,52 @@ class Database:
                                FOREIGN KEY (channel) REFERENCES pycheron(channel))"""
             )
 
+              # make psdMetricInfra table
+            db.execute(
+                """create table psdMetricInfra(
+                               created VARCHAR PRIMARY KEY,
+                               network varchar,
+                               station varchar,
+                               channel varchar,
+                               location varchar,
+                               session varchar,
+                               snclq varchar,
+                               start_time varchar,
+                               end_time varchar,
+                               metric_name varchar,
+                               noise2_mask varchar,
+                               dead_channel_exponent varchar,
+                               percent_above_idc_hnm varchar,
+                               dead_channel_linear varchar,
+                               uncorrected_psds varchar,
+                               percent_below_idc_lnm varchar,
+                               noise1_mask varchar,
+                               bad_resp_mask varchar,
+                               pdfs varchar,
+                               hi_amp_mask varchar,
+                               dc_mask varchar,
+                               low_amp_mask varchar,
+                               corrected_psds varchar,
+                               dead_channel_gsn varchar,
+                               dead_channel_exponent_hourly varchar,
+                               dead_channel_linear_hourly varchar,
+                               dead_channel_gsn_hourly varchar,
+                               dead_chan_exp_hourly_masks varchar,
+                               dead_chan_lin_hourly_masks varchar,
+                               dead_chan_gsn_hourly_masks varchar,
+                               dead_channel varchar,
+                               low_amp varchar,
+                               noise1 varchar,
+                               noise2 varchar,
+                               highAmp varchar,
+                               badResp varchar,
+                               dead_channel_gsn_mask varchar,
+                               FOREIGN KEY (metric_name) REFERENCES pycheron(metric),
+                               FOREIGN KEY (network) REFERENCES pycheron(network),
+                               FOREIGN KEY (station) REFERENCES pycheron(station),
+                               FOREIGN KEY (channel) REFERENCES pycheron(channel))"""
+            )
+            
             # make repeatedAmplitudeMetric table
             db.execute(
                 """create table repeatedAmplitudeMetric(
@@ -654,6 +700,23 @@ class Database:
                                 dead_chan_lin_hourly_masks int,
                                 dead_chan_gsn_hourly_masks int,
 
+                                --psdMetricInfra
+                                dc_mask int,
+                                low_amp_mask int,
+                                noise1_mask int,
+                                noise2_mask int,
+                                hi_amp_mask int,
+                                bad_resp_mask int,
+                                percent_above_idc_hnm varchar,
+                                percent_below_idc_lnm varchar,
+                                dead_channel_exponent varchar,
+                                dead_channel_linear varchar,
+                                dead_channel_gsn varchar,
+                                --(hourly psd)
+                                dead_chan_exp_hourly_masks int,
+                                dead_chan_lin_hourly_masks int,
+                                dead_chan_gsn_hourly_masks int,
+
                                 --repeatedAmplitudeMetric
                                 repAmp int,
 
@@ -801,7 +864,7 @@ class Database:
                 """
             )
 
-            # make transferFucntionMetric table
+            # make transferFunctionMetric table
             db.execute(
                 """create table transferFunctionMetric(
                                created VARCHAR PRIMARY KEY,
@@ -2385,6 +2448,17 @@ class Database:
                 "dead_chan_lin_hourly_masks",
                 "dead_chan_gsn_hourly_masks",
             ],
+             "psdMetricInfra": [
+                "dc_mask",
+                "low_amp_mask",
+                "noise1_mask",
+                "noise2_mask",
+                "hi_amp_mask",
+                "bad_resp_mask",
+                "dead_chan_exp_hourly_masks",
+                "dead_chan_lin_hourly_masks",
+                "dead_chan_gsn_hourly_masks",
+            ],
             "repeatedAmplitudeMetric": ["count"],
             "spikesMetric": ["total_spike_count"],
             "dailyPdfPlot": ["noise_masks", "microseism_masks", "banded_masks"],
@@ -2396,6 +2470,13 @@ class Database:
             "psdMetric": [
                 "percent_above_nhnm",
                 "percent_below_nlnm",
+                "dead_channel_exponent",
+                "dead_channel_linear",
+                "dead_channel_gsn",
+            ],
+            "psdMetricInfra": [
+                "percent_above_idc_hnm",
+                "percent_below_idc_lnm",
                 "dead_channel_exponent",
                 "dead_channel_linear",
                 "dead_channel_gsn",

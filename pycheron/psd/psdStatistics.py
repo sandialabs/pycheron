@@ -34,12 +34,13 @@ __all__ = ["psdStatistics"]
 
 from pycheron.psd.noise.getNoise import getNoise
 from pycheron.psd.noise.noiseModel import noiseModel
+from pycheron.psd.noise.noiseModelInfra import noiseModelInfra
 from pycheron.psd.getPDF import getPDF
 import numpy as np
 from pycheron.util.logger import Logger
 
 
-def psdStatistics(psds, evalresp=None, logger=None, database=None):
+def psdStatistics(psds, evalresp=None, logger=None, database=None, special_handling=None):
     """
     Calculates basic statistics (e.g., mean, median, max) as well as envelopes (95,5; 90, 10) of a set of PSDs.
 
@@ -54,6 +55,11 @@ def psdStatistics(psds, evalresp=None, logger=None, database=None):
     :type logger: pycheron.util.logger.Logger
     :param database: Database object
     :type database: pycheron.db.sqllite_db.Database
+    :param special_handling: Switches on customized handling for data other than seismic. 
+        Can be either None or 'infrasound'. None option should be used for seismic data, and 'infrasound' option
+        for infrasound data. Other options could be added in the future. Infrasound option could be used for 
+        hydrophone data as well (for response removal), but also would compare PSD PDFs to IDC infra models.
+    :type special_handling: string
 
     :return: List of dictionaries (one for each trace in stream) containing the
              following keys and types:
@@ -71,10 +77,18 @@ def psdStatistics(psds, evalresp=None, logger=None, database=None):
              * mean (`numpy.array`) – mean power level at each frequency
              * median (`numpy.array`) – median power level at each frequency
              * mode (`numpy.array`) – mode of power level at each frequency (obtained from pdfMatrix)
-             * nlnm (`numpy.array`) – low noise model power level at each frequency
+             * nlnm (`numpy.array`) – low noise model power level at each frequency. 
+               # If special_handling = 'infrasound' uses IDC low noise from Brown et. al. 2012 as described in
+               # noiseModelInfra. Otherwise uses Peterson models as described in noiseModel. 
              * nhnm (`numpy.array`) – high noise model power level at each frequency
+               # If special_handling = 'infrasound' uses IDC high noise from Brown et. al. 2012 as described in
+               # noiseModelInfra. Otherwise uses Peterson models as described in noiseModel. 
              * percent_above_nhnm (`numpy.array`) – percent of PSDs above the high noise model at each frequency
+               # If special_handling = 'infrasound' uses IDC high noise from Brown et. al. 2012 as described in
+               # noiseModelInfra. Otherwise uses Peterson models as described in noiseModel. 
              * percent_below_nlnm (vector) – percent of PSDS below the low noise model at each frequency
+               # If special_handling = 'infrasound' uses IDC low noise from Brown et. al. 2012 as described in
+               # noiseModelInfra. Otherwise uses Peterson models as described in noiseModel. 
              * percent_95 (`numpy.array`) - 95 percentile power level at each frequency
              * percent_90 (`numpy.array`) - 90 percentile power level at each frequency
              * percent_10 (`numpy.array`) - 10 percentile power level at each frequency
@@ -141,8 +155,8 @@ def psdStatistics(psds, evalresp=None, logger=None, database=None):
         print 'Mean:', stats[0]['Mean']  #Mean power level at each frequency
         print 'Median:', stats[0]['Median']  #Median power level at each frequency
         print 'Mode:', stats[0]['Mode']  #Mode power level at each frequency
-        print 'Percent_above_NHNM:', stats[0]['Percent_above_NHNM']  #Percent of PSDs above NHNM
-        print 'Percent_below_NLNM:', stats[0]['Percent_below_NLNM']  #Percent of PSDs below NLNM
+        print 'Percent_above_NHNM:', stats[0]['Percent_above_NHNM']  #Percent of PSDs above NHNM/IDC high noise model
+        print 'Percent_below_NLNM:', stats[0]['Percent_below_NLNM']  #Percent of PSDs below NLNM/IDC low noise model
         print '95percent:', stats[0]['95percent']  #95 percentile
         print '90percent:', stats[0]['90percent']  #90 percentile
         print '10percent:', stats[0]['10percent']  #10 percentile
@@ -171,13 +185,15 @@ def psdStatistics(psds, evalresp=None, logger=None, database=None):
 
     # Get list of frequencies for associated PSDs as well as noise matrices for each corrected PSD
     # (for each trace in stream)
-    if psds:
-        f, n, psds = getNoise(psds, evalresp, logger)
+    if psds and special_handling is None:
+        f, n, psds = getNoise(psds, evalresp, logger, units='acc')
+    elif psds and special_handling is 'infrasound':
+        f, n, psds = getNoise(psds, evalresp, logger, units='def')
     else:
         logger.error("psdStatistics(): psd input is empty or zero")
         return k
 
-    # Doing this again because getNoise can also return and empty psdList
+    # Doing this again because getNoise can also return an empty psdList
     if not f:
         logger.error("psdStatistics(): psd input is empty or zero")
         return k
@@ -220,8 +236,12 @@ def psdStatistics(psds, evalresp=None, logger=None, database=None):
             col10[i] = np.nanpercentile(noise[:, i], 10)
 
         # ------------Calculate pctAboveNHNM and pctBelowNLNM-----------------------
-        # Obtain high and low noise model based on specific frequencies requested in freq argument
-        nlnm, nhnm = noiseModel(freq)
+        # Obtain high and low noise model based on specific frequencies requested in freq argument. If special handling is
+        # infrasound, use IDC noise models, otherwise use Peterson noise models
+        if special_handling is 'infrasound':
+            nlnm, nhnm = noiseModelInfra(freq)
+        else:
+            nlnm, nhnm = noiseModel(freq)
 
         # "Calculate percent metrics based on frequencies that have a noise model value and noise value -- this is in R
         # code though I'm not sure how often this will actually be different than ncol but added it anyway
@@ -259,17 +279,21 @@ def psdStatistics(psds, evalresp=None, logger=None, database=None):
         # For mode, we need to convert to the discretized pdfMatrix that contains the count of PSDs with a given value
         # within each bin. The mode then is just the bin with the highest count, as the mode is the value that occurs
         # most frequently.
-        # Good Default dbBins: lo=-200, hi=-50, binsize=1, which is like McNamara psds
-        # Calculate hi and lo values based on noise matrix, use binsize = 1
+        # Good Default dbBins: lo=-200, hi=-50, binsize=1, which is like McNamara psds for seismic, dbBins for infra might be better set at lo=-100, hi=40, binsize=1
+        # Calculate hi and lo values based on noise matrix, use binsize = 1 (hard-coded)
         try:
             lo = np.floor(np.nanmin(noise))
             hi = np.ceil(np.nanmax(noise))
 
             # just incase lo and hi == nan or inf
-            if np.isnan(lo) or np.isinf(lo):
+            if np.isnan(lo) or np.isinf(lo) and special_handling is None:
                 lo = -200
-            if np.isnan(hi) or np.isinf(lo):
+            elif np.isnan(lo) or np.isinf(lo) and special_handling is 'infrasound':
+                lo = -100
+            if np.isnan(hi) or np.isinf(hi) and special_handling is None:
                 hi = -50
+            elif np.isnan(hi) or np.isinf(hi) and special_handling is 'infrasound':
+                hi = 40
 
         except ValueError:
             lo = -200

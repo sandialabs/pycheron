@@ -45,6 +45,7 @@ from pycheron.util.masks import consecutive
 from pycheron.util.format import parse_snclq
 from pycheron.util.getMPeriod import get_m_period
 from pycheron.metrics.psdMetric import psdMetric
+from pycheron.metrics.psdMetricInfra import psdMetricInfra
 
 
 __all__ = [
@@ -78,14 +79,14 @@ def dailyPdfplots(
     logger=None,
 ):
     """
-    Plots a color grid of the daily PDF Mode differences from noise model (nlnm, gsn, or network). Colorgrid plots show
+    Plots a color grid of the daily PDF Mode differences from noise model (nlnm, idc lnm, gsn, or network). Colorgrid plots show
     the magnitude of deviation (in decibels (dB)) of a station’s daily PSD PDF mode from the New Low Noise Model (NLNM)
-    (Peterson, 1993), the Global Seismic Network 2004 model (obtained from ported code base), or a user
+    (Peterson, 1993), the IDC Low Noise Model (Brown et. al., 2012), the Global Seismic Network 2004 model (obtained from ported code base), or a user
     provided/calculated network noise model.
 
     :param st: Obspy stream object or Database Object
     :type st: obspy.core.stream.Stream or pycheron.db.sqllite_db.Database
-    :param model: Noise Model to use in differencing from the PDF mode. Options are "gsn", "nlnm", or "network".
+    :param model: Noise Model to use in differencing from the PDF mode. Options are "gsn", "nlnm", "idc", or "network".
                   Using "network" calls networkNoiseModel.py and creates one on the fly or uses input dictionary
                   from the output of a pre-existing network noise model.
     :type model: str
@@ -145,13 +146,13 @@ def dailyPdfplots(
     **Parameter Notes**
 
     * diff_threshold (`int`):
-          * Threshold to use to trigger frequency masks. This is the difference from the nlnm,
+          * Threshold to use to trigger frequency masks. This is the difference from the nlnm, idc lnm,
             gsn, or network noise models desired to trigger a mask. DEFAULT = 50 and is probably
             sufficient for most cases as this will be the red color and above within the color
             grid plots. This is used as a greater than or equal to threshold.
     * micro_threshold (`int`):
           * Threshold to use to trigger masks when microseism isn't recording healthy energy.
-            This threshold is based on difference from nlnm, gsn, or network noise models desired
+            This threshold is based on difference from nlnm, idc lnm, gsn, or network noise models desired
             to trigger a mask. DEFAULT = 10, so the two darkest blues on the colorgrid plots.
             This will be utilized as a less than or equal to threshold.
     * banded_threshold (`int`):
@@ -597,7 +598,189 @@ def dailyPdfplots(
                     data.append(d)
                     print("dailyPDFPlot Info: No threshold created.")
                     continue
+        
+        # If model idc
+        elif model == "idc":
+            # Initialize empty arrays for filling in periods/frequencies and also to fill dictionary
+            data = []
+            period_masks = []
+            freq_start = []
+            freq_end = []
+            # Loop through traces and parse out snclq object
+            for stream in newStreams:
+                tr = stream[0]
 
+                network, station, channel, location, quality = parse_snclq(stream[0].get_id())
+
+                # If database object, check to see if we already have the psds calculated
+                if database is not None:
+                    time = (
+                        tr.stats.starttime.isoformat(),
+                        tr.stats.endtime.isoformat(),
+                    )
+                    tb = database.get_metric(
+                        "psdMetricInfra",
+                        network=network,
+                        station=station,
+                        channel=channel,
+                        location=location,
+                        session=session,
+                        time=time,
+                    )
+
+                    # if returns no data, calculate and insert into db
+                    if tb.empty or len(tb.index) != len(stream):
+                        psds = psdList(stream)
+                        psds_metrics_for_db = psdMetricInfra(stream)
+                        database.insert_metric(psds_metrics_for_db)
+                        freq = psds[0][0][0]
+                        period = 1 / freq
+
+                    else:
+                        tb_psds = tb.uncorrected_psds[tb.channel == channel]
+                        psds = []
+                        for j in range(len(tb_psds)):
+                            psd = database.extract_masks(tb_psds.iloc[j])
+                            psds.append(psd)
+
+                        freq = np.asarray(psds[0][0][0])
+                        period = 1 / freq
+                # If database not defined, then calculate psds, grab out freq and period
+                else:
+                    psds = psdList(stream)
+                    freq = psds[0][0][0]
+                    period = 1 / freq
+                # Calculate statistics
+                stats = psdStatistics(psds, logger=logger, database=database, special_handling='infrasound')
+                # Create empty dataframes to fill
+                df_line = pd.DataFrame()
+                df = pd.DataFrame()
+                date_index = []
+                # loop through traces in NEW stream
+                for val in range(len(stream)):
+                    pmode = stats[val]["mode"]
+                    m_power = stats[val]["nlnm"]
+                    # m_period = 1 / stats[j]["noise_matrix_frequency"]
+                    # TODO: Should this be a np array? or a list? Originally a list, but functionality was broken
+                    m_period = [1.0 / x for x in stats[val]["noise_matrix_frequency"]]
+                    date = str(stream[val].stats.starttime)
+                    date_index.append(date[0:10])
+                    # loop through all periods and find nearest in nlnm model
+                    diff, per = noiseDiff(period, pmode, m_power, m_period)
+
+                    df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
+                    df = pd.concat([df, df2], ignore_index=True)
+
+                    df_line2 = pd.DataFrame(data=pmode.reshape(1, len(pmode)), columns=per)
+                    df_line = pd.concat([df_line, df_line2], ignore_index=True)
+
+                # Drop and rename
+                df["Date"] = date_index
+                df = df.rename(df["Date"])
+                df = df.drop(["Date"], axis=1)
+
+                df_line["Date"] = date_index
+                df_line = df_line.rename(df_line["Date"])
+                df_line = df_line.drop(["Date"], axis=1)
+
+                # Drop digitizer values
+                df = df.drop([df.columns[-1]], axis=1)
+                df = df.drop([df.columns[-2]], axis=1)
+
+                snclq = stream[0].get_id()
+
+                # Plot colorgrid and mode timelines
+                update_grid = plot_grid(df, snclq, plot="dailyPDF", f_name=f_name_grid)
+                update_line = _plot_colorline(df_line, snclq, per_arr, f_name=f_name_line)
+                try:
+                    ### Trigger based on large differences from noise model ###
+                    # Trigger mask output based on diff_threshold value -- looks for
+                    thresh = np.where(df >= diff_threshold)[1]
+                    # Get consecutive indices out
+                    thresh_cons = consecutive(thresh, stepsize=1)
+
+                    # Loop through consecutive indices and find where freq values where threshold exceeds those values
+                    for k in range(len(thresh_cons)):
+                        period_masks.append(df.columns[thresh_cons[k]])
+
+                    # Grab out period masks and aggregate them into start/stop frequencies
+                    for k in range(len(period_masks)):
+                        freq_start.append(1 / float(period_masks[k][0]))
+                        freq_end.append(1 / float(period_masks[k][-1]))
+
+                    ### Trigger based on unhealthy differences from noise model in the microseism band ###
+                    # Microseism band is 0.1 - 1.0 Hz, which translates to 1 - 10s periods
+                    # Find indices that are between 1-10s period so that we can subset the dataframe accordingly
+                    # First convert columns to list, then convert strings to floats
+                    cols = list(df.columns)
+                    cols_f = [float(i) for i in cols]
+                    micro_dead = False
+                    # Find index of max period (10s) and min period (1s)
+                    max_period = min(list(range(len(cols_f))), key=lambda i: abs(cols_f[i] - 10))
+                    min_period = min(list(range(len(cols_f))), key=lambda i: abs(cols_f[i] - 1))
+
+                    # Find where values are below threshold, indicating a potentially dead channel
+                    micro_thresh = np.where(df.iloc[0][max_period:min_period] <= micro_threshold)
+
+                    # Check if length of micro_thresh equal to number of elements in period range of microseism, this
+                    # means that all of them are less than or equal to the threshold, indicating a dead channel
+                    if len(micro_thresh[0]) == len(df.iloc[0][max_period:min_period]):
+                        micro_dead = True
+
+                    # Also check if the mean is less than or equal to micro_threshold, indicating a dead channel too,
+                    # but perhaps not all elements are less than the micro_threshold
+                    if np.mean(df.iloc[0][max_period:min_period]) <= micro_threshold:
+                        micro_dead = True
+
+                    ### Trigger on banded character of colorgrid indicating issue ###
+                    # This could be a dead channel, noise issues, or other issues.
+                    # This trigger is to let the user know that there's an issue with the health of the station.
+                    # When we add more complexity to these metrics and
+                    # review more colorgrids we might be able to get more specific here ###
+
+                    # Get rows of dataFrame into a list
+                    rows = list(df.iloc[0])
+                    banded_issue = False
+
+                    # Then find the average of the difference.
+                    # Low averages generally indicate that a banded character is
+                    # present in the colorGrid plot, while high averages are more likely to indicate that
+                    # the station is healthy
+                    banded = np.mean(np.diff(rows))
+
+                    if banded <= banded_threshold:
+                        banded_issue = True
+
+                    # Create dictionary for every stream object,
+                    # then append to data to encompass all information per stream
+                    d = {
+                        "start_time": tr.stats.starttime.isoformat(),
+                        "end_time": tr.stats.starttime.isoformat(),
+                        "snclq": tr.get_id(),
+                        "noise_masks": {
+                            "frequency_start": freq_start,
+                            "frequency_end": freq_end,
+                        },
+                        "microseism_masks": micro_dead,
+                        "banded_masks": banded_issue,
+                        "metric_name": "dailyPdfPlot",
+                    }
+                    d.update(update_grid)
+                    d.update(update_line)
+                    data.append(d)
+                # If error out, then set up output dictionary object
+                except IndexError:
+                    d = {
+                        "metric_name": "dailyPdfPlot",
+                        "start_time": tr.stats.starttime,
+                        "end_time": tr.stats.endtime,
+                        "snclq": snclq,
+                    }
+                    d.update(update_grid)  # add in the plot image and keys
+                    d.update(update_line)
+                    data.append(d)
+                    print("dailyPDFPlot Info: No threshold created.")
+                    continue
         # read in network model if available
         elif model == "network":
             # Create empty arrays to fill for thresholds
@@ -813,6 +996,8 @@ def dailyPdfplots(
         return data
 
 
+# TODO this appears to be an unused function now and should probably be removed or other
+# options besides nlnm added to it, like idc, gsn, network if going to use in the future
 def get_pdf_plot_data(
     database,
     network,
@@ -1144,7 +1329,7 @@ def _pdf_plots_from_database(
                 period = 1 / freq
 
                 date_index.append(date[0:10])
-                # loop through all periods and find nearest in gsn model
+                # loop through all periods and find nearest in nlnm model
                 diff, per = noiseDiff(period, pmode, m_power, m_period)
 
                 df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
@@ -1252,6 +1437,167 @@ def _pdf_plots_from_database(
                 data.append(d)
                 print(("dailyPDFPlot Info: No threshold created for SNCLQ: " + snclq))
 
+    if model == "idc":
+        # Initialize empty arrays for filling in periods/frequencies and also to fill dictionary
+        data = []
+        period_masks = []
+        freq_start = []
+        freq_end = []
+
+        tb = database.get_metric(
+            "psdMetricInfra",
+            network=network,
+            station=station,
+            channel=channel,
+            location=location,
+            session=session,
+        )
+
+        if tb.empty:
+            logger.error(
+                "dailyPDFPlot: Error no PSDS found in DB for Network: \
+                    {n}, Station: {s}, Channel: {c}, Session: {se}".format(
+                    n=network, s=station, c=channel, se=session
+                )
+            )
+            return
+
+        for i in range(len(tb.channel.unique())):
+            df_line = pd.DataFrame()
+            df = pd.DataFrame()
+            date_index = []
+
+            channel = tb.channel.iloc[i]
+            tb_psds = tb.uncorrected_psds[tb.channel == channel]
+            chan_psds = []
+            for j in range(len(tb_psds)):
+                psd = database.extract_masks(tb_psds.iloc[j])
+                chan_psds.append(psd)
+            stats = psdStatistics(chan_psds, logger=logger, database=database, special_handling='infrasound')
+
+            df = pd.DataFrame()
+            df_line = pd.DataFrame()
+            # loop through traces in NEW stream
+            for j in range(len(chan_psds)):
+                pmode = stats[j]["mode"]
+                m_power = np.asarray(stats[j]["nlnm"])
+                m_period = 1 / np.asarray(stats[j]["noise_matrix_frequency"])
+                snclq = tb.snclq[tb.channel == channel].iloc[j]
+                date = tb.start_time[tb.channel == channel].iloc[j]
+                starttime = tb.start_time[tb.channel == channel].iloc[j]
+                endtime = tb.end_time[tb.channel == channel].iloc[j]
+                freq = np.asarray(chan_psds[j][0][0])
+                period = 1 / freq
+
+                date_index.append(date[0:10])
+                # loop through all periods and find nearest in IDC model
+                diff, per = noiseDiff(period, pmode, m_power, m_period)
+
+                df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
+                df = pd.concat([df, df2], ignore_index=True)
+
+                df_line2 = pd.DataFrame(data=pmode.reshape(1, len(pmode)), columns=period)
+                df_line = pd.concat([df_line, df_line2], ignore_index=True)
+
+            df["Date"] = date_index
+            df = df.rename(df["Date"])
+            df = df.drop(["Date"], axis=1)
+
+            df_line["Date"] = date_index
+            df_line = df_line.rename(df_line["Date"])
+            df_line = df_line.drop(["Date"], axis=1)
+
+            # dropping digitizer values
+            df = df.drop([df.columns[-1]], axis=1)
+            df = df.drop([df.columns[-2]], axis=1)
+
+            update_grid = plot_grid(df, snclq, plot="dailyPDF", f_name=f_name_grid)
+            update_line = _plot_colorline(df_line, snclq, per_arr, f_name=f_name_line)
+            try:
+                ### Trigger based on large differences from noise model ###
+                # Trigger mask output based on diff_threshold value -- looks for
+                thresh = np.where(df >= diff_threshold)[1]
+                # Get consecutive indices out
+                thresh_cons = consecutive(thresh, stepsize=1)
+
+                # Loop through consecutive indices and find where freq values where threshold exceeds those values
+                for k in range(len(thresh_cons)):
+                    period_masks.append(df.columns[thresh_cons[k]])
+
+                # Grab out period masks and aggregate them into start/stop frequencies
+                for k in range(len(period_masks)):
+                    freq_start.append(1 / float(period_masks[k][0]))
+                    freq_end.append(1 / float(period_masks[k][-1]))
+
+                ### Trigger based on unhealthy differences from noise model in the microseism band ###
+                # Microseism band is 0.1 - 1.0 Hz, which translates to 1 - 10s periods
+                # Find indices that are between 1-10s period so that we can subset the dataframe accordingly
+                # First convert columns to list, then convert strings to floats
+                cols = list(df.columns)
+                cols_f = [float(i) for i in cols]
+                micro_dead = False
+                # Find index of max period (10s) and min period (1s)
+                max_period = min(list(range(len(cols_f))), key=lambda i: abs(cols_f[i] - 10))
+                min_period = min(list(range(len(cols_f))), key=lambda i: abs(cols_f[i] - 1))
+
+                # Find where values are below threshold, indicating a potentially dead channel
+                micro_thresh = np.where(df.iloc[0][max_period:min_period] <= micro_threshold)
+
+                # Check if length of micro_thresh equal to number of elements in period range of microseism, this
+                # means that all of them are less than or equal to the threshold, indicating a dead channel
+                if len(micro_thresh[0]) == len(df.iloc[0][max_period:min_period]):
+                    micro_dead = True
+
+                # Also check if the mean is less than or equal to micro_threshold, indicating a dead channel too,
+                # but perhaps not all elements are less than the micro_threshold
+                if np.mean(df.iloc[0][max_period:min_period]) <= micro_threshold:
+                    micro_dead = True
+
+                ### Trigger on banded character of colorgrid indicating issue ###
+                # This could be a dead channel, noise issues, or other issues. This trigger is to let the user know that
+                # there's an issue with the health of the station. When we add more complexity to these metrics and
+                # review more colorgrids we might be able to get more specific here ###
+
+                # Get rows of dataFrame into a list
+                rows = list(df.iloc[0])
+                banded_issue = False
+
+                # Then find the average of the difference. Low averages generally indicate that a banded character is
+                # present in the colorGrid plot, while high averages are more likely to indicate that the station is
+                # healthy
+                banded = np.mean(np.diff(rows))
+
+                if banded <= banded_threshold:
+                    banded_issue = True
+
+                # Create dictionary for every stream object, then append to data to encompass all information per stream
+                d = {
+                    "start_time": starttime,
+                    "end_time": endtime,
+                    "snclq": snclq,
+                    "noise_masks": {
+                        "frequency_start": freq_start,
+                        "frequency_end": freq_end,
+                    },
+                    "microseism_masks": micro_dead,
+                    "banded_masks": banded_issue,
+                    "metric_name": "dailyPdfPlot",
+                }
+                d.update(update_grid)
+                d.update(update_line)
+                data.append(d)
+            except (IndexError, ZeroDivisionError):
+                d = {
+                    "metric_name": "dailyPdfPlot",
+                    "start_time": starttime,
+                    "end_time": endtime,
+                    "snclq": snclq,
+                }
+                d.update(update_grid)  # add in the plot image and keys
+                d.update(update_line)
+                data.append(d)
+                print(("dailyPDFPlot Info: No threshold created for SNCLQ: " + snclq))
+    
     if model == "network":
         # Create empty arrays to fill for thresholds
         data = []
@@ -1326,7 +1672,7 @@ def _pdf_plots_from_database(
                     m_power = en_power
 
                 date_index.append(date[0:10])
-                # loop through all periods and find nearest in gsn model
+                # loop through all periods and find nearest in network model
                 diff, per = noiseDiff(period, pmode, m_power, m_period)
 
                 df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
@@ -1594,11 +1940,12 @@ def plot_grid_data_fill_in(grd_data):
 def plot_grid(grd_data, snclq, plot, f_name=None, channel=None, rank=None):
     """
     Plots colorgrid data into Colorgrid (power mode or station ranking). Colorgrid plots show the magnitude of deviation
-    (in decibels (dB)) of a station's daily PSD PDF mode from the New Low Noise Model (NLNM) (Peterson, 1993), GSN 2004
-    model, or a user provided/calculated network noise model. Station ranking plots show the magnitude of deviation
-    (in dB) of the mean of each station’s daily PDF mode  (averaged at each period bin over the respective time period)
-    from the NLNM. Stations are ranked from quietest to noisiest based on user provided frequencies.  Hotter colors
-    indicate noisier data, while cooler colors indicate quieter data on colorgrid and station ranking plots.
+    (in decibels (dB)) of a station's daily PSD PDF mode from the New Low Noise Model (NLNM) (Peterson, 1993), IDC
+    low noise model (Brown et. al., 2012), GSN 2004 model, or a user provided/calculated network noise model. Station 
+    ranking plots show the magnitude of deviation (in dB) of the mean of each station’s daily PDF mode (averaged at 
+    each period bin over the respective time period) from the NLNM or aforementioned noise models. Stations are ranked 
+    from quietest to noisiest based on user provided frequencies. Hotter colors indicate noisier data, while cooler 
+    colors indicate quieter data on colorgrid and station ranking plots.
 
     :param grd_data: (dataframe) dataframe containing period and values
     :param snclq: (str) SNCLQ id

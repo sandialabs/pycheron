@@ -946,25 +946,24 @@ station_tab = html.Div(
                     id="station-table",
                     data=[{"station": "", "channel": "", "location": ""}],
                     columns=[{"name": i, "id": i} for i in ["station", "channel", "location"]],
-                    style_table={
-                        "maxHeight": "300",
-                        "overflowY": "scroll",
-                        "overflowX": "scroll",
-                    },
-                    style_data={"whiteSpace": "normal"},
                     css=[
                         {
                             "selector": ".dash-cell div.dash-cell-value",
-                            "rule": "display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;",
+                            "rule": "display: inline; white-space: inherit; overflow: auto; text-overflow: auto;",
                         }
                     ],
-                    fixed_rows={"headers": True, "data": 1},
+                    style_table={
+                        "maxHeight": "500",
+                        "overflowY": "scroll",
+                        "overflowX": "scroll",
+                    },
+                    fixed_rows={"headers": True, "data": 0},
                     style_cell={
                         "font_family": "Helvetica",
                         "font_size": "12px",
                         "text-align": "left",
-                        "minWidth": "150px",
-                        "maxWidth": "250px",
+                        "minWidth": "300px",
+                        "maxWidth": "800px",
                         "whiteSpace": "normal",
                         "textOverflow": "ellipsis",
                     },
@@ -992,7 +991,7 @@ station_tab = html.Div(
                     css=[
                         {
                             "selector": ".dash-cell div.dash-cell-value",
-                            "rule": "display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;",
+                            "rule": "display: inline; white-space: inherit; overflow: auto; text-overflow: auto;",
                         }
                     ],
                     style_table={
@@ -1000,13 +999,13 @@ station_tab = html.Div(
                         "overflowY": "scroll",
                         "overflowX": "scroll",
                     },
-                    fixed_rows={"headers": True, "data": 1},
+                    fixed_rows={"headers": True, "data": 0},
                     style_cell={
                         "font_family": "Helvetica",
                         "font_size": "12px",
                         "text-align": "left",
-                        "minWidth": "150px",
-                        "maxWidth": "250px",
+                        "minWidth": "300px",
+                        "maxWidth": "800px",
                         "whiteSpace": "normal",
                         "textOverflow": "ellipsis",
                     },
@@ -1034,21 +1033,21 @@ station_tab = html.Div(
                     css=[
                         {
                             "selector": ".dash-cell div.dash-cell-value",
-                            "rule": "display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;",
+                            "rule": "display: inline; white-space: inherit; overflow: auto; text-overflow: auto;",
                         }
                     ],
                     style_table={
                         "maxHeight": "500",
                         "overflowY": "scroll",
-                        "overflowX": "auto",
+                        "overflowX": "scroll",
                     },
-                    fixed_rows={"headers": True, "data": 1},
+                    fixed_rows={"headers": True, "data": 0},
                     style_cell={
                         "font_family": "Helvetica",
                         "font_size": "12px",
                         "text-align": "left",
-                        "minWidth": "150px",
-                        "maxWidth": "250px",
+                        "minWidth": "300px",
+                        "maxWidth": "800px",
                         "whiteSpace": "normal",
                         "textOverflow": "ellipsis",
                     },
@@ -1056,7 +1055,6 @@ station_tab = html.Div(
                         "font_family": "Helvetica",
                         "font_size": "15px",
                         "text-align": "center",
-                        "overflowX": "auto",
                     },
                     filter_action="native",
                     sort_action="native",
@@ -1326,8 +1324,7 @@ def _connect(n_clicks):
 
 # ------ Map data functions and storage -----------
 def _make_data(db):
-    print('INSIDE _make_data on line 1329')
-    #import pdb; pdb.set_trace()
+
     pycheron_df = db.view()
 
     ########## Manipulate data ###########
@@ -1356,43 +1353,45 @@ def _make_data(db):
     ]
 
     for df in breakdown:
+        try:
+            map_frames.append(
+                {
+                    "network": df["network"].values[0],
+                    "station": df["station"].values[0],
+                    "channel": df["channel"].values[0],
+                    "location": pych_Ndf.loc[
+                        (pych_Ndf["station"] == df["station"][0])
+                        & (pych_Ndf["network"] == df["network"][0])
+                        & (pych_Ndf["channel"] == df["channel"][0])
+                    ]["location"].values[0],
+                    "Overall Quality": _quality_color(df["all_counts"].mean()),
+                    "latitude": pych_Ndf.loc[
+                        (pych_Ndf["station"] == df["station"][0])
+                        & (pych_Ndf["network"] == df["network"][0])
+                        & (pych_Ndf["channel"] == df["channel"][0])
+                    ]["latitude"].values[0],
+                    "longitude": pych_Ndf.loc[
+                        (pych_Ndf["station"] == df["station"][0])
+                        & (pych_Ndf["network"] == df["network"][0])
+                        & (pych_Ndf["channel"] == df["channel"][0])
+                    ]["longitude"].values[0],
+                }
+            )
 
-        map_frames.append(
-            {
-                "network": df["network"].values[0],
-                "station": df["station"].values[0],
-                "channel": df["channel"].values[0],
-                "location": pych_Ndf.loc[
-                    (pych_Ndf["station"] == df["station"][0])
-                    & (pych_Ndf["network"] == df["network"][0])
-                    & (pych_Ndf["channel"] == df["channel"][0])
-                ]["location"].values[0],
-                "Overall Quality": _quality_color(df["all_counts"].mean()),
-                "latitude": pych_Ndf.loc[
-                    (pych_Ndf["station"] == df["station"][0])
-                    & (pych_Ndf["network"] == df["network"][0])
-                    & (pych_Ndf["channel"] == df["channel"][0])
-                ]["latitude"].values[0],
-                "longitude": pych_Ndf.loc[
-                    (pych_Ndf["station"] == df["station"][0])
-                    & (pych_Ndf["network"] == df["network"][0])
-                    & (pych_Ndf["channel"] == df["channel"][0])
-                ]["longitude"].values[0],
-            }
-        )
-
-    map_data = pd.DataFrame(
-        map_frames,
-        columns=[
-            "network",
-            "station",
-            "channel",
-            "location",
-            "Overall Quality",
-            "latitude",
-            "longitude",
-        ],
-    )
+            map_data = pd.DataFrame(
+                map_frames,
+                columns=[
+                    "network",
+                    "station",
+                    "channel",
+                    "location",
+                    "Overall Quality",
+                    "latitude",
+                    "longitude",
+                ],
+            )
+        except Exception as e:
+            print(e)
 
     if map_data.empty:
         raise ValueError("No Summary Counts and Values were calculated for *channels* in this database,\
@@ -1410,6 +1409,7 @@ def _make_data(db):
     [State("input-db", "value")],
 )
 def _store_data(clicks, value):
+    
     clicks_ = json.loads(clicks)
     if clicks_["n_clicks"] > 0:
         db = Database(value)
@@ -1615,13 +1615,11 @@ def control_modal(
             df = _choose_correct_date(sum_tab, date_start, date_end)
             report_qcolor_state = summary_report_cond_style + _conditional_quality_color(df, COLOR_SCHEMES, "channel")
             df = _organize_nsc_cols(nsc_cols, df)
-            return (
-                {"display": "block"},
-                df.to_dict("records"),
-                report_qcolor_state,
-                weights,
-            )
-        return ({"display": "block"}, sum_tab, report_qcolor_state, weights)
+            sums = df.to_dict("records")
+            _sanitize_summary_data(sums)
+            return {"display": "block"}, sums, report_qcolor_state, weights,
+        _sanitize_summary_data(sum_tab)
+        return {"display": "block"}, sum_tab, report_qcolor_state, weights
 
     # When user closes modal
     if (close_clicks > open_clicks) and (close_clicks > csv_clicks):
@@ -1640,6 +1638,16 @@ def control_modal(
         return ({"display": "none"}, [], [], weight_table_state)
 
     return (stylestate, [], [], weight_table_state)
+
+
+def _sanitize_summary_data(sum_data: list):
+    for data in sum_data:
+        for key, val in data.items():
+            if (not isinstance(val, (str, bool, int, float))) and (isinstance(val, list)):
+                new_val = ""
+                for v in val:
+                    new_val+= v+" "
+                data[key] = new_val 
 
 
 def _adjust_weight(weight_table_state):
@@ -1663,9 +1671,6 @@ def _get_network_selections(children, value):
     clicks = json.loads(children)
     if clicks["n_clicks"] > 0:
         db = Database(value).networks()
-        ret = [{"label": val, "value": val} for val in np.unique(db) if ":" not in val]
-        print(f"LINE 1666 getting DB: {db} and return value is {ret}")
-        
         return [{"label": val, "value": val} for val in np.unique(db) if ":" not in val]
     else:
         return []
@@ -1688,8 +1693,6 @@ def _get_network(value):
     ],
 )
 def _make_map(map_data, clicks, network):
-    print(f'IN _make_map on line 1687 and network is {network}')
-    #import pdb; pdb.set_trace()
     if clicks is not None and network is not None:
         clicks_ = json.loads(clicks)
         value = json.loads(network)
@@ -1857,18 +1860,25 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     df_z_avg = get_rank_day_averages(df_z_rank)
                     plot_dat = plot_grid_data_fill_in(df_z_avg)
                     ranker = float(df_z.columns[index_dz])
+                    next_index = float(df_z.columns[index_dz +1])
+                    prev_index = float(df_z.columns[index_dz - 1])
                 if df_e.empty is False:
                     index_de = _find_nearest(np.asarray(df_e.columns, dtype=float), rank)
                     df_e_rank = df_e.sort_values(by=[df_e.columns[index_de]])
                     df_e_avg = get_rank_day_averages(df_e_rank)
                     plot_dat = plot_grid_data_fill_in(df_e_avg)
                     ranker = float(df_e.columns[index_de])
+                    next_index = float(df_e.columns[index_de + 1])
+                    prev_index = float(df_e.columns[index_de - 1])
                 if df_n.empty is False:
                     index_dn = _find_nearest(np.asarray(df_n.columns, dtype=float), rank)
+                    print('i am index_dn', index_dn)
                     df_n_rank = df_n.sort_values(by=[df_n.columns[index_dn]])
                     df_n_avg = get_rank_day_averages(df_n_rank)
                     plot_dat = plot_grid_data_fill_in(df_n_avg)
                     ranker = float(df_n.columns[index_dn])
+                    next_index = float(df_n.columns[index_dn + 1])
+                    prev_index = float(df_n.columns[index_dn - 1])
                 plot_dat = plot_dat.reindex(index=plot_dat.index[::-1])
                 stations = plot_dat.axes[0].tolist()
                 seconds = plot_dat.axes[1].tolist()
@@ -1932,13 +1942,11 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                 # Correct size of bounding box for log scale
                 fig.add_shape(
                     type="rect",
-                    xref="x domain",
-                    yref="y domain",
-                    x0=ranker - ranker / 24,
-                    x1=ranker + ranker / 24,
-                    y0=-0.5,
-                    y1=len(y) - 0.5,
-                    line=dict(color="Black"),
+                    x0 = next_index,
+                    x1 = prev_index,
+                    y0 = -0.5,
+                    y1 = len(y) - 0.5,
+                    line=dict(color="Black")
                 )
                 fig.update_xaxes(type="log")
 
@@ -2007,7 +2015,7 @@ def _get_plot(plot, chan, rank, clicks, network, path):
                     x="Period",
                     y="Power (dB)",
                     color="label",
-                    labels={"Period": "Period (10^n)"},
+                    labels={"Period": "Period (s)"},
                     title=net_title,
                     height=600,
                     width=1200,
@@ -2207,7 +2215,7 @@ def _get_plot(network, clicks, station, plot, db_path):
                         color="sta",
                         line_group="hl",
                         hover_name="hl",
-                        labels={"Period": "Period (10^n)"},
+                        labels={"Period": "Period (s)"},
                         title=sta_title,
                         height=600,
                         width=1200,
@@ -2219,14 +2227,18 @@ def _get_plot(network, clicks, station, plot, db_path):
                 db = Database(db_path)
                 if plot == "sohMetric":
                     name = "State of Health Metric Activity Flags"
-                    style_soh = {"display": "block"}
+                    style_soh = {"display": "block", "overflow": "scroll"}
                     # Table 1, sohActivity
+                    # import pdb; pdb.set_trace()
                     af = db.get_metric(
                         metric_name=plot + "ActivityFlags",
                         network=network_["network"],
                         station=station_["station"],
                     )
-                    tb = af.to_dict("records")
+                    if af.empty:
+                        tb = [{col: "" for col in af.columns}]
+                    else:
+                        tb = af.to_dict("records")
                     cols = [{"name": i, "id": i} for i in af.columns]
                     # Table 2, sohDQ
                     df = db.get_metric(
@@ -2235,6 +2247,7 @@ def _get_plot(network, clicks, station, plot, db_path):
                         station=station_["station"],
                     )
                     tb1 = df.to_dict("records")
+                    
                     cols1 = [{"name": i, "id": i} for i in df.columns]
 
                     # Table 3, IOClock
@@ -2243,7 +2256,10 @@ def _get_plot(network, clicks, station, plot, db_path):
                         network=network_["network"],
                         station=station_["station"],
                     )
-                    tb2 = iof.to_dict("records")
+                    if iof.empty:
+                        tb2 = [{col: "" for col in af.columns}]
+                    else:
+                        tb2 = iof.to_dict("records")
                     cols2 = [{"name": i, "id": i} for i in iof.columns]
 
                 else:
@@ -2270,7 +2286,7 @@ def _get_plot(network, clicks, station, plot, db_path):
                 cols2,
                 name,
                 fig,
-                style_graph,
+                style_graph
             )
     return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
@@ -2345,7 +2361,14 @@ def _get_metric_top_panel_selections(network, station, channel, clicks, value):
                 )
                 .metric
             )
-            return [{"label": val, "value": val} for val in np.unique(db)]
+            unique_metrics = [val for val in np.unique(db)]
+            labels = [{"label": val, "value": val} for val in unique_metrics]
+            if 'psdPlot' not in unique_metrics:
+                print('PSDPLOT NOT FOUND')
+                #labels.append({"label": 'psdPlot', "value": "psdPlot"})
+            else:
+                print("I SHOULD BE SEEING PSDPLOT IN SELECTOR")
+            return labels
         else:
             return [{"label": "", "value": ""}]
     else:
@@ -2414,7 +2437,14 @@ def _get_metric_botttom_panel_selections(network, station, channel, clicks, valu
                 )
                 .metric
             )
-            return [{"label": val, "value": val} for val in np.unique(db)]
+            unique_metrics = [val for val in np.unique(db)]
+            labels = [{"label": val, "value": val} for val in unique_metrics]
+            if 'psdPlot' not in unique_metrics:
+                print('PSDPLOT NOT FOUND')
+                #labels.append({"label": 'psdPlot', "value": "psdPlot"})
+            else:
+                print("I SHOULD BE SEEING PSDPLOT IN SELECTOR")
+            return labels
         else:
             return [{"label": "", "value": ""}]
     else:
@@ -2786,6 +2816,7 @@ def _summary_report_query(db, set_weight=[1] * WEIGHT_LEN):
     sums_table: dataframe containing only count information
     values_table: dataframe containing only non-count value information
     """
+    #import pdb; pdb.set_trace()
     summary_table = """select * from summaryReportCountsAndValues WHERE channel <> 'None'"""
     sum_table_res = db.query(summary_table)
 
@@ -2820,7 +2851,8 @@ def _summary_report_query(db, set_weight=[1] * WEIGHT_LEN):
     dtl = [eval(x) for x in csnsc["range"]]
     dts = [[str(x), str(y)] for x, y in dtl]
 
-    range_frame = pd.DataFrame({"range": dts})
+    #range_frame = pd.DataFrame({"range": dts})
+    range_frame = pd.DataFrame.from_dict({"range": dts})
     sr_tail = pd.concat([csnsc["session"], range_frame], axis=1)
 
     # Reorder network, station, channel columns to be station, network, channel

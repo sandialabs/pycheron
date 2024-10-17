@@ -197,6 +197,11 @@ def _pool_psd_python(tr):
         z = 2 * 3600
         loFreq = 0.0025
 
+    # Special case for infrasound data 
+    elif channel[1] == 'D':
+        z = 3600
+        loFreq = 0.01
+
     # Changed to z = 10, loFreq = 0.6 from IRISSeismic 1.4.5 to 1.4.6, but keeping at 1.4.5 options for now because
     # 10s increments take too long for processing but do increase the statistical significance -- think about in
     # future

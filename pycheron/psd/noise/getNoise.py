@@ -38,7 +38,7 @@ from pycheron.dataAcq.fap import fap_reader
 import numpy as np
 
 
-def getNoise(psd_list, evalresp=None, logger=None):
+def getNoise(psd_list, evalresp=None, logger=None, units='acc'):
     """
     Obtains instrument correction information at the specified frequencies from IRIS/user provided evalresps.
     The instrument correction is applied to every PSD in the list and the now corrected PSD values are returned
@@ -51,6 +51,9 @@ def getNoise(psd_list, evalresp=None, logger=None):
     :type evalresp: dict {channel (str): resp file information (file location, file, file type)}
     :param logger: logger object
     :type logger: pycheron.util.logger.Logger
+    :param units: Units to return response in. Can be either def, dis, vel or acc. If none, specified, will use default units. 
+    :type units: string
+
 
     :return:
 
@@ -102,6 +105,12 @@ def getNoise(psd_list, evalresp=None, logger=None):
     freqData = []
     indices = []
 
+    # Ensure units are properly supplied, otherwise log an error
+    if units in ('acc', 'def', 'dis', 'vel'):
+        pass
+    else:
+        logger.error("getNoise(): units are not defined properly for response removal. Valid units are 'ACC', 'DEF', 'DIS', 'VEL'")
+
     # First loops through psd_list and removes empty psds
     pop_i = []
     for i in range(len(psd_list)):
@@ -134,8 +143,6 @@ def getNoise(psd_list, evalresp=None, logger=None):
         minFreq = np.nanmin(freq)
         maxFreq = np.nanmax(freq)
         nFreq = len(freq)
-        # Units in acceleration
-        units = "acc"
 
         # Get instrument response from IRIS webservice in the case where evalresp = None
         if evalresp is None:
@@ -184,7 +191,7 @@ def getNoise(psd_list, evalresp=None, logger=None):
                         channel=channel,
                         network=network,
                         locid=location,
-                        units="ACC",
+                        units=units,
                         debug=True,
                     )
                     amp = iris[1]

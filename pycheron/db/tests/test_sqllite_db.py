@@ -56,6 +56,7 @@ from pycheron.psd.noise.stationNoiseModel import stationNoiseModel
 from pycheron.metrics.basicStatsMetric import basicStatsMetric
 from pycheron.metrics.calibration import calibrationMetric
 from pycheron.metrics.psdMetric import psdMetric
+from pycheron.metrics.psdMetricInfra import psdMetricInfra 
 from pycheron.plotting.psdPlot import psdPlot
 import os
 
@@ -70,7 +71,8 @@ Issues:
 db = Database("test.db", overwrite=True)
 db1 = Database("gapMetric.db", session_name="test", overwrite=True)
 db_psd = Database("psdMetric.db", session_name="test", overwrite=True)
-
+# Not sure this is needed, but added it
+db_psdInfra = Database("psdMetricInfra.db", session_name="test", overwrite=True)
 
 def test_sqlite_db_instantiate():
     assert db is not None
@@ -133,6 +135,11 @@ def calculate_calibration_metric():
 def calculate_psd_metric():
     stream = get_stream_from_file("test_data/BGU_HHE_002.mseed")
     return psdMetric(stream)
+
+#TODO: Update to infrasound test data 
+def calculate_psd_metric_infra():
+    stream = get_stream_from_file("test_data/BGU_HHE_002.mseed")
+    return psdMetricInfra(stream)
 
 
 def test_insert_metric_cross_corr():
@@ -240,6 +247,22 @@ def test_insert_psd():
     val = db_psd.get_metric("psdPlot")
     assert val is not None
 
+def test_insert_psd_infra():
+    psdinfra = calculate_psd_metric_infra()
+    db_psdInfra.insert_metric(psdinfra)
+    val = db_psdInfra.get_metric("psdMetricInfra")
+    assert val is not None
+
+    # TODO: Update test data to be an infrasound file 
+    stream = get_stream_from_file("test_data/BGU_HHE_002.mseed")
+    psdPlot(stream, database=db_psdInfra)
+    val = db_psdInfra.get_metric("psdPlot")
+    assert val is not None
+
+    # Re-insert to test override functionality
+    psdPlot(stream, database=db_psdInfra)
+    val = db_psdInfra.get_metric("psdPlot")
+    assert val is not None
 
 def test_connect():
     conn = db.connect("test.db")
