@@ -71,11 +71,11 @@ def unHistogram(vec, startVal=1, inc=1):
     if len(k) % 10 != 0:
         k = np.append(k, k[-1])
     try:
-        k.reshape(np.int(np.round(len(k) / 10)), 10)
+        k.reshape(int(np.round(len(k) / 10)), 10)
     except ValueError:
         while len(k) != 470:
             k = np.append(k, k[-1])
 
-        k.reshape(np.int(np.round(len(k) / 10)), 10)
+        k.reshape(int(np.round(len(k) / 10)), 10)
 
     return k

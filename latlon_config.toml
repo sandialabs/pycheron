@@ -8,3 +8,8 @@
 #   [NE.STTN]
 #       lat = 1.0
 #       lon = -1.0
+
+[UU]
+    [UU.BGU]
+        lat = 40.92083
+        lon = -113.02983

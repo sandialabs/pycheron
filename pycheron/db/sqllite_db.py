@@ -1558,6 +1558,7 @@ class Database:
                 metric_name = metric[0]["metric_name"]
             except TypeError:
                 metric_name = metric[0][0]["metric_name"]
+        print(metric_name)
         # deals with metrics that have two SNCLQs
         if (
             metric_name == "correlationMetric"

@@ -32,9 +32,10 @@ __all__ = ["maxRange"]
 import numpy as np
 from pycheron.util.logger import Logger
 from pycheron.rollseis.roll_range import roll_range
+from pycheron.db.sqllite_db import Database
 
 
-def maxRange(st, window=300, increment=150, database=None, logger=None):
+def maxRange(st, window=300, increment=150, database_config=None, logger=None):
     """
     Calculates the maximum sample range (difference between the largest and smallest sample value)
     for the given stream object over a user defined rolling window, incremented by a user defined increment
@@ -45,8 +46,10 @@ def maxRange(st, window=300, increment=150, database=None, logger=None):
     :type window: integer
     :param increment: number of seconds to advance window for each calculation (default = 150s)
     :type increment: integer
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
     :param logger: logger object
     :type logger: pycheron.util.logger.Logger
 
@@ -121,7 +124,8 @@ def maxRange(st, window=300, increment=150, database=None, logger=None):
         d.append(data)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(d)
 
     return d

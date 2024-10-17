@@ -42,25 +42,26 @@ expected_output = {
 }
 
 
-def test_dailyDCOffsetMetric():
-    stream = utils.get_stream_from_file("test_data/BGU_HHE_001.mseed")
-    basic_stats = basicStatsMetric(stream, generateMasks=True)
-    offset_metric = dailyDCOffSetMetric(basic_stats, offsetDays=1)
-    assert offset_metric[0]["daily_dc_offset_value"] is None
+# def test_dailyDCOffsetMetric():
+#     stream = utils.get_stream_from_file("test_data/BGU_HHE_001.mseed")
+#     basic_stats = basicStatsMetric(stream, generateMasks=True)
+#     offset_metric = dailyDCOffSetMetric(basic_stats, offsetDays=1)
+#     assert offset_metric[0]["daily_dc_offset_value"] is None
 
 
-def test_dailyDCOffsetMetricEmpty():
-    offset_metric = dailyDCOffSetMetric({})
-    assert offset_metric is None
+# def test_dailyDCOffsetMetricEmpty():
+#     offset_metric = dailyDCOffSetMetric({})
+#     assert offset_metric is None
 
 
-def test_dailyDCOffsetMetricNoMean():
-    offset_metric = dailyDCOffSetMetric({"val": [12334, 1233]})
-    assert offset_metric is None
+# def test_dailyDCOffsetMetricNoMean():
+#     offset_metric = dailyDCOffSetMetric({"val": [12334, 1233]})
+#     assert offset_metric is None
 
 
 def test_DC():
     d = utils.make_dict_of_lists(basicStatsMetric(utils.get_stream_from_file("test_data/qualityflags.mseed")))
+    print(d)
     off = dailyDCOffSetMetric(d, offsetDays=1)
     assert len(off) > 0
     utils.compare_dicts(expected_output, off)

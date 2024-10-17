@@ -46,7 +46,9 @@ from scipy import signal
 import pickle
 import warnings
 import joblib
-import sklearn
+from sklearn.impute import SimpleImputer as Imputer
+from sklearn.svm import _classes
+ 
 from pycheron.metrics.utils import sta_lta, stft
 
 
@@ -73,6 +75,12 @@ class CustomUnpickler(pickle.Unpickler, object):
     def find_class(self, module, name):
         if module == "__main__":
             module = "pycheron.metrics.calibration"
+        if module == "sklearn.preprocessing.imputation":
+            module = "sklearn.impute"
+        if module == "sklearn.preprocessing.data":
+            module = "sklearn.preprocessing"
+        if module == "sklearn.svm.classes":
+            module = "sklearn.svm"
         return super(CustomUnpickler, self).find_class(module, name)
 
 
@@ -203,11 +211,16 @@ class MLApplier(object):
             unpickler = CustomUnpickler(fid)
             compressor = unpickler.load()
 
-        filename = dirpath + "imputer.joblib"
-        imputer = joblib.load(filename)
+        # filename = dirpath + "imputer.pkl"
+        # with open(filename, "rb") as fid:
+        #     unpickler = CustomUnpickler(fid)
+        #     compressor = unpickler.load()
 
-        filename = dirpath + "scaler.joblib"
-        scaler = joblib.load(filename)
+        filename = dirpath + "scaler.pkl"
+        with open(filename, "rb") as fid:
+            unpickler = CustomUnpickler(fid)
+            scaler = unpickler.load()
+        #scaler = joblib.load(filename)
 
         filename = dirpath + "classifier.joblib"
         classifier = joblib.load(filename)
@@ -412,6 +425,7 @@ class CalibrationHelper(object):
             self.ml_applier = MLApplier(self.ml_loadpath)
 
         return self.ml_applier.iscal(detection)
+        
 
 
 _chelper = CalibrationHelper()
@@ -1006,11 +1020,14 @@ def calibration(trace, metric_store=None, debug=False, **params):
     return out
 
 
-def calibrationMetric(st, metric_store=None, debug=False, database=None, **params):
+def calibrationMetric(st, metric_store=None, debug=False, database_config=None, **params):
     """
     Wrapper function for calibration. Enable stream processing
     :param st: Stream object
-
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
     :return: List of calibration detections
     """
 
@@ -1020,7 +1037,8 @@ def calibrationMetric(st, metric_store=None, debug=False, database=None, **param
         d = calibration(tr, metric_store, debug, **params)
         out.append(d)
 
-    if database is not None or isinstance(st, Database):
+    if database_config is not None or isinstance(st, Database):
+        database = Database(**database_config)
         database.insert_metric(out)
 
     return out

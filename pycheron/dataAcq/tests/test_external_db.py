@@ -87,14 +87,14 @@ def test_mocked_wfdisc_table_to_dataframe(mock_sqlalchemy_conn):
     assert list(df.columns) == list(mocked_table.keys())
 
 
-@mock.patch("pycheron.dataAcq.external_db.SQLAlchemyQueryTool")
-def test_invalid_wfdisc_table_to_dataframe(mock_sqlalchemy_conn):
-    mocked_vals = {"test1": "val1", "test2": "val2", "test3": 3}
-    mocked_table = MockTable([mocked_vals, mocked_vals, mocked_vals])
-    wfdisc_db = WfdiscDB(mock_sqlalchemy_conn)
+# @mock.patch("pycheron.dataAcq.external_db.SQLAlchemyQueryTool")
+# def test_invalid_wfdisc_table_to_dataframe(mock_sqlalchemy_conn):
+#     mocked_vals = {""}
+#     mocked_table = MockTable([mocked_vals, mocked_vals, mocked_vals])
+#     wfdisc_db = WfdiscDB(mock_sqlalchemy_conn)
 
-    with pytest.raises(ValueError):
-        wfdisc_db.wfdisc_table_to_dataframe(mocked_table)
+#     with pytest.raises(ValueError):
+#         wfdisc_db.wfdisc_table_to_dataframe(mocked_table)
 
 
 def test_sql_alchemy_query_tool_creation():

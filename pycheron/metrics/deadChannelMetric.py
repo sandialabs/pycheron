@@ -29,11 +29,12 @@
 
 from pycheron.util.logger import Logger
 from pycheron.psd.noise.deadChannel import isDC
+from pycheron.db.sqllite_db import Database
 
 __all__ = ["deadChannelMetric"]
 
 
-def deadChannelMetric(st, logger=None, database=None):
+def deadChannelMetric(st, logger=None, database_config=None):
     """
     Individaul metric that tests a channel to see if it is a dead channel
 
@@ -41,8 +42,10 @@ def deadChannelMetric(st, logger=None, database=None):
     :type st: obspy.core.stream.Stream
     :param logger: logger object
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: list of dictionaries for each channel in stream with the following keys and types
 
@@ -126,7 +129,8 @@ def deadChannelMetric(st, logger=None, database=None):
         all.append(data)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(all)
 
     return all

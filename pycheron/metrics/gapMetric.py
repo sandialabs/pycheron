@@ -34,6 +34,7 @@ from obspy.core.utcdatetime import UTCDateTime
 from obspy.core.trace import Trace
 from pycheron.util.masks import samples2time
 from pycheron.util.logger import Logger
+from pycheron.db.sqllite_db import Database
 
 
 def gapMetric(
@@ -43,7 +44,7 @@ def gapMetric(
     completeDay=True,
     masksByTime=True,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
     Function calculates gaps, overlaps, max gap/max overlap, station/channel percent availability, and masks
@@ -66,8 +67,10 @@ def gapMetric(
     :type masksByTime: bool
     :param logger: logger object
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: Tuple of station gap summary information and channel gap information. See below.
     :rtype: tuple
@@ -812,7 +815,8 @@ def gapMetric(
             sum_data.append(additions)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric((sum_data, data))
 
     return sum_data, data

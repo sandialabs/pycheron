@@ -46,11 +46,11 @@ def test_get_noise_noise_matricies_are_correct_types_valid_trace(psd_list_data):
     f, n, psd = getNoise(psd_list_data)
     assert isinstance(f, list)
     assert isinstance(f[0], np.ndarray)
-    assert isinstance(f[0][0], np.float)
+    assert isinstance(f[0][0], float)
     assert isinstance(n, list)
     assert isinstance(n[0], np.ndarray)
     assert isinstance(n[0][0], np.ndarray)
-    assert isinstance(n[0][0][0], np.float)
+    assert isinstance(n[0][0][0], float)
 
 
 def test_get_noise_noise_matricies_return_correct_values(psd_list_data):
@@ -73,11 +73,11 @@ def test_get_noise_noise_matricies_are_correct_types_trace_w_out_quality(psd_lis
     f, n, psd = getNoise(test_data)
     assert isinstance(f, list)
     assert isinstance(f[0], np.ndarray)
-    assert isinstance(f[0][0], np.float)
+    assert isinstance(f[0][0], float)
     assert isinstance(n, list)
     assert isinstance(n[0], np.ndarray)
     assert isinstance(n[0][0], np.ndarray)
-    assert isinstance(n[0][0][0], np.float)
+    assert isinstance(n[0][0][0], float)
 
 
 def test_get_noise_pops_psdLists_without_valid_information(psd_list_data):

@@ -45,6 +45,9 @@ Alternatively, if a specific environment manager is not chosen beforehand, Poetr
 
 Note, a **Python 3.6.9** environment is required and must be *activated before installing packages and using Pycheron. 
 
+## Fortran
+Prior to installing Pycheron, it is recommended to ensure gfortran 6.3 for OSX exists on your OS. Currently Fortran compilations only work on OSX and Linux. If using a Windows operating system, there is an option to turn off Fortran in the functions that use it (e.g., `staltaMetric`, `psdMetric`,`spikesMetric`, `repeatedAmplitudeMetric`) by setting the variable `fortran` equal to `False`. Please refer to the 'Operating Systems' section regarding Windows use with Pycheron.
+
 ## Installing
 Before installing Pycheron, download:
 
@@ -88,10 +91,6 @@ Then use pip to install the .whl file:
 
 ## Known Issues
 If using Mac OSX with an Anaconda environment and receive errors relating to matplotlib, matplotlib will need to be reinstalled using version 2.2.5 with the command `conda install matplotlib=2.2.5". Afterwards, re-build Pycheron using the build script. 
-
-## Fortran
-It is recommended to use gfortran 6.3 for OSX. Currently Fortran compilations only work on OSX and Linux. If using a Windows operating system, there is an option to turn off Fortran in the functions that use it (e.g., `staltaMetric`, `psdMetric`,`spikesMetric`, `repeatedAmplitudeMetric`)
-by setting the variable `fortran` equal to `False`. Please refer to the 'Operating Systems' section regarding Windows use with Pycheron.
 
 ## How to run Pycheron's backend
 Data is ingested into Pycheron by directing the package to a local directory 

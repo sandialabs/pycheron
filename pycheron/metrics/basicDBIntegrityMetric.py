@@ -34,6 +34,7 @@ from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import text
 from cx_Oracle import makedsn
 from pycheron.util.logger import Logger
+from pycheron.db.sqllite_db import Database
 
 
 def dbIntegrityCheck(
@@ -46,7 +47,7 @@ def dbIntegrityCheck(
     CSSType="CSS",
     table_names=None,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
 
@@ -72,6 +73,10 @@ def dbIntegrityCheck(
     :type table_names: dict
     :param logger: logger object
     :type logger: pycheron.util.logger.Logger
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     Input format should provide info to create this information:
         dialect[+driver]://user:password@host:port/service name.
@@ -609,7 +614,8 @@ def dbIntegrityCheck(
             "integrity_results": basic_db_checks
         }
 
-    if database:
+    if database_config:
+        database = Database(**database_config)
         database.insert_metric(imet)
 
     #return basic_db_checks

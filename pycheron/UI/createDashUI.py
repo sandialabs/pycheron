@@ -1324,7 +1324,7 @@ def _connect(n_clicks):
 
 # ------ Map data functions and storage -----------
 def _make_data(db):
-    
+
     pycheron_df = db.view()
 
     ########## Manipulate data ###########
@@ -1486,6 +1486,7 @@ def _color_scale(md, selected_row_indices=[]):
 def _make_map(map_data, clicks):
     clicks_ = json.loads(clicks)
     if clicks_["n_clicks"] > 0:
+        print(f"MAP DATA: {map_data}")
         df = pd.read_json(map_data)
         return _gen_map(df)
     else:
@@ -1670,7 +1671,6 @@ def _get_network_selections(children, value):
     clicks = json.loads(children)
     if clicks["n_clicks"] > 0:
         db = Database(value).networks()
-        ret = [{"label": val, "value": val} for val in np.unique(db) if ":" not in val]        
         return [{"label": val, "value": val} for val in np.unique(db) if ":" not in val]
     else:
         return []
@@ -1679,6 +1679,7 @@ def _get_network_selections(children, value):
 # This stores the network across tables
 @app.callback(Output("network", "children"), [Input("network-selector", "value")])
 def _get_network(value):
+    print(f"value: {value}")
     return json.dumps({"network": value})
 
 
@@ -1692,7 +1693,6 @@ def _get_network(value):
     ],
 )
 def _make_map(map_data, clicks, network):
-    #import pdb; pdb.set_trace()
     if clicks is not None and network is not None:
         clicks_ = json.loads(clicks)
         value = json.loads(network)
@@ -1779,6 +1779,7 @@ def _get_plot_options(clicks, network, value):
             ranks = [1, 6.5, 30, 100]
             rank_opt = [{"label": val, "value": val} for val in ranks]
 
+            print(f"VALUE PASSED to Database on line 1770: {value}")
             db = Database(value)
             unique_nc = db.get_metric("psdMetric").groupby(["network", "channel"]).size().reset_index(name="Freq")
             unique_nc = unique_nc.drop(labels=["Freq"], axis=1)
@@ -2749,6 +2750,7 @@ def _metric_table_plot(network, station, channel, clicks, metric, value):
                 style = {"display": "block"}
 
                 # Connect to database and get
+                print(f"VALUE PASSED TO Database on line 2709: {value}")
                 db = Database(value).get_metric(
                     metric_name=metric_name,
                     network=network_["network"],

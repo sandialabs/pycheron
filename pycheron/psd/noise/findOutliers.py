@@ -281,7 +281,6 @@ def findOutliers(
     .. image:: _static/outliersPlot.png
 
     """
-
     # Set up logger
     if logger is None:
         logger = Logger(None)

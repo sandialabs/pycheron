@@ -37,6 +37,7 @@ from pycheron.util.logger import Logger
 import os
 import warnings
 import numpy as np
+from pycheron.db.sqllite_db import Database
 
 
 def sohMetric(
@@ -46,7 +47,7 @@ def sohMetric(
     io_clock=True,
     timing_quality=True,
     logger=None,
-    database=None,
+    database_config=None,
     generateMasks=False,
     masksByTime=True,
     noGPSTimeThreshold=0,
@@ -82,8 +83,10 @@ def sohMetric(
     :type timing_quality: bool
     :param logger: logger object
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
     :param generateMasks: Return generated masks. Boolean mask types generated only, and generated for the whole data
                           that spans the issue, as flags don't indicate the exact record it was discovered.
     :type generateMasks: bool
@@ -632,7 +635,8 @@ def sohMetric(
             os.remove(st_filename)
 
     # Insert data into database if available
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(sohFlags)
 
     return sohFlags

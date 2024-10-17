@@ -185,11 +185,11 @@ class WfdiscDB:
         :return: Returns a pandas dataframe representation of the wfdisc iterable
         :type: `pandas.DataFrame`
         """
-        df = pd.DataFrame(columns=list(wfdisc_table.keys()))
         try:
             print("Converting wfdisc table to pandas dataframe (this may take a while...)")
-            for row in wfdisc_table:
-                df = df.append(dict(row), ignore_index=True)
+            df_dict = {i: dict(row).values() for i, row in enumerate(wfdisc_table)}
+            df = pd.DataFrame.from_dict(df_dict, orient='index', columns=list(wfdisc_table.keys()))
+            
         except Exception as e:
             msg = "Failed to convert wfdisc table to pandas dataframe: {e}".format(e=e)
             raise ValueError(msg)

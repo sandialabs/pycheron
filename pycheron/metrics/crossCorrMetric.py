@@ -33,6 +33,7 @@ import numpy as np
 from pycheron.psd.noise.deadChannel import DDT, isDC
 from pycheron.util.logger import Logger
 from obspy.signal import cross_correlation, filter
+from pycheron.db.sqllite_db import Database
 
 
 def crossCorrMetric(
@@ -48,7 +49,7 @@ def crossCorrMetric(
     ba=False,
     freq_passband=False,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
     Cross-correlates tr1 data and tr2 data
@@ -84,8 +85,10 @@ def crossCorrMetric(
     :type freq_passband: bool
     :param logger: If using a logger, (you must create one using the util.logger class)
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    ::param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: Dictionary containing the following keys and types:
 
@@ -369,7 +372,8 @@ def crossCorrMetric(
     }
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(d)
 
     return d

@@ -34,6 +34,7 @@ from pycheron.psd.noise.findOutliers import findOutliers
 import multiprocessing as mp
 from pycheron.util.masks import samples2time
 from pycheron.util.logger import Logger
+from pycheron.db.sqllite_db import Database
 
 
 def spikesMetric(
@@ -47,7 +48,7 @@ def spikesMetric(
     processes=4,
     logger=None,
     fortran=True,
-    database=None,
+    database_config=None,
 ):
     """
     Determines the total number of spikes (may contain more than one data point) and adjacent spikes (separated by at
@@ -78,8 +79,10 @@ def spikesMetric(
     :type logger: pycheron.util.logger.Logger
     :param fortran: Use Fortran libs or not. If libs will not compile or on a Windows Machine, set to `False`
     :type fortran: bool
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: list of dictionaries with following keys and types:
 
@@ -240,7 +243,8 @@ def spikesMetric(
         out.append(d)
 
     # Insert data into database if available
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(out)
 
     return out

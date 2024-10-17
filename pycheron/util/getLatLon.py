@@ -38,7 +38,6 @@ def get_latlon(
     :return: latitude and longitude values from obspy station
     :rtype: (obspy.core.inventory.util.Latitude, obspy.core.inventory.util.Longitude)
     """
-
     # If database connection
     if wfdb_conn and not manual:
         # Try reading from the site table and getting the lat, lon
@@ -57,15 +56,49 @@ def get_latlon(
         file_path = Path(os.path.realpath(__file__))
         conf_path = file_path.parent.parent.parent
         conf_file = Path(conf_path, "latlon_config.toml")
+        if not os.path.exists(conf_file):
+            with open(conf_file, "w") as f:
+                f.write("")
+        # conf_file = "/Users/prkay/workspace/github-pycheron/pycheron/latlon_config_test.toml"
         conf = toml.load(conf_file)
         # Try to get lat, lon for specific net, sta
         try:
-            lat = conf[network][station]["lat"]
-            lon = conf[network][station]["lon"]
+            lat = float(conf[network][station]["lat"])
+            lon = float(conf[network][station]["lon"])
         # If excpetion, set lat, lon to 0
         except Exception as e:
-            print(f"Unable to find config for network {network} and station {station}. Assigning lat/lon as 0,0: {e}")
-            lat, lon = 0.0, 0.0
+            try:
+                if start is None or end is None:
+                    inv = client.get_stations(network=network, station=station, level="response")
+                # Get response information so we can extract lat, lon values
+                else:
+                    starttime, endtime = UTCDateTime(start), UTCDateTime(end)
+                    inv = client.get_stations(
+                        network=network,
+                        station=station,
+                        starttime=starttime,
+                        endtime=endtime,
+                        level="response",
+                    )
+            # If exception note unable to get lat, lon values
+            except Exception as e:
+                print('COULDN"T GET LAT LON FROM CLIENT')
+                return None, None
+            # lat/lon information is found in station. Can not use get_coordinates() because this requires "channel" info
+            # which isn't always provided when setting a database metric
+            # Get lat, lon values from inventory object
+        
+            lat = inv._networks[0]._stations[0]._latitude
+            lon = inv._networks[0]._stations[0]._longitude
+            # conf[network][station]["lat"] = lat
+            # conf[network][station]["lon"] = lon
+            
+            conf[network] = {station: {"lat": lat, "lon": lon}}
+            with open(conf_file, 'w') as f:
+                toml.dump(conf, f)
+            print(f"network: {network}, station: {station} not found in file. Now adding lat: {lat}, lon: {lon}")
+            
+            
         return lat, lon
     # If not database, or manual, get the metadata from IRIS
     else:
@@ -85,11 +118,12 @@ def get_latlon(
                 )
         # If exception note unable to get lat, lon values
         except Exception as e:
-            print(f"Unable to generate lat or lon values: {e}")
             return None, None
         # lat/lon information is found in station. Can not use get_coordinates() because this requires "channel" info
         # which isn't always provided when setting a database metric
         # Get lat, lon values from inventory object
+    
         lat = inv._networks[0]._stations[0]._latitude
         lon = inv._networks[0]._stations[0]._longitude
+        print(f"network: {network}, station: {station}, lat: {lat}, lon: {lon}")
         return lat, lon

@@ -49,9 +49,10 @@ from pycheron.dataAcq.css import platform_file_path
 from pycheron.dataAcq.fap import fap_reader
 from obspy.io.xseed.core import _read_resp
 from obspy.core.inventory.inventory import read_inventory
+from pycheron.db.sqllite_db import Database
 
 
-def seedChanSpsCompliance(st, sps_tolerance=0.01, database=None):
+def seedChanSpsCompliance(st, sps_tolerance=0.01, database_config=None):
     """
     Checks stream object for compliance with SEED channel naming convention and sample rate. Additionally tests sample
     rate against calculated sample rate from data
@@ -62,8 +63,10 @@ def seedChanSpsCompliance(st, sps_tolerance=0.01, database=None):
                           calculated from data. Also used for allowable tolerance when comparing to band code sps
                           ranges (default = 0.01 or 1%)
     :type sps_tolerance: float
-    :param database: Pycheron database to ingest metrics into
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return:
 
@@ -220,13 +223,14 @@ def seedChanSpsCompliance(st, sps_tolerance=0.01, database=None):
         }
         SeedChanComp.append(data)
     
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(SeedChanComp)
     
     return SeedChanComp
 
 
-def chanOrientationCompliance(st, inv=None, angle_tolerance=0.01, iris_compatible=True, database=None):
+def chanOrientationCompliance(st, inv=None, angle_tolerance=0.01, iris_compatible=True, database_config=None):
     """
 
     For each trace in a stream object, check that the orientation (azimuth & dip) agree with the assumed channel
@@ -434,7 +438,8 @@ def chanOrientationCompliance(st, inv=None, angle_tolerance=0.01, iris_compatibl
                 }
                 ChanOrientComp.append(data)
     
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(ChanOrientComp)
 
     return ChanOrientComp
@@ -505,7 +510,7 @@ def retrieve_chan_orientation(tr, inv):
     return azimuth, dip
 
 
-def verticalChanOrientationCompliance(tr, inv=None, angle_tolerance=0.01, iris_compatible=True, database=None):
+def verticalChanOrientationCompliance(tr, inv=None, angle_tolerance=0.01, iris_compatible=True, database_config=None):
     """
 
     For vertical channels only, check that the orientation of the azimuth (0 deg) and dip (-90 deg) are compliant with
@@ -560,13 +565,14 @@ def verticalChanOrientationCompliance(tr, inv=None, angle_tolerance=0.01, iris_c
             "verticalChanOrientationCompliance checks azimuth and dip of vertical channels only." % tr.id
         )
     
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric([data])
 
     return [data]
 
 
-def horzChanOrientationCompliance(tr1, tr2, inv1=None, inv2=None, angle_tolerance=0.01, iris_compatible=True, database=None):
+def horzChanOrientationCompliance(tr1, tr2, inv1=None, inv2=None, angle_tolerance=0.01, iris_compatible=True, database_config=None):
     """
 
     For horizontal channels only, check that the orientation of the azimuth and dip are compliant with
@@ -703,13 +709,14 @@ def horzChanOrientationCompliance(tr1, tr2, inv1=None, inv2=None, angle_toleranc
         "metric_subname": "horzChanOrientationCompliance",
     }
 
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric([data])
 
     return [data]
 
 
-def sampleRateRespVerification(st, perc_tol=0.15, norm_freq=None, iris_compatible=True, database=None, logger=None):
+def sampleRateRespVerification(st, perc_tol=0.15, norm_freq=None, iris_compatible=True, database_config=None, logger=None):
     """
     Sample Rate consistency check that compares the sample rate from a stream object to the sample rate obtained from
     the high frequency corner of the trace's (i.e., channel's) amplitude response
@@ -964,7 +971,8 @@ def sampleRateRespVerification(st, perc_tol=0.15, norm_freq=None, iris_compatibl
         d.append(spsResp)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(d)
 
     return d

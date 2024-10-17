@@ -40,6 +40,7 @@ import numpy as np
 import os
 import sklearn
 from pycheron.sigpro.qcStatisticsML.feature_generator import FeatureGenerator
+from pycheron.db.sqllite_db import Database
 
 
 def evaluate(
@@ -171,10 +172,10 @@ def evaluate(
 
 def evaluate_stream(
     st,
-    model_path="/sigpro/qcStatisticsML/models/1621881059_RF-Raw-QC_Balanced.joblib.pkl",
+    model_path="/sigpro/qcStatisticsML/models/1715965925_RF-Raw-QC_Balanced.joblib.pkl",
     window_size=60,
     stride_length=50,
-    database=None,
+    database_config=None,
 ):
     """
     Function to loop through each traces in stream object and evaluate whether it contains signal or an artifact using
@@ -238,7 +239,8 @@ def evaluate_stream(
             )
         )
 
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(artifact_list)
 
     return artifact_list
@@ -249,7 +251,7 @@ def evaluate_file(
     model_path="/sigpro/qcStatisticsML/models/1621881059_RF-Raw-QC_Balanced.joblib.pkl",
     window_size=60,
     stride_length=50,
-    database=None,
+    database_config=None,
 ):
     """
     Function to evaluate a user-provided file, convert it to a stream object, and loop through each trace in the
@@ -266,8 +268,10 @@ def evaluate_file(
     :type window_size: int
     :param stride_length: length in seconds to increment rolling window
     :type stride_length: int
-    :param database: Pycheron database to ingest metrics into
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
      returns: d; list of dictionaries containing all the artifacts found for each trace object within
                             respective stream object. The following keys exist:
@@ -308,7 +312,7 @@ def evaluate_file(
         model_path=model_path,
         window_size=window_size,
         stride_length=stride_length,
-        database=database,
+        database=database_config,
     )
 
     return d
@@ -324,7 +328,7 @@ def evaluate_webservice(
     station=None,
     channel=None,
     location=None,
-    database=None,
+    database_config=None,
 ):
     """
     Function to evaluate a user-requested SNCL from IRIS webservices, convert it to a stream object, then loop through
@@ -396,7 +400,7 @@ def evaluate_webservice(
         model_path=model_path,
         window_size=window_size,
         stride_length=stride_length,
-        database=database,
+        database=database_config,
     )
 
     return d

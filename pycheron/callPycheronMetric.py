@@ -2704,7 +2704,7 @@ def _call_pycheron_wrapper(
             station,
             logger,
             byHourOn,
-            Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+            database={"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
         )
 
     # # ----------------------basicStatsMetric--------------------------------------
@@ -2726,10 +2726,24 @@ def _call_pycheron_wrapper(
                 network,
                 station,
                 logger,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_basic.start()
+        # _basic_stats_wrapper(st_basic,
+        #         rmsThreshold,
+        #         maxThreshold,
+        #         minThreshold,
+        #         medianThreshold,
+        #         meanThreshold,
+        #         varianceThreshold,
+        #         stdThreshold,
+        #         generateMasks,
+        #         masksByTime,
+        #         network,
+        #         station,
+        #         logger,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
 
     # # ----------------------correlationMetric-------------------------------------
     if calcAll or calcCorr:
@@ -2741,11 +2755,15 @@ def _call_pycheron_wrapper(
                 network,
                 station,
                 logger,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_corr.start()
-
+        # _corr_wrapper(stM,
+        #         network,
+        #         station,
+        #         logger,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
     # # ----------------------crossCorrMetric---------------------------------------
     if calcAll or calcCrossCorr:
         st_cross = stM.copy()
@@ -2765,10 +2783,24 @@ def _call_pycheron_wrapper(
                 network,
                 station,
                 logger,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_cross.start()
+        # _cross_corr_wrapper(st_cross,
+        #         freqmin,
+        #         maxLagSecs,
+        #         filt,
+        #         freqmax,
+        #         corners,
+        #         zerophase,
+        #         maxorder,
+        #         ba,
+        #         freq_passband,
+        #         network,
+        #         station,
+        #         logger,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
 
     # # ----------------------DCOffSetTimesMetric-----------------------------------
     if calcAll or calcDcOffset:
@@ -2785,10 +2817,20 @@ def _call_pycheron_wrapper(
                 network,
                 station,
                 logger,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_offset.start()
+        # _offset_wrapper(st_offset,
+        #         generateMasks,
+        #         masksByTime,
+        #         windowSecs,
+        #         incrementSecs,
+        #         threshold,
+        #         network,
+        #         station,
+        #         logger,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
 
     # # ----------------------gapMetric---------------------------------------------
     if calcAll or calcGap:
@@ -2803,10 +2845,18 @@ def _call_pycheron_wrapper(
                 network,
                 station,
                 logger,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )  # calculating metric
         t_gap.start()
+        # _gap_wrapper(st_gap,
+        #         generateMasks,
+        #         separateMasks,
+        #         masksByTime,
+        #         network,
+        #         station,
+        #         logger,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
 
     # # ----------------------repeatedAmplitude-------------------------------------
     if calcAll or calcAmp:
@@ -2821,10 +2871,18 @@ def _call_pycheron_wrapper(
                 station,
                 logger,
                 False,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_amp.start()
+        # _rep_amp_wrapper(st_amp,
+        #         minRep,
+        #         generateMasks,
+        #         network,
+        #         station,
+        #         logger,
+        #         False,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
 
     # # ----------------------snrMetric---------------------------------------------
     if calcAll or calcSNR:
@@ -2841,10 +2899,20 @@ def _call_pycheron_wrapper(
                 network,
                 station,
                 logger,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_snr.start()
+        # _snr_wrapper(st_snr,
+        #         algorithmSNR,
+        #         windowSecsSNR,
+        #         snrThreshold,
+        #         generateMasks,
+        #         masksByTime,
+        #         network,
+        #         station,
+        #         logger,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
 
     # # ----------------------sohMetric---------------------------------------------
     if calcAll or calcSOH:
@@ -2860,10 +2928,19 @@ def _call_pycheron_wrapper(
                 network,
                 station,
                 logger,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_soh.start()
+        # _soh_wrapper(st,
+        #         data_quality,
+        #         activity,
+        #         io_clock,
+        #         network,
+        #         station,
+        #         logger,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
+
 
     # # ----------------------staltaMetric------------------------------------------
     if calcAll or calcStalta:
@@ -2880,10 +2957,20 @@ def _call_pycheron_wrapper(
                 station,
                 logger,
                 fortran,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_stalta.start()
+        # _stalta_wrapper(st_stalta,
+        #         staSecs,
+        #         ltaSecs,
+        #         increment,
+        #         algorithmSTA,
+        #         network,
+        #         station,
+        #         logger,
+        #         fortran,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
 
     # # ----------------------transferFunctionMetric--------------------------------
     if calcAll or calcTransfer:
@@ -2896,12 +2983,18 @@ def _call_pycheron_wrapper(
                 network,
                 station,
                 logger,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
                 evalresp,
             ),
         )
         tmp += 1  # Adding this so linter doesn't complain
         t_transfer.start()
+        # _transfer_wrapper(st_trans,
+        #         network,
+        #         station,
+        #         logger,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+        #         evalresp)
 
     # # ----------------------spikesMetric------------------------------------------
     if calcAll or calcSpikes:
@@ -2921,10 +3014,23 @@ def _call_pycheron_wrapper(
                 fortran,
                 generateMasks,
                 masksByTime,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_spikes.start()
+        # _spikes_wrapper(st_spikes,
+        #         windowSize,
+        #         thresholdSpikes,
+        #         selectivity,
+        #         fixedThreshold,
+        #         processesSpikes,
+        #         network,
+        #         station,
+        #         logger,
+        #         fortran,
+        #         generateMasks,
+        #         masksByTime,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
 
     # # ----------------------deadChannel-------------------------------------------
     if calcAll or calcAllDeadChan:
@@ -2939,7 +3045,7 @@ def _call_pycheron_wrapper(
                 st_dc,
                 network,
                 station,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
                 logger,
                 detrend,
                 demean,
@@ -2947,7 +3053,14 @@ def _call_pycheron_wrapper(
             ),
         )
         t_dc.start()
-
+        # _dead_channel_wrapper(st_dc,
+        #         network,
+        #         station,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+        #         logger,
+        #         detrend,
+        #         demean,
+        #         taper)
         # deadChanADFMetric
         t_dc.join()
         st_dcADF = st.copy()
@@ -2964,11 +3077,21 @@ def _call_pycheron_wrapper(
                 generateMasks,
                 masksByTime,
                 dcADF_use_thresh,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_dc.start()
-
+        # _dead_channelADF_wrapper(st_dcADF,
+        #         network,
+        #         station,
+        #         logger,
+        #         dcADF_win_size,
+        #         dcADF_pval_thresh,
+        #         dcADF_threshold,
+        #         generateMasks,
+        #         masksByTime,
+        #         dcADF_use_thresh,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
         # deadChanMeanMetric
         t_dc.join()
         st_dcM = st.copy()
@@ -2983,11 +3106,20 @@ def _call_pycheron_wrapper(
                 dcMean_thresh,
                 generateMasks,
                 masksByTime,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_dc.start()
-
+        # _dead_channelMean_wrapper(st_dcM,
+        #         network,
+        #         station,
+        #         logger,
+        #         dcMean_win_size,
+        #         dcMean_thresh,
+        #         generateMasks,
+        #         masksByTime,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
+        
     # # ----------------------calibration-------------------------------------------
     if calcAll or calcCal:
         st_cal = st.copy()
@@ -2997,7 +3129,7 @@ def _call_pycheron_wrapper(
             station,
             logger,
             cal_metric_store,
-            Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+            {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
         )
 
     # # ----------------------qcStatsML-------------------------------------------
@@ -3013,11 +3145,19 @@ def _call_pycheron_wrapper(
                 model_path,
                 window_size,
                 stride_length,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)
-                ),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_qcml.start()
+        # _qc_ml_wrapper(st_qcml,
+        #         network,
+        #         station,
+        #         logger,
+        #         model_path,
+        #         window_size,
+        #         stride_length,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)
+        #         ))
 
     # # ----------------------metadataComplianceMetric-------------------------------------------
     if calcAll or calcMetadataComplianceMetric:
@@ -3039,11 +3179,25 @@ def _call_pycheron_wrapper(
                 perc_tol,
                 norm_freq,
                 iris_compatible,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)
-                ),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_mdcm.start()
+        # _mdcm_wrapper(st_mdcm,
+        #         network,
+        #         station,
+        #         logger,
+        #         seed_chan_sps_compliance,
+        #         chan_orientation_compliance,
+        #         vertical_chan_orientation_compliance,
+        #         horz_chan_orientation_compliance,
+        #         sample_rate_resp_verification,
+        #         sps_tolerance,
+        #         angle_tolerance,
+        #         perc_tol,
+        #         norm_freq,
+        #         iris_compatible,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)))
 
     # # -----------------------maxRangeMetric-----------------------------------------------------
     if calcAll or calcMaxRangeMetric:
@@ -3057,14 +3211,21 @@ def _call_pycheron_wrapper(
                 logger,
                 maxrange_window,
                 maxrange_increment,
-                Database(database._name, session, overwrite, manual, generate_conn(orcdb)
-                ),
+                {"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
             ),
         )
         t_mrm.start()
+        # _mrm_wrapper(st_mrm,
+        #         network,
+        #         station,
+        #         logger,
+        #         maxrange_window,
+        #         maxrange_increment,
+        #         Database(database._name, session, overwrite, manual, generate_conn(orcdb)
+        #         ))
 
     # # ----------------------plots--------------------------------
-
+    print("Made it to plots.")
     if plots:
         if calcAll:
             t_amp.join()
@@ -3321,12 +3482,13 @@ def _psd_wrapper(
         processes=processes,
         logger=logger,
         byHourOn=byHourOn,
-        database=database,
+        database_config=database,
     )
     # if psds returned
     if psds:
         print(("callPycheron(): Finished psdMetric for: " + network + "." + station))
         logger.log("callPycheron(): Finished psdMetric for: " + network + "." + station)
+
     else:
         logger.warn("callPycheron(): No results returned for psdMetric()... Skipping")
         print("callPycheron(): No results returned for psdMetric()... Skipping")
@@ -3369,7 +3531,7 @@ def _basic_stats_wrapper(
         generateMasks=generateMasks,
         masksByTime=masksByTime,
         logger=logger,
-        database=database,
+        database_config=database,
     )
 
     if basic_stats:
@@ -3462,7 +3624,7 @@ def _cross_corr_wrapper(
                 ba=ba,
                 freq_passband=freq_passband,
                 logger=logger,
-                database=database,
+                database_config=database,
             )
 
         # if results in list
@@ -3508,7 +3670,7 @@ def _offset_wrapper(
         incrementSecs=incrementSecs,
         threshold=threshold,
         logger=logger,
-        database=database,
+        database_config=database,
     )
     # if DCOffSetMetric returns results
     if offset_times:
@@ -3528,7 +3690,7 @@ def _offset_wrapper(
         outlierWindow=7,
         outlierThreshold=6.0,
         OutputType=0,
-        database=database,
+        database_config=database,
     )
     # if dailyDCOffsetMetric returns results
     if daily_dc_offset_metric:
@@ -3560,7 +3722,7 @@ def _gap_wrapper(st, generateMasks, separateMasks, masksByTime, network, station
         separateMasks=separateMasks,
         masksByTime=masksByTime,
         logger=logger,
-        database=database,
+        database_config=database,
     )
 
     logger.log("callPycheron(): Finished gapMetric for: " + network + "." + station)
@@ -3590,7 +3752,7 @@ def _rep_amp_wrapper(st, minRep, generateMasks, network, station, logger, fortra
         generateMasks=generateMasks,
         logger=logger,
         fortran=fortran,
-        database=database,
+        database_config=database,
     )
 
     # if results returned
@@ -3634,7 +3796,7 @@ def _snr_wrapper(
         generateMasks=generateMasks,
         masksByTime=masksByTime,
         logger=logger,
-        database=database,
+        database_config=database,
     )
     # if snrMetric returns a result, loop through unique channels and create/open a csv file to write out to.
     if snr:
@@ -3662,7 +3824,7 @@ def _soh_wrapper(st, data_quality, activity, io_clock, network, station, logger,
         activity=activity,
         io_clock=io_clock,
         logger=logger,
-        database=database,
+        database_config=database,
     )
     # if soh returns result, create/open a csv file to write out to.
     if soh is not None:
@@ -3704,7 +3866,7 @@ def _stalta_wrapper(
         algorithm=algorithmSTA,
         logger=logger,
         fortran=fortran,
-        database=database,
+        database_config=database,
     )
     # if staltaMetric returns a result, loop through unique channels and create/open a csv file to write out to.
     if stalta:
@@ -3734,7 +3896,7 @@ def _transfer_wrapper(st, network, station, logger, database, evalresp):
         for i in range(len(st) - 1):
             tr1 = st[i]
             tr2 = st[i + 1]
-            transMetric = transferFunctionMetric(tr1, tr2, logger, database=database, evalresp=evalresp)
+            transMetric = transferFunctionMetric(tr1, tr2, logger, database_config=database, evalresp=evalresp)
 
         # If result is returned, loop through unique channels and create/open CSV file.
         if transMetric:
@@ -3787,7 +3949,7 @@ def _spikes_wrapper(
         fortran=fortran,
         generateMasks=generateMasks,
         masksByTime=masksByTime,
-        database=database,
+        database_config=database,
     )
 
     # if spikesMetric returns a result, loop through unique channels and create/open a csv file to write out to.
@@ -3812,7 +3974,7 @@ def _dead_channel_wrapper(st, network, station, database, logger=None, detrend=T
     Output filename: deadChannelMetric_<channel>_<date>.csv
     """
     # calculate deadChannelMetric
-    dc = deadChannelMetric(st, logger, database=database)
+    dc = deadChannelMetric(st, logger, database_config=database)
     # If result is returned, loop through unique channels and create/open CSV file.
     if dc:
         logger.log("callPycheron(): Finished deadChannelMetric for: " + network + "." + station)
@@ -3854,7 +4016,7 @@ def _dead_channelADF_wrapper(
         generateMasks,
         masksByTime,
         use_thesh,
-        database=database,
+        database_config=database,
     )
 
     if dc:
@@ -3887,7 +4049,7 @@ def _dead_channelMean_wrapper(
 
     """
 
-    dc = deadChanMean(st, win_size, threshold, generateMasks, masksByTime, database=database)
+    dc = deadChanMean(st, win_size, threshold, generateMasks, masksByTime, database_config=database)
 
     if dc:
         logger.log("callPycheron(): Finished deadChanMeanMetric for: " + network + "." + station)
@@ -3907,7 +4069,7 @@ def _calibration_wrapper(st, network, station, logger, metric_store=None, databa
 
     Output filename: calibrationMetric_<channel>_<date>.csv
     """
-    cal = calibrationMetric(st, metric_store=metric_store, database=database)
+    cal = calibrationMetric(st, metric_store=metric_store, database_config=database)
 
     if cal:
         logger.log("callPycheron(): Finished calibrationMetric for: " + network + "." + station)
@@ -3964,7 +4126,7 @@ def _db_integ_wrapper(
         CSSType="CSS",
         table_names=table_names,
         logger=logger,
-        database=database,
+        database_config=database,
     )
 
     if db_integ:
@@ -3989,18 +4151,18 @@ def _mdcm_wrapper(st, network, station, logger,
     """
     
     if seed_chan_sps_compliance:
-        scss = seedChanSpsCompliance(st, sps_tolerance=sps_tolerance, database=database)
+        scss = seedChanSpsCompliance(st, sps_tolerance=sps_tolerance, database_config=database)
 
     if sample_rate_resp_verification:
-        srrv = sampleRateRespVerification(st, perc_tol=perc_tol, norm_freq=norm_freq, iris_compatible=iris_compatible, database=database)
+        srrv = sampleRateRespVerification(st, perc_tol=perc_tol, norm_freq=norm_freq, iris_compatible=iris_compatible, database_config=database)
     
     if chan_orientation_compliance:
-        coc = chanOrientationCompliance(st, iris_compatible=iris_compatible, database=database)
+        coc = chanOrientationCompliance(st, iris_compatible=iris_compatible, database_config=database)
     
     if vertical_chan_orientation_compliance:
         for tr in st:
             if tr.stats.component == "Z":
-                vcoc = verticalChanOrientationCompliance(tr, iris_compatible=iris_compatible, database=database)
+                vcoc = verticalChanOrientationCompliance(tr, iris_compatible=iris_compatible, database_config=database)
     
     if horz_chan_orientation_compliance:
         # creates pairs for each trace without duplicate pairs. In this case, we want duplicate pairs
@@ -4014,7 +4176,7 @@ def _mdcm_wrapper(st, network, station, logger,
             tr_pairs = tuple((x, y) for x in st for y in st)
             for tr_pair in tr_pairs:
                 if tr_pair[0].stats.component != "Z" and tr_pair[1].stats.component != "Z":
-                    hcoc = horzChanOrientationCompliance(tr_pair[0], tr_pair[1], iris_compatible=iris_compatible, database=database)
+                    hcoc = horzChanOrientationCompliance(tr_pair[0], tr_pair[1], iris_compatible=iris_compatible, database_config=database)
 
     logger.log("callPycheron(): Finished metadataComplianceMetric for: " + network + "." + station)
     print(("callPycheron(): Finished metadataComplianceMetric for: " + network + "." + station))
@@ -4028,7 +4190,7 @@ def _mrm_wrapper(st, network, station, logger, maxrange_window, maxrange_increme
     Output filename: maxRangeMetric_<channel>_<date>.csv
     """
 
-    mrm = maxRange(st, window=maxrange_window, increment=maxrange_increment, database=database, logger=logger)
+    mrm = maxRange(st, window=maxrange_window, increment=maxrange_increment, database_config=database, logger=logger)
 
     if mrm:
         logger.log("callPycheron(): Finished maxRangeMetric for: " + network + "." + station)
@@ -4063,7 +4225,7 @@ def main():
 
         if config.split(".")[-1] == "yaml":
             with open(config, "r") as ymlfile:
-                cfg = yaml.load(ymlfile)
+                cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
         else:
             print("Error: config file must be yaml")
             return

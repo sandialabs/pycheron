@@ -13,6 +13,7 @@ def test_get_latlon_types(file_assets, client_asset):
     st = file_assets["7A_CABN_stream"]
     tr = st[0]
     lat, lon = get_latlon(client_asset, tr.stats.network, tr.stats.station)
+    print(type(lat), type(lon))
     assert isinstance(lat, Latitude)
     assert isinstance(lon, Longitude)
 

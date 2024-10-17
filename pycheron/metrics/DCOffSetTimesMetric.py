@@ -32,6 +32,7 @@ __all__ = ["DCOffSetTimesMetric"]
 import numpy as np
 from pycheron.util.logger import Logger
 from pycheron.util.masks import samples2time
+from pycheron.db.sqllite_db import Database
 
 
 def DCOffSetTimesMetric(
@@ -42,7 +43,7 @@ def DCOffSetTimesMetric(
     generateMasks=False,
     masksByTime=True,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
     Metric to determine DC offset times (ie., where a shift in the signal mean is detected)
@@ -62,8 +63,10 @@ def DCOffSetTimesMetric(
     :type masksByTime: bool
     :param logger: (logger object) - If using a logger, (you must create one using the util.logger class)
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: list of dictionaries (one for each trace in stream object) containing the following keys and types:
 
@@ -229,7 +232,8 @@ def DCOffSetTimesMetric(
         d.append(metrics)
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(d)
 
     return d

@@ -36,6 +36,7 @@ from pycheron.rollseis.roll_median import roll_median
 from pycheron.rollseis.roll_sd import roll_sd
 from pycheron.util.logger import Logger
 from scipy.stats.mstats import mquantiles
+from pycheron.db.sqllite_db import Database
 
 
 def dailyDCOffSetMetric(
@@ -45,7 +46,7 @@ def dailyDCOffSetMetric(
     outlierThreshold=6.0,
     OutputType=1,
     logger=None,
-    database=None,
+    database_config=None,
 ):
     """
     Metric to process a list of dictionaries with daily means from basicStatsMetric and return a vector of daily
@@ -65,8 +66,10 @@ def dailyDCOffSetMetric(
     :type OutputType: bool
     :param logger: If using a logger, (you must create one using the util.logger class)
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: A list or list of dictionaries is returned for the `last day - np.floor(outlierWindow/2)`
              (default 3rd day from last) in incoming data if outputType = 1
@@ -233,7 +236,8 @@ def dailyDCOffSetMetric(
             )
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(metricList)
 
     return metricList

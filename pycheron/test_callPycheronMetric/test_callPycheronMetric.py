@@ -35,7 +35,7 @@ from pycheron.db.sqllite_db import Database
 
 def load_config_file(config_file):
     with open(config_file, "r") as ymlfile:
-        cfg = yaml.load(ymlfile)
+        cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
     return cfg
 
 

@@ -27,7 +27,7 @@
 # (End of Notice)
 ####################################################################################
 
-import dash_html_components as html
+import dash as html
 
 
 # Display utility functions

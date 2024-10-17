@@ -373,6 +373,7 @@ def rankPlot(
                         df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
                         df_z = pd.concat([df_z, df2], ignore_index=True)
 
+
                 # adding station as index
                 df_z["Station"] = sta_z
                 df_z = df_z.rename(df_z["Station"])
@@ -499,18 +500,6 @@ def rankPlot(
                         df2 = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
                         df_z = pd.concat([df_z, df2], ignore_index=True)
 
-                # adding station as index
-                df_z["Station"] = sta_z
-                df_z = df_z.rename(df_z["Station"])
-                df_z = df_z.drop(["Station"], axis=1)
-                # adding station as index
-                df_e["Station"] = sta_e
-                df_e = df_e.rename(df_e["Station"])
-                df_e = df_e.drop(["Station"], axis=1)
-                # adding station as index
-                df_n["Station"] = sta_n
-                df_n = df_n.rename(df_n["Station"])
-                df_n = df_n.drop(["Station"], axis=1)
 
         # ranking data
         for k in rank_by:
@@ -872,11 +861,13 @@ def calc_power_period_rankplot(stats, period):
             # adding data to DF
             df2_e = pd.DataFrame(data=np.asarray(diff).reshape(1, len(diff)), columns=per)
             df_e = pd.concat([df_e, df2_e], ignore_index=True)
+
         # Z component or for infrasound just fill "F" component into Z component
         # TODO this should probably be updated to be less confusing, is a stopgap for now
         # As is we may want to remove E and N components as well or just make a separate
         # ranking plot function for infrasound data 
         if chan.endswith("Z") or chan.endswith("F"):
+
             # Get sta, channel
             sta_z.append(stats[i]["snclq"].split(".")[1])
             chan_z = chan

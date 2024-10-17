@@ -32,10 +32,11 @@ __all__ = ["correlationMetric"]
 import numpy as np
 from pycheron.psd.noise.deadChannel import isDC
 from pycheron.util.logger import Logger
+from pycheron.db.sqllite_db import Database
 from scipy.stats.stats import pearsonr
 
 
-def correlationMetric(tr1, tr2, logger=None, database=None):
+def correlationMetric(tr1, tr2, logger=None, database_config=None):
     """
     Calculates the correlation between two ObsPy Traces of seismic data from same location.
 
@@ -45,8 +46,10 @@ def correlationMetric(tr1, tr2, logger=None, database=None):
     :type tr2: `obspy.core.trace.Trace`
     :param logger: If using a logger, (you must create one using the util.logger class)
     :type logger: pycheron.util.logger.Logger
-    :param database: database object
-    :type database: pycheron.db.sqllite_db.Database
+    :param database_config: dictionary containing the necessary parameters to create
+                            a pycheron Database object. 
+                            These include "db_name", "session_name", "overwrite", "manual", "wfdb_conn"
+    :type database_config: dict
 
     :return: Dictionary containing the following keys and types:
 
@@ -199,7 +202,8 @@ def correlationMetric(tr1, tr2, logger=None, database=None):
     }
 
     # If database defined, insert metric information
-    if database is not None:
+    if database_config is not None:
+        database = Database(**database_config)
         database.insert_metric(c)
 
     return c
