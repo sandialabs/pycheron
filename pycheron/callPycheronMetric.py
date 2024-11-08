@@ -27,55 +27,58 @@
 # (End of Notice)
 ####################################################################################
 
-import warnings
 import fnmatch
 import os
 import sys
 import time
-import cx_Oracle
+import warnings
+from multiprocessing import Process
 
+import cx_Oracle
 import numpy as np
 import obspy
+from obspy.clients.fdsn import Client
 from obspy.core.utcdatetime import UTCDateTime
 from obspy.imaging.cm import pqlx
-from obspy.clients.fdsn import Client
 
+import pycheron.metrics.tests.utils as utils
+from pycheron.dataAcq.css import css2stream, css2streamDB, get_wfdisc_stations
+from pycheron.dataAcq.external_db import SQLAlchemyQueryTool, generate_conn
+from pycheron.db.sqllite_db import Database
+from pycheron.metrics.basicDBIntegrityMetric import dbIntegrityCheck
+from pycheron.metrics.basicStatsMetric import basicStatsMetric
+from pycheron.metrics.calibration import calibrationMetric
+from pycheron.metrics.correlationMetric import correlationMetric
+from pycheron.metrics.crossCorrMetric import crossCorrMetric
+from pycheron.metrics.dailyDCOffsetMetric import dailyDCOffSetMetric
+from pycheron.metrics.DCOffSetTimesMetric import DCOffSetTimesMetric
+from pycheron.metrics.deadChanADFMetric import deadChanADFMetric
+from pycheron.metrics.deadChanMeanMetric import deadChanMean
+from pycheron.metrics.deadChannelMetric import deadChannelMetric
+from pycheron.metrics.gapMetric import gapMetric
+from pycheron.metrics.maxRangeMetric import maxRange
+from pycheron.metrics.metadataComplianceMetric import (
+    chanOrientationCompliance,
+    horzChanOrientationCompliance,
+    sampleRateRespVerification,
+    seedChanSpsCompliance,
+    verticalChanOrientationCompliance,
+)
+from pycheron.metrics.psdMetric import psdMetric
+from pycheron.metrics.psdMetricInfra import psdMetricInfra
+from pycheron.metrics.qcStatsML import evaluate_stream
+from pycheron.metrics.repeatedAmplitude import repeatedAmplitudeMetric
+from pycheron.metrics.snrMetric import snrMetric
+from pycheron.metrics.sohMetric import sohMetric
+from pycheron.metrics.spikesMetric import spikesMetric
+from pycheron.metrics.staltaMetric import staltaMetric
+from pycheron.metrics.transferFunctionMetric import transferFunctionMetric
 from pycheron.plotting.dailyPdfPlot import dailyPdfplots
 from pycheron.plotting.psdPlot import psdPlot
 from pycheron.psd.noise.stationNoiseModel import stationNoiseModel
 from pycheron.util.getChannel import getChannelName
 from pycheron.util.getSta import getSta, getUniqSta
-from pycheron.dataAcq.css import get_wfdisc_stations, css2stream, css2streamDB
-from pycheron.dataAcq.external_db import SQLAlchemyQueryTool, generate_conn
-from pycheron.metrics.basicStatsMetric import basicStatsMetric
-from pycheron.metrics.correlationMetric import correlationMetric
-from pycheron.metrics.crossCorrMetric import crossCorrMetric
-from pycheron.metrics.basicDBIntegrityMetric import dbIntegrityCheck
-from pycheron.metrics.DCOffSetTimesMetric import DCOffSetTimesMetric
-from pycheron.metrics.dailyDCOffsetMetric import dailyDCOffSetMetric
-from pycheron.metrics.gapMetric import gapMetric
-from pycheron.metrics.repeatedAmplitude import repeatedAmplitudeMetric
-from pycheron.metrics.deadChannelMetric import deadChannelMetric
-from pycheron.metrics.deadChanADFMetric import deadChanADFMetric
-from pycheron.metrics.deadChanMeanMetric import deadChanMean
-from pycheron.metrics.snrMetric import snrMetric
-from pycheron.metrics.psdMetric import psdMetric
-from pycheron.metrics.sohMetric import sohMetric
-from pycheron.metrics.spikesMetric import spikesMetric
-from pycheron.metrics.staltaMetric import staltaMetric
-from pycheron.metrics.calibration import calibrationMetric
-from pycheron.metrics.transferFunctionMetric import transferFunctionMetric
-from pycheron.metrics.qcStatsML import evaluate_stream
-from pycheron.metrics.metadataComplianceMetric import seedChanSpsCompliance, chanOrientationCompliance, verticalChanOrientationCompliance, horzChanOrientationCompliance, sampleRateRespVerification
-from pycheron.metrics.maxRangeMetric import maxRange
 from pycheron.util.logger import Logger
-from pycheron.db.sqllite_db import Database
-
-
-import pycheron.metrics.tests.utils as utils
-
-
-from multiprocessing import Process
 
 warnings.filterwarnings("ignore")
 
@@ -90,6 +93,7 @@ def callPycheron(
     datatype="dir",
     calcAll=True,
     calcPsds=False,
+    calcPsdsInfra=False,
     calcBasic=False,
     calcCorr=False,
     calcCrossCorr=False,
@@ -149,6 +153,23 @@ def callPycheron(
     num_gaps=10,
     pctBelowNoiseThresholdRESP=90,
     pctAboveNoiseThresholdRESP=90,
+    expLoPeriodInfra=None,
+    expHiPeriodInfra=100,
+    linLoPeriodInfra=None,
+    linHiPeriodInfra=100,
+    evalrespInfra=None,
+    generateMasksInfra=False,
+    dcExpThresholdInfra=0.3,
+    dcExpThresholdHourInfra=0.25,
+    pctBelowNoiseThresholdInfra=20,
+    pctAboveNoiseThresholdInfra=20,
+    rmsThresholdInfra=50000,
+    dcLinThresholdInfra=2,
+    dcLinThresholdHourInfra=2,
+    pctBelowNoiseThresholdRESPInfra=90,
+    pctAboveNoiseThresholdRESPInfra=90,
+    masksByTimeInfra=True,
+    byHourOnInfra=True,
     minRep=10,
     algorithmSNR="splitWindow",
     windowSecsSNR=60,
@@ -722,6 +743,7 @@ def callPycheron(
                 st_sta,
                 calcAll,
                 calcPsds,
+                calcPsdsInfra,
                 calcBasic,
                 calcCorr,
                 calcCrossCorr,
@@ -843,6 +865,23 @@ def callPycheron(
                 iris_compatible,
                 maxrange_window,
                 maxrange_increment,
+                expLoPeriodInfra,
+                expHiPeriodInfra,
+                linLoPeriodInfra,
+                linHiPeriodInfra,
+                evalrespInfra,
+                generateMasksInfra,
+                dcExpThresholdInfra,
+                dcExpThresholdHourInfra,
+                pctBelowNoiseThresholdInfra,
+                pctAboveNoiseThresholdInfra,
+                rmsThresholdInfra,
+                dcLinThresholdInfra,
+                dcLinThresholdHourInfra,
+                pctBelowNoiseThresholdRESPInfra,
+                pctAboveNoiseThresholdRESPInfra,
+                masksByTimeInfra,
+                byHourOnInfra,
                 orcdb,
             )
 
@@ -861,6 +900,7 @@ def callPycheron(
                 st_sta,
                 calcAll,
                 calcPsds,
+                calcPsdsInfra,
                 calcBasic,
                 calcCorr,
                 calcCrossCorr,
@@ -982,6 +1022,23 @@ def callPycheron(
                 iris_compatible,
                 maxrange_window,
                 maxrange_increment,
+                expLoPeriodInfra,
+                expHiPeriodInfra,
+                linLoPeriodInfra,
+                linHiPeriodInfra,
+                evalrespInfra,
+                generateMasksInfra,
+                dcExpThresholdInfra,
+                dcExpThresholdHourInfra,
+                pctBelowNoiseThresholdInfra,
+                pctAboveNoiseThresholdInfra,
+                rmsThresholdInfra,
+                dcLinThresholdInfra,
+                dcLinThresholdHourInfra,
+                pctBelowNoiseThresholdRESPInfra,
+                pctAboveNoiseThresholdRESPInfra,
+                masksByTimeInfra,
+                byHourOnInfra,
                 orcdb,
             )
 
@@ -1006,6 +1063,7 @@ def callPycheron(
                         st_sta,
                         calcAll,
                         calcPsds,
+                        calcPsdsInfra,
                         calcBasic,
                         calcCorr,
                         calcCrossCorr,
@@ -1127,6 +1185,23 @@ def callPycheron(
                         iris_compatible,
                         maxrange_window,
                         maxrange_increment,
+                        expLoPeriodInfra,
+                        expHiPeriodInfra,
+                        linLoPeriodInfra,
+                        linHiPeriodInfra,
+                        evalrespInfra,
+                        generateMasksInfra,
+                        dcExpThresholdInfra,
+                        dcExpThresholdHourInfra,
+                        pctBelowNoiseThresholdInfra,
+                        pctAboveNoiseThresholdInfra,
+                        rmsThresholdInfra,
+                        dcLinThresholdInfra,
+                        dcLinThresholdHourInfra,
+                        pctBelowNoiseThresholdRESPInfra,
+                        pctAboveNoiseThresholdRESPInfra,
+                        masksByTimeInfra,
+                        byHourOnInfra,
                         orcdb,
                     )
                 else:
@@ -1139,6 +1214,7 @@ def callPycheron(
                                 st,
                                 calcAll,
                                 calcPsds,
+                                calcPsdsInfra,
                                 calcBasic,
                                 calcCorr,
                                 calcCrossCorr,
@@ -1260,6 +1336,23 @@ def callPycheron(
                                 iris_compatible,
                                 maxrange_window,
                                 maxrange_increment,
+                                expLoPeriodInfra,
+                                expHiPeriodInfra,
+                                linLoPeriodInfra,
+                                linHiPeriodInfra,
+                                evalrespInfra,
+                                generateMasksInfra,
+                                dcExpThresholdInfra,
+                                dcExpThresholdHourInfra,
+                                pctBelowNoiseThresholdInfra,
+                                pctAboveNoiseThresholdInfra,
+                                rmsThresholdInfra,
+                                dcLinThresholdInfra,
+                                dcLinThresholdHourInfra,
+                                pctBelowNoiseThresholdRESPInfra,
+                                pctAboveNoiseThresholdRESPInfra,
+                                masksByTimeInfra,
+                                byHourOnInfra,
                                 orcdb,
                             )
         # if specific Station is specified
@@ -1274,6 +1367,7 @@ def callPycheron(
                     st_sta,
                     calcAll,
                     calcPsds,
+                    calcPsdsInfra,
                     calcBasic,
                     calcCorr,
                     calcCrossCorr,
@@ -1395,6 +1489,23 @@ def callPycheron(
                     iris_compatible,
                     maxrange_window,
                     maxrange_increment,
+                    expLoPeriodInfra,
+                    expHiPeriodInfra,
+                    linLoPeriodInfra,
+                    linHiPeriodInfra,
+                    evalrespInfra,
+                    generateMasksInfra,
+                    dcExpThresholdInfra,
+                    dcExpThresholdHourInfra,
+                    pctBelowNoiseThresholdInfra,
+                    pctAboveNoiseThresholdInfra,
+                    rmsThresholdInfra,
+                    dcLinThresholdInfra,
+                    dcLinThresholdHourInfra,
+                    pctBelowNoiseThresholdRESPInfra,
+                    pctAboveNoiseThresholdRESPInfra,
+                    masksByTimeInfra,
+                    byHourOnInfra,
                     orcdb,
                 )
             # if stream to be split up by days, loop through each day in stream
@@ -1407,6 +1518,7 @@ def callPycheron(
                             st,
                             calcAll,
                             calcPsds,
+                            calcPsdsInfra,
                             calcBasic,
                             calcCorr,
                             calcCrossCorr,
@@ -1528,6 +1640,23 @@ def callPycheron(
                             iris_compatible,
                             maxrange_window,
                             maxrange_increment,
+                            expLoPeriodInfra,
+                            expHiPeriodInfra,
+                            linLoPeriodInfra,
+                            linHiPeriodInfra,
+                            evalrespInfra,
+                            generateMasksInfra,
+                            dcExpThresholdInfra,
+                            dcExpThresholdHourInfra,
+                            pctBelowNoiseThresholdInfra,
+                            pctAboveNoiseThresholdInfra,
+                            rmsThresholdInfra,
+                            dcLinThresholdInfra,
+                            dcLinThresholdHourInfra,
+                            pctBelowNoiseThresholdRESPInfra,
+                            pctAboveNoiseThresholdRESPInfra,
+                            masksByTimeInfra,
+                            byHourOnInfra,
                             orcdb,
                         )
 
@@ -1586,6 +1715,7 @@ def callPycheron(
                         st_sta,
                         calcAll,
                         calcPsds,
+                        calcPsdsInfra,
                         calcBasic,
                         calcCorr,
                         calcCrossCorr,
@@ -1707,6 +1837,23 @@ def callPycheron(
                         iris_compatible,
                         maxrange_window,
                         maxrange_increment,
+                        expLoPeriodInfra,
+                        expHiPeriodInfra,
+                        linLoPeriodInfra,
+                        linHiPeriodInfra,
+                        evalrespInfra,
+                        generateMasksInfra,
+                        dcExpThresholdInfra,
+                        dcExpThresholdHourInfra,
+                        pctBelowNoiseThresholdInfra,
+                        pctAboveNoiseThresholdInfra,
+                        rmsThresholdInfra,
+                        dcLinThresholdInfra,
+                        dcLinThresholdHourInfra,
+                        pctBelowNoiseThresholdRESPInfra,
+                        pctAboveNoiseThresholdRESPInfra,
+                        masksByTimeInfra,
+                        byHourOnInfra,
                         orcdb,
                     )
                 else:
@@ -1719,6 +1866,7 @@ def callPycheron(
                                 st,
                                 calcAll,
                                 calcPsds,
+                                calcPsdsInfra,
                                 calcBasic,
                                 calcCorr,
                                 calcCrossCorr,
@@ -1840,6 +1988,23 @@ def callPycheron(
                                 iris_compatible,
                                 maxrange_window,
                                 maxrange_increment,
+                                expLoPeriodInfra,
+                                expHiPeriodInfra,
+                                linLoPeriodInfra,
+                                linHiPeriodInfra,
+                                evalrespInfra,
+                                generateMasksInfra,
+                                dcExpThresholdInfra,
+                                dcExpThresholdHourInfra,
+                                pctBelowNoiseThresholdInfra,
+                                pctAboveNoiseThresholdInfra,
+                                rmsThresholdInfra,
+                                dcLinThresholdInfra,
+                                dcLinThresholdHourInfra,
+                                pctBelowNoiseThresholdRESPInfra,
+                                pctAboveNoiseThresholdRESPInfra,
+                                masksByTimeInfra,
+                                byHourOnInfra,
                                 orcdb,
                             )
         # if specific Station is specified
@@ -1854,6 +2019,7 @@ def callPycheron(
                     st_sta,
                     calcAll,
                     calcPsds,
+                    calcPsdsInfra,
                     calcBasic,
                     calcCorr,
                     calcCrossCorr,
@@ -1975,6 +2141,23 @@ def callPycheron(
                     iris_compatible,
                     maxrange_window,
                     maxrange_increment,
+                    expLoPeriodInfra,
+                    expHiPeriodInfra,
+                    linLoPeriodInfra,
+                    linHiPeriodInfra,
+                    evalrespInfra,
+                    generateMasksInfra,
+                    dcExpThresholdInfra,
+                    dcExpThresholdHourInfra,
+                    pctBelowNoiseThresholdInfra,
+                    pctAboveNoiseThresholdInfra,
+                    rmsThresholdInfra,
+                    dcLinThresholdInfra,
+                    dcLinThresholdHourInfra,
+                    pctBelowNoiseThresholdRESPInfra,
+                    pctAboveNoiseThresholdRESPInfra,
+                    masksByTimeInfra,
+                    byHourOnInfra,
                     orcdb,
                 )
             # if stream to be split up by days, loop through each day in stream
@@ -1987,6 +2170,7 @@ def callPycheron(
                             st,
                             calcAll,
                             calcPsds,
+                            calcPsdsInfra,
                             calcBasic,
                             calcCorr,
                             calcCrossCorr,
@@ -2108,6 +2292,23 @@ def callPycheron(
                             iris_compatible,
                             maxrange_window,
                             maxrange_increment,
+                            expLoPeriodInfra,
+                            expHiPeriodInfra,
+                            linLoPeriodInfra,
+                            linHiPeriodInfra,
+                            evalrespInfra,
+                            generateMasksInfra,
+                            dcExpThresholdInfra,
+                            dcExpThresholdHourInfra,
+                            pctBelowNoiseThresholdInfra,
+                            pctAboveNoiseThresholdInfra,
+                            rmsThresholdInfra,
+                            dcLinThresholdInfra,
+                            dcLinThresholdHourInfra,
+                            pctBelowNoiseThresholdRESPInfra,
+                            pctAboveNoiseThresholdRESPInfra,
+                            masksByTimeInfra,
+                            byHourOnInfra,
                             orcdb,
                         )
 
@@ -2181,6 +2382,7 @@ def callPycheron(
                     st_sta,
                     calcAll,
                     calcPsds,
+                    calcPsdsInfra,
                     calcBasic,
                     calcCorr,
                     calcCrossCorr,
@@ -2302,6 +2504,23 @@ def callPycheron(
                     iris_compatible,
                     maxrange_window,
                     maxrange_increment,
+                    expLoPeriodInfra,
+                    expHiPeriodInfra,
+                    linLoPeriodInfra,
+                    linHiPeriodInfra,
+                    evalrespInfra,
+                    generateMasksInfra,
+                    dcExpThresholdInfra,
+                    dcExpThresholdHourInfra,
+                    pctBelowNoiseThresholdInfra,
+                    pctAboveNoiseThresholdInfra,
+                    rmsThresholdInfra,
+                    dcLinThresholdInfra,
+                    dcLinThresholdHourInfra,
+                    pctBelowNoiseThresholdRESPInfra,
+                    pctAboveNoiseThresholdRESPInfra,
+                    masksByTimeInfra,
+                    byHourOnInfra,
                     orcdb,
                 )
         # process by individual day
@@ -2337,6 +2556,7 @@ def callPycheron(
                         st_sta,
                         calcAll,
                         calcPsds,
+                        calcPsdsInfra,
                         calcBasic,
                         calcCorr,
                         calcCrossCorr,
@@ -2458,6 +2678,23 @@ def callPycheron(
                         iris_compatible,
                         maxrange_window,
                         maxrange_increment,
+                        expLoPeriodInfra,
+                        expHiPeriodInfra,
+                        linLoPeriodInfra,
+                        linHiPeriodInfra,
+                        evalrespInfra,
+                        generateMasksInfra,
+                        dcExpThresholdInfra,
+                        dcExpThresholdHourInfra,
+                        pctBelowNoiseThresholdInfra,
+                        pctAboveNoiseThresholdInfra,
+                        rmsThresholdInfra,
+                        dcLinThresholdInfra,
+                        dcLinThresholdHourInfra,
+                        pctBelowNoiseThresholdRESPInfra,
+                        pctAboveNoiseThresholdRESPInfra,
+                        masksByTimeInfra,
+                        byHourOnInfra,
                         orcdb,
                     )
         timestart = (time.time() - start) / 60
@@ -2482,6 +2719,7 @@ def _call_pycheron_wrapper(
     st_sta,
     calcAll,
     calcPsds,
+    calcPsdsInfra,
     calcBasic,
     calcCorr,
     calcCrossCorr,
@@ -2603,6 +2841,23 @@ def _call_pycheron_wrapper(
     iris_compatible,
     maxrange_window,
     maxrange_increment,
+    expLoPeriodInfra=None,
+    expHiPeriodInfra=100,
+    linLoPeriodInfra=None,
+    linHiPeriodInfra=100,
+    evalrespInfra=None,
+    generateMasksInfra=False,
+    dcExpThresholdInfra=0.3,
+    dcExpThresholdHourInfra=0.25,
+    pctBelowNoiseThresholdInfra=20,
+    pctAboveNoiseThresholdInfra=20,
+    rmsThresholdInfra=50000,
+    dcLinThresholdInfra=2,
+    dcLinThresholdHourInfra=2,
+    pctBelowNoiseThresholdRESPInfra=90,
+    pctAboveNoiseThresholdRESPInfra=90,
+    masksByTimeInfra=True,
+    byHourOnInfra=False,
     orcdb=None,
 ):
     """
@@ -2707,6 +2962,35 @@ def _call_pycheron_wrapper(
             database={"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
         )
 
+    # # ----------------------psdMetric---------------------------------------------
+    if calcAll or calcPsdsInfra:
+        st_psd_infra = st.copy()
+
+        _psd_infra_wrapper(
+            st_psd_infra,
+            expLoPeriodInfra,
+            expHiPeriodInfra,
+            linLoPeriodInfra,
+            linHiPeriodInfra,
+            evalrespInfra,
+            generateMasksInfra,
+            dcExpThresholdInfra,
+            pctBelowNoiseThresholdInfra,
+            pctAboveNoiseThresholdInfra,
+            rmsThresholdInfra,
+            dcLinThresholdInfra,
+            dcExpThresholdHourInfra,
+            dcLinThresholdHourInfra,
+            pctBelowNoiseThresholdRESPInfra,
+            pctAboveNoiseThresholdRESPInfra,
+            processesPSD,
+            network,
+            station,
+            logger,
+            masksByTimeInfra,
+            byHourOnInfra,
+            database={"db_name":database._name, "session_name": session, "overwrite": overwrite, "manual": manual, "wfdb_conn": generate_conn(orcdb)},
+        )
     # # ----------------------basicStatsMetric--------------------------------------
     if calcAll or calcBasic:
         st_basic = st.copy()
@@ -3364,6 +3648,66 @@ def _call_pycheron_wrapper(
         )
         print("Finished pdfPlot: " + network + "." + station)
 
+        if calcAll or calcPsdsInfra:
+            psdPlot(
+                Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+                "pdf",
+                f_name=sta_dir + "/pdfPlotInfra",
+                showNoiseModel=False,
+                showMaxMin=False,
+                showMode=False,
+                showMean=False,
+                showMedian=False,
+                showEnvelope=False,
+                envelopeType=False,
+                showSingle=False,
+                singleType=False,
+                ylo=ylo,
+                yhi=yhi,
+                pcolor=pqlx,
+                timespan=timespan,
+                network=network,
+                station=station,
+                channel=None,
+                session=session,
+                special_handling='infrasound'
+            )
+        psdPlot(
+            Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+            style="psd",
+            f_name=sta_dir + "/psdPlot",
+            showNoiseModel=showNoiseModel,
+            showMaxMin=showMaxMin,
+            showMode=showMode,
+            showMean=showMean,
+            showMedian=showMedian,
+            showEnvelope=showEnvelope,
+            envelopeType=envelopeType,
+            showSingle=showSingle,
+            singleType=singleType,
+            ylo=ylo,
+            yhi=yhi,
+            pcolor=pqlx,
+            timespan=timespan,
+            network=network,
+            station=station,
+            channel=None,
+            session=session,
+            special_handling='infrasound'
+        )
+
+        dailyPdfplots(
+            Database(database._name, session, overwrite, manual, generate_conn(orcdb)),
+            "idc",
+            sta_dir + "/dailyPDFgrid",
+            sta_dir + "/dailyPDFline",
+            per_arr,
+            network=network,
+            station=station,
+            channel=None,
+            session=session,
+        )
+
         print("-----------------------------------------------")
         print(("Finished Metric Calculations for " + network + "." + station))
         print("-----------------------------------------------")
@@ -3493,6 +3837,65 @@ def _psd_wrapper(
         logger.warn("callPycheron(): No results returned for psdMetric()... Skipping")
         print("callPycheron(): No results returned for psdMetric()... Skipping")
 
+def _psd_infra_wrapper(
+    st,
+    expLoPeriod,
+    expHiPeriod,
+    linLoPeriod,
+    linHiPeriod,
+    evalresp,
+    generateMasks,
+    dcExpThreshold,
+    pctBelowNoiseThreshold,
+    pctAboveNoiseThreshold,
+    rmsThreshold,
+    dcLinThreshold,
+    dcExpThresholdHour,
+    dcLinThresholdHour,
+    pctBelowNoiseThresholdRESP,
+    pctAboveNoiseThresholdRESP,
+    processes,
+    network,
+    station,
+    logger,
+    masksByTime,
+    byHourOn,
+    database,
+):
+    
+    print("Calculating PSDS for Infrasound. This could take a while...")
+    # calculating psdMetric
+    psds = psdMetricInfra(
+        st,
+        expLoPeriod=expLoPeriod,
+        expHiPeriod=expHiPeriod,
+        linLoPeriod=linLoPeriod,
+        linHiPeriod=linHiPeriod,
+        evalresp=evalresp,
+        generateMasks=generateMasks,
+        dcExpThreshold=dcExpThreshold,
+        pctBelowNoiseThreshold=pctBelowNoiseThreshold,
+        pctAboveNoiseThreshold=pctAboveNoiseThreshold,
+        rmsThreshold=rmsThreshold,
+        dcLinThreshold=dcLinThreshold,
+        pctBelowNoiseThresholdRESP=pctBelowNoiseThresholdRESP,
+        pctAboveNoiseThresholdRESP=pctAboveNoiseThresholdRESP,
+        dcExpThresholdHour=dcExpThresholdHour,
+        dcLinThresholdHour=dcLinThresholdHour,
+        processes=processes,
+        logger=logger,
+        masksByTime=masksByTime,
+        byHourOn=byHourOn,
+        database_config=database,
+    )
+    # if psds returned
+    if psds:
+        print(("callPycheron(): Finished psdMetricInfra for: " + network + "." + station))
+        logger.log("callPycheron(): Finished psdMetricInfra for: " + network + "." + station)
+
+    else:
+        logger.warn("callPycheron(): No results returned for psdMetricInfra()... Skipping")
+        print("callPycheron(): No results returned for psdMetricInfra()... Skipping")
 
 def _basic_stats_wrapper(
     st,
@@ -4207,8 +4610,9 @@ def _mrm_wrapper(st, network, station, logger, maxrange_window, maxrange_increme
 
 
 def main():
-    import time
     import argparse
+    import time
+
     import yaml
 
     parser = argparse.ArgumentParser(description="callPycheronMetric")
@@ -4245,6 +4649,7 @@ def main():
         datatype=cfg["datatype"],
         calcAll=cfg["calcAll"],
         calcPsds=cfg["calcPsds"],
+        calcPsdsInfra=["calcPsdsInfra"],
         calcBasic=cfg["calcBasic"],
         calcCorr=cfg["calcCorr"],
         calcCrossCorr=cfg["calcCrossCorr"],
@@ -4377,6 +4782,7 @@ def main():
         maxrange_window=cfg["maxrange_window"],
         maxrange_increment=cfg["maxrange_window"],
     )
+    ##callPycheron(**cfg)
 
     timestart = (time.time() - start) / 60
     print(("Time in minutes: " + str(timestart)))
