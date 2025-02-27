@@ -2559,15 +2559,8 @@ class Database:
                         mn=mn, key=key.lower(), val=value, c=timestamp
                     )
                 
-                if 'uncorrected_psds' in update:
-                    # print(update)
-                    # print(mn)
-                    # print(key)
-                    # #print(value)
                 
-                    with open('/Users/prkay/workspace/sql-psds.txt', 'w+') as f:
-                        f.write(update)
-                #print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                
                 db.execute(update)
 
                 sum_counts_sql = self._insert_summary_sql(mn, key, value, summary_count_dict, dt_range, network, station, "_counts", channel)
