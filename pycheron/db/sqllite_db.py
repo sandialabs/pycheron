@@ -27,20 +27,20 @@
 # (End of Notice)
 ####################################################################################
 
-import io
 import codecs
 import csv
+import io
 import json
 import os
 import os.path
 import sqlite3
 import time
-from sqlite3 import OperationalError, DatabaseError
+from sqlite3 import DatabaseError, OperationalError
 
 import numpy as np
 import pandas as pd
-from obspy.core import UTCDateTime
 from obspy.clients.fdsn import Client
+from obspy.core import UTCDateTime
 
 from pycheron.util.format import parse_snclq
 from pycheron.util.getLatLon import get_latlon
@@ -354,33 +354,33 @@ class Database:
                                start_time varchar,
                                end_time varchar,
                                metric_name varchar,
-                               noise2_mask varchar,
-                               dead_channel_exponent varchar,
-                               percent_above_idc_hnm varchar,
-                               dead_channel_linear varchar,
-                               uncorrected_psds varchar,
-                               percent_below_idc_lnm varchar,
-                               noise1_mask varchar,
-                               bad_resp_mask varchar,
-                               pdfs varchar,
-                               hi_amp_mask varchar,
-                               dc_mask varchar,
-                               low_amp_mask varchar,
-                               corrected_psds varchar,
-                               dead_channel_gsn varchar,
-                               dead_channel_exponent_hourly varchar,
-                               dead_channel_linear_hourly varchar,
-                               dead_channel_gsn_hourly varchar,
-                               dead_chan_exp_hourly_masks varchar,
-                               dead_chan_lin_hourly_masks varchar,
-                               dead_chan_gsn_hourly_masks varchar,
-                               dead_channel varchar,
-                               low_amp varchar,
-                               noise1 varchar,
-                               noise2 varchar,
-                               highAmp varchar,
-                               badResp varchar,
-                               dead_channel_gsn_mask varchar,
+                               noise2_mask_infra varchar,
+                               dead_channel_exponent_infra varchar,
+                               percent_above_idc_hnm_infra varchar,
+                               dead_channel_linear_infra varchar,
+                               uncorrected_psds_infra varchar,
+                               percent_below_idc_lnm_infra varchar,
+                               noise1_mask_infra varchar,
+                               bad_resp_mask_infra varchar,
+                               pdfs_infra varchar,
+                               hi_amp_mask_infra varchar,
+                               dc_mask_infra varchar,
+                               low_amp_mask_infra varchar,
+                               corrected_psds_infra varchar,
+                               dead_channel_gsn_infra varchar,
+                               dead_channel_exponent_hourly_infra varchar,
+                               dead_channel_linear_hourly_infra varchar,
+                               dead_channel_gsn_hourly_infra varchar,
+                               dead_chan_exp_hourly_masks_infra varchar,
+                               dead_chan_lin_hourly_masks_infra varchar,
+                               dead_chan_gsn_hourly_masks_infra varchar,
+                               dead_channel_infra varchar,
+                               low_amp_infra varchar,
+                               noise1_infra varchar,
+                               noise2_infra varchar,
+                               highAmp_infra varchar,
+                               badResp_infra varchar,
+                               dead_channel_gsn_mask_infra varchar,
                                FOREIGN KEY (metric_name) REFERENCES pycheron(metric),
                                FOREIGN KEY (network) REFERENCES pycheron(network),
                                FOREIGN KEY (station) REFERENCES pycheron(station),
@@ -701,21 +701,21 @@ class Database:
                                 dead_chan_gsn_hourly_masks int,
 
                                 --psdMetricInfra
-                                dc_mask int,
-                                low_amp_mask int,
-                                noise1_mask int,
-                                noise2_mask int,
-                                hi_amp_mask int,
-                                bad_resp_mask int,
-                                percent_above_idc_hnm varchar,
-                                percent_below_idc_lnm varchar,
-                                dead_channel_exponent varchar,
-                                dead_channel_linear varchar,
-                                dead_channel_gsn varchar,
+                                dc_mask_infra int,
+                                low_amp_mask_infra int,
+                                noise1_mask_infra int,
+                                noise2_mask_infra int,
+                                hi_amp_mask_infra int,
+                                bad_resp_mask_infra int,
+                                percent_above_idc_hnm_infra varchar,
+                                percent_below_idc_lnm_infra varchar,
+                                dead_channel_exponent_infra varchar,
+                                dead_channel_linear_infra varchar,
+                                dead_channel_gsn_infra varchar,
                                 --(hourly psd)
-                                dead_chan_exp_hourly_masks int,
-                                dead_chan_lin_hourly_masks int,
-                                dead_chan_gsn_hourly_masks int,
+                                dead_chan_exp_hourly_masks_infra int,
+                                dead_chan_lin_hourly_masks_infra int,
+                                dead_chan_gsn_hourly_masks_infra int,
 
                                 --repeatedAmplitudeMetric
                                 repAmp int,
@@ -1552,6 +1552,7 @@ class Database:
 
         # try/except sequence that deals with metrics whose names are inside lists or lists of lists
         try:
+            #print(metric)
             metric_name = metric["metric_name"]
         except TypeError:
             try:
@@ -2475,11 +2476,11 @@ class Database:
                 "dead_channel_gsn",
             ],
             "psdMetricInfra": [
-                "percent_above_idc_hnm",
-                "percent_below_idc_lnm",
-                "dead_channel_exponent",
-                "dead_channel_linear",
-                "dead_channel_gsn",
+                "percent_above_idc_hnm_infra",
+                "percent_below_idc_lnm_infra",
+                "dead_channel_exponent_infra",
+                "dead_channel_linear_infra",
+                "dead_channel_gsn_infra",
             ],
             "spikesMetric": ["non_adjacent_spikes"],
             "snrMetric": ["SNR"],
@@ -2523,6 +2524,7 @@ class Database:
             )
             db.execute(sql)
 
+            
             for key, value in metric.items():
                 valuej = None
                 if (
@@ -2541,7 +2543,7 @@ class Database:
                 if key == "daily_dc_offset_value" and value:
                     value = [value]
 
-                if key == "uncorrected_psds":
+                if key == "uncorrected_psds" or key == "uncorrected_psds_infra":
                     for i in range(len(value)):
                         value[i][0] = json.dumps(list(value[i][0]))
                         value[i][1] = json.dumps(list(value[i][1]))
@@ -2556,6 +2558,16 @@ class Database:
                     update = """UPDATE {mn} SET '{key}' = '{val}' where created = '{c}'""".format(
                         mn=mn, key=key.lower(), val=value, c=timestamp
                     )
+                
+                if 'uncorrected_psds' in update:
+                    # print(update)
+                    # print(mn)
+                    # print(key)
+                    # #print(value)
+                
+                    with open('/Users/prkay/workspace/sql-psds.txt', 'w+') as f:
+                        f.write(update)
+                #print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                 db.execute(update)
 
                 sum_counts_sql = self._insert_summary_sql(mn, key, value, summary_count_dict, dt_range, network, station, "_counts", channel)
@@ -2585,7 +2597,7 @@ class Database:
                 ):
                     value = json.dumps(value)
 
-                if key == "uncorrected_psds":
+                if key == "uncorrected_psds" or key == "uncorrected_psds_infra":
                     for i in range(len(value)):
                         value[i][0] = json.dumps(list(value[i][0]))
                         value[i][1] = json.dumps(list(value[i][1]))
@@ -3889,20 +3901,236 @@ def summary_table_check_exist(db, session_name, network, station, channel, dt_ra
                     AND channel = '{chan}'""".format(
         dt_range=dt_range, sn=session_name, net=network, sta=station, chan=channel
     )
-    db.execute(querycheck)
-    selectall_summaryquery = db.fetchall()
+    try:
+        db.execute(querycheck)
+    except sqlite3.OperationalError:
+        qc_insert = """create table summaryReportCountsAndValues(
+                                created VARCHAR PRIMARY KEY,
+                                range varchar,
+                                session varchar,
+                                network varchar,
+                                station varchar,
+                                channel varchar,
 
-    if not selectall_summaryquery:
-        qc_insert = """INSERT INTO summaryReportCountsAndValues (created, range, session, 
-                        network, station, channel) VALUES ('{created}', '{dt_range}', 
-                        '{sn}', '{net}', '{sta}', '{chan}')""".format(
-            created=UTCDateTime(time.time()).isoformat(),
-            dt_range=dt_range,
-            sn=session_name,
-            net=network,
-            sta=station,
-            chan=channel,
-        )
+                                --basicStatsMetric
+                                min_mask int,
+                                max_mask int,
+                                median_mask int,
+                                variance_mask int,
+                                std_mask int,
+                                rms_mask int,
+                                min_threshold_exceeded int,
+                                max_threshold_exceeded int,
+                                median_threshold_exceeded int,
+                                mean_threshold_exceeded int,
+                                variance_threshold_exceeded int, 
+                                std_threshold_exceeded int,
+                                highAmp int, 
+                                pegged int,
+                                highAmp_rms_mask int,
+                                pegged_mask int,
+
+                                --calibrationMetric
+                                num_cals_detected int,
+                                
+                                --dailyDCOffset
+                                daily_dc_offset_value int,
+                                
+                                --DCOffsetTimesMetric
+                                dc_offset_times int,
+
+                                --deadChannel
+                                dead_chan_mean_metric_masks int,
+                                dead_chan_ADF_metric_masks int,
+                                is_dead_channel int,
+
+                                --gapMetricStation
+                                station_completeness varchar,
+                                channel_percent_available varchar,
+                                total_gaps int,
+                                total_overlaps int,
+                                maximum_gap varchar,
+                                maximum_overlap varchar,
+
+                                --psdMetric
+                                dc_mask int,
+                                low_amp_mask int,
+                                noise1_mask int,
+                                noise2_mask int,
+                                hi_amp_mask int,
+                                bad_resp_mask int,
+                                percent_above_nhnm varchar,
+                                percent_below_nlnm varchar,
+                                dead_channel_exponent varchar,
+                                dead_channel_linear varchar,
+                                dead_channel_gsn varchar,
+                                --(hourly psd)
+                                dead_chan_exp_hourly_masks int,
+                                dead_chan_lin_hourly_masks int,
+                                dead_chan_gsn_hourly_masks int,
+
+                                --psdMetricInfra
+                                dc_mask_infra int,
+                                low_amp_mask_infra int,
+                                noise1_mask_infra int,
+                                noise2_mask_infra int,
+                                hi_amp_mask_infra int,
+                                bad_resp_mask_infra int,
+                                percent_above_idc_hnm_infra varchar,
+                                percent_below_idc_lnm_infra varchar,
+                                dead_channel_exponent_infra varchar,
+                                dead_channel_linear_infra varchar,
+                                dead_channel_gsn_infra varchar,
+                                --(hourly psd)
+                                dead_chan_exp_hourly_masks_infra int,
+                                dead_chan_lin_hourly_masks_infra int,
+                                dead_chan_gsn_hourly_masks_infra int,
+
+                                --repeatedAmplitudeMetric
+                                repAmp int,
+
+                                --spikesMetric
+                                total_spike_count int,
+                                non_adjacent_spikes varchar,
+
+                                --sohMetricActivityFlags
+                                calibration_signal_counts int,
+                                event_begin_counts int,
+                                event_end_counts int,
+                                event_in_progress_counts int,
+                                negative_leap_counts int,
+                                positive_leap_counts int,
+                                time_correction_applied_counts int,
+
+                                calibration_signal_percentages varchar,
+                                event_begin_percentages varchar,
+                                event_end_percentages varchar,
+                                event_in_progress_percentages varchar,
+                                negative_leap_percentages varchar,
+                                positive_leap_percentages varchar,
+                                time_correction_applied_percentages varchar, 
+                                
+                                --sohMetricDataQualityFlags
+                                amplifier_saturation_counts int,
+                                digital_filter_charging_counts int,
+                                digitizer_clipping_counts int,
+                                glitches_counts int,
+                                missing_padded_data_counts int,
+                                spikes_counts int,
+                                suspect_time_tag_counts int,
+                                telemetry_sync_error_counts int,
+
+                                amplifier_saturation_percentages varchar,
+                                digital_filter_charging_percentages varchar,
+                                digitizer_clipping_percentages varchar,
+                                glitches_percentages varchar,
+                                missing_padded_data_percentages varchar,
+                                spikes_percentages varchar,
+                                suspect_time_tag_percentages varchar,
+                                telemetry_sync_error_percentages varchar,
+                                
+                                --sohMetricIOClockFlags
+                                clock_locked_counts int,
+                                end_time_series_counts int,
+                                long_record_read_counts int,
+                                short_record_read_counts int,
+                                start_time_series_counts int,
+                                station_volume_counts int,
+
+                                clock_locked_percentages varchar,
+                                end_time_series_percentages varchar,
+                                long_record_read_percentages varchar,
+                                short_record_read_percentages varchar,
+                                start_time_series_percentages varchar,
+                                station_volume_percentages varchar,
+
+                                --sohMasksAndGeneral
+                                timing_correction varchar,
+                                timing_correction_count int,
+                                timing_quality_record_count varchar,
+                                timing_quality_statistics varchar,
+                                record_count varchar,
+                                num_records_used varchar,
+                                noTime varchar,
+                                poorTQ varchar,
+                                suspectTime varchar,
+                                ampSat varchar,
+                                digFilterChg varchar,
+                                clip varchar,
+                                spikes varchar,
+                                glitch varchar,
+                                missingPad varchar,
+                                tsyncErrors varchar,
+                                calib varchar,
+                                timingCor varchar,
+                                noTimeMasks varchar,
+                                poorTQMasks varchar,
+                                suspectTimeMasks varchar,
+                                ampSatMasks varchar,
+                                digFilterChgMasks varchar,
+                                clipMasks varchar,
+                                spikesMasks varchar,
+                                glitchMasks varchar,
+                                missingPadMasks varchar,
+                                tsyncMasks varchar,
+                                calibMasks varchar,
+                                tcMasks varchar,
+
+                                --dailyPdfPlot
+                                noise_masks int,
+                                microseism_masks int,
+                                banded_masks int,
+
+                                --snrMetric
+                                snr_masks int,
+                                snr varchar,
+
+                                --correlationMetric
+                                correlation_coefficient varchar,
+                                p_value varchar,
+
+                                --crossCorrMetric
+                                peak_correlation varchar,
+                                peak_lag varchar,
+
+                                --transferFunctionMetric
+                                gain_ratio varchar,
+                                phase_diff varchar,
+                                ms_coherence varchar,
+
+                                --staltaMetric
+                                max_stalta varchar,
+                                event_time varchar,
+
+                                --qcMLMetric
+                                dropout_fraction varchar,
+                                distinct_values_ratio varchar,
+                                packet_time_bandwidth_product varchar,
+                                frequency_sigma varchar,
+                                discontinuity_max_value varchar,
+                                artifacts int,
+
+                                --seedChanSpsCompliance
+                                is_chan_sps_Seedcompliant int,
+                                does_sps_match_data int,
+
+                                --ChanOrientationCompliance
+                                is_chan_orientation_compliant int,
+
+                                --verticalChanOrientationCompliance
+                                is_vert_chan_orientation_compliant int,
+
+                                --horzChanOrientationCompliance
+                                is_horz_chan_orientation_compliant_tr1 int,
+                                is_horz_chan_orientation_compliant_tr2 int,
+
+                                --sampleRateRespVerification
+                                sample_rate_resp int,
+
+                                --maxRangeMetric
+                                max_range varchar)
+
+                """
     return qc_insert
 
 

@@ -29,17 +29,19 @@
 
 __all__ = ["psdMetric"]
 
+import warnings
+from collections import OrderedDict
+
 import numpy as np
+import pandas as pd
+
+from pycheron.db.sqllite_db import Database
+from pycheron.metrics.basicStatsMetric import basicStatsMetric
 from pycheron.psd.psdList import psdList
 from pycheron.psd.psdStatistics import psdStatistics
 from pycheron.sigpro.unHistogram import unHistogram
-import pandas as pd
-from collections import OrderedDict
-from pycheron.metrics.basicStatsMetric import basicStatsMetric
-import warnings
 from pycheron.util.logger import Logger
 from pycheron.util.masks import samples2time
-from pycheron.db.sqllite_db import Database
 
 warnings.filterwarnings("ignore")
 
@@ -1118,6 +1120,7 @@ def psdMetric(
     # If database defined, insert metric information
     if database_config is not None:
         database = Database(**database_config)
+        #import pdb; pdb.set_trace()
         database.insert_metric(d)
 
     return d
